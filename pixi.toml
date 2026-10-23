@@ -47,7 +47,7 @@ dev-frontend = { cmd = "npm run dev", cwd = "frontend", depends-on = ["npm-insta
 
 # Lint
 lint-backend = { cmd = "ruff check . && ruff format --check .", cwd = "backend" }
-lint-frontend = { cmd = "npm run lint", cwd = "frontend", depends-on = ["npm-install"] }
+lint-frontend = { cmd = "npm run check", cwd = "frontend", depends-on = ["npm-install"] }
 lint = { depends-on = ["lint-backend", "lint-frontend"] }
 
 # Typecheck

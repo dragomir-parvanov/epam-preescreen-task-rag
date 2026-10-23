@@ -1,18 +1,28 @@
-import { render, screen } from '@testing-library/react'
-import { http, HttpResponse } from 'msw'
-import { expect, test } from 'vitest'
-import type { components } from './api/schema'
-import App from './App'
-import { server } from './test/server'
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, screen } from "@testing-library/react";
+import { http, HttpResponse } from "msw";
+import { expect, test } from "vite-plus/test";
+import type { components } from "./api/schema";
+import App from "./App";
+import { server } from "./test/server";
 
-test('shows the status the backend reports on /health', async () => {
+function renderApp() {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>,
+  );
+}
+
+test("shows the status the backend reports on /health", async () => {
   server.use(
-    http.get('*/api/health', () =>
-      HttpResponse.json<components['schemas']['HealthResponse']>({ status: 'ok' }),
+    http.get("*/api/health", () =>
+      HttpResponse.json<components["schemas"]["HealthResponse"]>({ status: "ok" }),
     ),
-  )
+  );
 
-  render(<App />)
+  renderApp();
 
-  expect(await screen.findByText('ok')).toBeInTheDocument()
-})
+  expect(await screen.findByText("ok")).toBeInTheDocument();
+});

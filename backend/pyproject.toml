@@ -16,4 +16,4 @@ typeCheckingMode = "strict"
 pythonVersion = "3.13"
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["app"]

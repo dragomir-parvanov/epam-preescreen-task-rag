@@ -10,3 +10,6 @@ docs
 **/.pytest_cache
 **/.ruff_cache
 .env
+**/*_test.py
+**/*.test.ts
+**/*.test.tsx

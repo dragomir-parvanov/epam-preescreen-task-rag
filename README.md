@@ -16,10 +16,10 @@ Development tasks:
 
 | Task | What it does |
 | --- | --- |
-| `pixi run dev-backend` / `pixi run dev-frontend` | Run the backend (reload) and the Vite dev server locally |
-| `pixi run lint` | ruff + ESLint |
-| `pixi run typecheck` | pyright (strict) + tsc |
-| `pixi run test` | pytest + Vitest |
+| `pixi run dev-backend` / `pixi run dev-frontend` | Run the backend (reload) and the Vite+ dev server locally |
+| `pixi run lint` | ruff + `vp check` (oxfmt, type-aware oxlint) |
+| `pixi run typecheck` | pyright (strict) + TypeScript 7 via `vp check` |
+| `pixi run test` | pytest + Vitest (via Vite+) |
 | `pixi run gen-types` | Regenerate the frontend's API types from the backend's OpenAPI schema; commit the result |
 
 ## Chat recording
