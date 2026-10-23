@@ -23,6 +23,11 @@ fastembed = "==0.9.0"
 psycopg = { version = "==3.3.6", extras = ["binary"] }
 # Article front-matter.
 pyyaml = ">=6.0"
+# Each generator integration with the provider SDK it was tested against (#22).
+anthropic-haystack = "==8.0.1"
+anthropic = "==2.1.0"
+ollama-haystack = "==7.0.2"
+ollama = "==0.6.3"
 
 # --- backend dev tooling ---
 
