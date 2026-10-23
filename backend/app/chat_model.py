@@ -32,3 +32,23 @@ class ChatModel(Protocol):
     async def complete(self, messages: Sequence[Message]) -> str:
         """The whole reply at once. The Follow-up rewrite uses it."""
         ...
+
+
+type LlmProblem = Literal["auth_failed", "unavailable", "model_missing"]
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class LlmHealth:
+    """What the readiness `llm` check reports. No `problem` means the model can be used."""
+
+    problem: LlmProblem | None = None
+    command: str | None = None
+    """The command that fixes the problem, when there is one: `ollama pull <model>`."""
+
+
+class LlmProbe(Protocol):
+    """A sibling of `ChatModel`: can the configured provider and model be used right now?"""
+
+    async def probe(self) -> LlmHealth:
+        """Asks the provider without generating any tokens. Never raises for a provider failure."""
+        ...

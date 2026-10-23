@@ -9,6 +9,12 @@ from app.logs import configure_logging
 from app.pgvector_testing import fresh_database, running_pgvector
 
 
+@pytest.fixture
+def anyio_backend() -> str:
+    """`pytest.mark.anyio` tests run on asyncio only."""
+    return "asyncio"
+
+
 @pytest.fixture(scope="session")
 def pgvector_server_url() -> Iterator[str]:
     """Admin URL of the session's pgvector server. Tests want `pgvector_database_url` instead."""

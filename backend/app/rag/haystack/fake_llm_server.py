@@ -209,3 +209,28 @@ def ollama_message(text: str) -> Reply:
 
 def ollama_error(status: int, message: str) -> Reply:
     return Reply(status=status, parts=[json.dumps({"error": message}).encode()])
+
+
+# --- Readiness probes: Anthropic's model lookup, Ollama's /api/show -------------------------
+
+
+def anthropic_model(model: str) -> Reply:
+    """A `GET /v1/models/{model}` reply."""
+    body = {
+        "type": "model",
+        "id": model,
+        "display_name": model,
+        "created_at": "2026-10-01T00:00:00Z",
+    }
+    return Reply(parts=[json.dumps(body).encode()])
+
+
+def ollama_show() -> Reply:
+    """A `POST /api/show` reply for a model that has been pulled."""
+    body = {
+        "modelfile": "",
+        "template": "",
+        "details": {"family": "qwen3"},
+        "model_info": {"general.architecture": "qwen3"},
+    }
+    return Reply(parts=[json.dumps(body).encode()])

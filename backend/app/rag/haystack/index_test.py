@@ -1,8 +1,12 @@
+import asyncio
+import time
+
 import psycopg
 import pytest
 from pydantic import SecretStr
 
-from app.rag.haystack.conftest import KnowledgeBase, RecordingEmbedder
+from app.rag.haystack.conftest import KnowledgeBase, RecordingEmbedder, keyword_embedding
+from app.rag.haystack.embedding import fake_embedder
 from app.rag.haystack.index import EmbeddingDimensionMismatchError, PassageIndex, SyncReport
 
 pytestmark = [pytest.mark.pgvector, pytest.mark.anyio]
@@ -111,5 +115,48 @@ async def test_opening_over_a_table_of_another_embedding_dimension_fails_with_th
     assert str(error.value) == (
         "The passages table holds 768-dimension embeddings, but the embedding model "
         "keyword-overlap makes 384-dimension ones. The table is derived from knowledge-base/: "
-        "drop it (DROP TABLE passages;) and restart to re-ingest."
+        "rebuild it with `pixi run reindex`."
     )
+
+
+async def test_two_backends_syncing_at_once_take_turns_and_the_second_writes_nothing(
+    pgvector_database_url: str, knowledge_base: KnowledgeBase
+) -> None:
+    knowledge_base.write("sso", SSO)
+    knowledge_base.write("webhooks", WEBHOOKS)
+
+    def slow_embedding(text: str) -> list[float]:
+        time.sleep(0.2)  # long enough for an unserialised second sync to see an empty table
+        return keyword_embedding(text)
+
+    embedder = fake_embedder(slow_embedding, model="keyword-overlap")
+    # Two processes on a fresh database: opening creates the table, which must not race either.
+    first, second = await asyncio.gather(
+        PassageIndex.open(SecretStr(pgvector_database_url), top_k=6, embedder=embedder),
+        PassageIndex.open(SecretStr(pgvector_database_url), top_k=6, embedder=embedder),
+    )
+    async with first, second:
+        reports = await asyncio.gather(
+            first.sync(knowledge_base.directory), second.sync(knowledge_base.directory)
+        )
+
+    assert sorted(len(report.written) for report in reports) == [0, 3]
+    assert sorted(report.unchanged for report in reports) == [0, 3]
+
+
+async def test_dropping_the_index_makes_the_next_sync_rebuild_everything(
+    pgvector_database_url: str, keyword_embedder: RecordingEmbedder, knowledge_base: KnowledgeBase
+) -> None:
+    knowledge_base.write("sso", SSO)
+    async with await open_index(pgvector_database_url, keyword_embedder) as index:
+        await index.sync(knowledge_base.directory)
+
+    await PassageIndex.drop(SecretStr(pgvector_database_url))
+    async with await open_index(pgvector_database_url, keyword_embedder) as index:
+        report = await index.sync(knowledge_base.directory)
+
+    assert report.written == ("sso#okta-1", "sso#troubleshooting-1")
+
+
+async def test_dropping_an_index_that_does_not_exist_is_a_no_op(pgvector_database_url: str) -> None:
+    await PassageIndex.drop(SecretStr(pgvector_database_url))

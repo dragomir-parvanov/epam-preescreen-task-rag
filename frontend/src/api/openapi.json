@@ -24,6 +24,35 @@
         }
       }
     },
+    "/ready": {
+      "get": {
+        "summary": "Ready",
+        "description": "Readiness: 200 once the stack can answer, else 503. Both carry every check.",
+        "operationId": "getReady",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Not ready: see `checks`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/chat": {
       "post": {
         "summary": "Chat",
@@ -481,6 +510,30 @@
           }
         }
       },
+      "Check": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok"
+        ],
+        "title": "Check"
+      },
       "Citation": {
         "properties": {
           "n": {
@@ -674,6 +727,48 @@
         "title": "HistoryTurn",
         "description": "An earlier Turn of the Conversation, as the client remembers it."
       },
+      "LlmCheck": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LlmProblem"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "command": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Command"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok"
+        ],
+        "title": "LlmCheck"
+      },
+      "LlmProblem": {
+        "type": "string",
+        "enum": [
+          "auth_failed",
+          "unavailable",
+          "model_missing"
+        ]
+      },
       "Passage": {
         "properties": {
           "id": {
@@ -748,6 +843,47 @@
         ],
         "title": "PassagesEvent",
         "description": "The retrieved Passages, numbered in prompt order. Sent before any token."
+      },
+      "ReadinessChecks": {
+        "properties": {
+          "database": {
+            "$ref": "#/components/schemas/Check"
+          },
+          "index": {
+            "$ref": "#/components/schemas/Check"
+          },
+          "llm": {
+            "$ref": "#/components/schemas/LlmCheck"
+          }
+        },
+        "type": "object",
+        "required": [
+          "database",
+          "index",
+          "llm"
+        ],
+        "title": "ReadinessChecks"
+      },
+      "ReadinessResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "not_ready"
+            ],
+            "title": "Status"
+          },
+          "checks": {
+            "$ref": "#/components/schemas/ReadinessChecks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "checks"
+        ],
+        "title": "ReadinessResponse"
       },
       "Refusal": {
         "properties": {

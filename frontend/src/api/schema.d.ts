@@ -24,6 +24,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ready": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ready
+         * @description Readiness: 200 once the stack can answer, else 503. Both carry every check.
+         */
+        get: operations["getReady"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/chat": {
         parameters: {
             query?: never;
@@ -169,6 +189,13 @@ export interface components {
         };
         ChatResult: components["schemas"]["Answer"] | components["schemas"]["UncitedAnswer"] | components["schemas"]["Refusal"];
         ChatStreamEvent: components["schemas"]["RewrittenEvent"] | components["schemas"]["PassagesEvent"] | components["schemas"]["TokenEvent"] | components["schemas"]["DoneEvent"] | components["schemas"]["ErrorEvent"];
+        /** Check */
+        Check: {
+            /** Ok */
+            ok: boolean;
+            /** Detail */
+            detail?: string | null;
+        };
         /** Citation */
         Citation: {
             /** N */
@@ -243,6 +270,16 @@ export interface components {
             /** Answer */
             answer: string;
         };
+        /** LlmCheck */
+        LlmCheck: {
+            /** Ok */
+            ok: boolean;
+            detail?: components["schemas"]["LlmProblem"] | null;
+            /** Command */
+            command?: string | null;
+        };
+        /** @enum {string} */
+        LlmProblem: "auth_failed" | "unavailable" | "model_missing";
         /** Passage */
         Passage: {
             /** Id */
@@ -273,6 +310,21 @@ export interface components {
             type: "passages";
             /** Passages */
             passages: components["schemas"]["Passage"][];
+        };
+        /** ReadinessChecks */
+        ReadinessChecks: {
+            database: components["schemas"]["Check"];
+            index: components["schemas"]["Check"];
+            llm: components["schemas"]["LlmCheck"];
+        };
+        /** ReadinessResponse */
+        ReadinessResponse: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ready" | "not_ready";
+            checks: components["schemas"]["ReadinessChecks"];
         };
         /** Refusal */
         Refusal: {
@@ -388,6 +440,35 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HealthResponse"];
+                };
+            };
+        };
+    };
+    getReady: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReadinessResponse"];
+                };
+            };
+            /** @description Not ready: see `checks`. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReadinessResponse"];
                 };
             };
         };

@@ -5,9 +5,9 @@ runs over `StubAnsweringService`, which also lets the route tests drive every pa
 """
 
 import asyncio
-from collections.abc import AsyncIterator, Sequence
+from collections.abc import AsyncIterator, Callable, Sequence
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Final, Protocol
 
 from app.chat.schemas import (
     Answer,
@@ -21,6 +21,9 @@ from app.chat.schemas import (
     SectionRef,
     TokenEvent,
 )
+from app.errors import AppError
+
+INDEX_NOT_READY: Final = "The Knowledge Base is still being indexed. Please try again in a minute."
 
 type TurnEvent = RewrittenEvent | PassagesEvent | TokenEvent | DoneEvent
 """What a Turn yields. Failures are raised, never yielded: the HTTP layer owns `error` events."""
@@ -43,6 +46,20 @@ class AnsweringService(Protocol):
         Cancelling the consuming task, as a client disconnect does, must stop the work.
         """
         ...
+
+
+@dataclass(frozen=True)
+class RequireIndex:
+    """Refuses every Turn with `index_not_ready` until `index_ready()`, then answers through
+    `answering`: retrieval before the first sync would search a missing or stale index."""
+
+    answering: AnsweringService
+    index_ready: Callable[[], bool]
+
+    async def start_turn(self, request: ChatRequest) -> AsyncIterator[TurnEvent]:
+        if not self.index_ready():
+            raise AppError("index_not_ready", INDEX_NOT_READY)
+        return await self.answering.start_turn(request)
 
 
 @dataclass(frozen=True)

@@ -9,11 +9,6 @@ import pytest
 from app.rag.haystack.embedding import EMBEDDING_DIMENSION, Embedder, fake_embedder
 
 
-@pytest.fixture
-def anyio_backend() -> str:
-    return "asyncio"
-
-
 def keyword_embedding(text: str) -> list[float]:
     """A bag of words hashed into EMBEDDING_DIMENSION buckets and normalised: texts sharing more
     words have a higher cosine, so ranking assertions mean something without a real model."""
