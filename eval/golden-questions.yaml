@@ -2159,6 +2159,361 @@
     - [API token]
     - [Token access]
 
+- id: gq-security-access-reviews-1
+  question: How can a client export all Nimbus users with their roles and last sign-in date for a user access review?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-security-access-reviews, section: Admin settings}
+  expected_facts:
+    - Call GET /users with limit=100 and follow next_cursor until it is null.
+    - Keep email, role, status and last_sign_in_at for each user.
+  must_mention:
+    - [GET /users]
+    - [last_sign_in_at]
+
+- id: gq-security-access-reviews-2
+  question: During a Nimbus access review, how do we see which API keys are still being used and who created them?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-security-access-reviews, section: Controls in place}
+  expected_facts:
+    - Settings > Developers > API keys, or GET /api-keys, shows created_by and last_used_at for each key.
+  must_mention:
+    - [GET /api-keys]
+    - [last_used_at]
+    - [created_by]
+
+- id: gq-security-api-key-hygiene-1
+  question: Can a client create a read-only or scoped Nimbus API key for a reporting integration?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-security-api-key-hygiene, section: Controls in place}
+  expected_facts:
+    - No; an API key acts with Admin permissions in its workspace and keys have no scopes, so there is no read-only key.
+  must_mention:
+    - [no scopes]
+    - [Admin permissions]
+
+- id: gq-security-api-key-hygiene-2
+  question: How can an Admin find Nimbus API keys that no integration has used recently?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-security-api-key-hygiene, section: Admin settings > Reviewing keys}
+  expected_facts:
+    - Check the last_used_at field returned by GET /api-keys (the Last used column in the console) and revoke keys nothing uses.
+  must_mention:
+    - [last_used_at]
+    - [/api-keys]
+
+- id: gq-security-audit-events-1
+  question: Which Nimbus audit log event records a user's role being changed, and what does it contain?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-security-audit-events, section: Controls in place > Event types by area}
+    - {article: nimbus-security-audit-events, section: Controls in place > Event shape}
+  expected_facts:
+    - The action is user.role_changed.
+    - The event carries the actor, the target and a changes block with the role from and to.
+  must_mention:
+    - [user.role_changed]
+    - [changes]
+
+- id: gq-security-audit-events-2
+  question: Does the Nimbus audit log store the value of a secret when someone updates it in the secrets vault?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-security-audit-events, section: Controls in place > Event shape}
+  expected_facts:
+    - No. A secret.updated event carries the secret's name in target and has no changes block; the value is never logged.
+  must_mention:
+    - [secret.updated]
+    - [never logged]
+
+- id: gq-security-compliance-reports-1
+  question: How do I get the Nimbus SOC 2 Type II report sent to a client who is asking for it?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-security-compliance-reports, section: Admin settings}
+  expected_facts:
+    - Confirm an NDA is in force on the account record, then raise a Security documentation request in the Security & Compliance queue.
+    - Security & Compliance sends a watermarked PDF through a secure share link.
+  must_mention:
+    - [NDA]
+    - [Security documentation request]
+
+- id: gq-security-compliance-reports-2
+  question: How long does Security & Compliance take to return a client's own security questionnaire about Nimbus?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-security-compliance-reports, section: Evidence for auditors > Security questionnaires}
+  expected_facts:
+    - Custom questionnaires are returned within 10 business days; the standard CAIQ and SIG Lite answer pack can be sent first.
+  must_mention:
+    - [10 business days]
+
+- id: gq-security-credential-storage-1
+  question: Can an Admin read back the value of a secret stored in the Nimbus secrets vault, in the console or through GET /secrets?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-security-credential-storage, section: Controls in place > Write-only access}
+  expected_facts:
+    - No; secrets are never shown again after saving. Settings > Secrets shows names only and GET /secrets returns names only; even OmniCorp support can't decrypt them.
+  must_mention:
+    - [never]
+    - [names only]
+
+- id: gq-security-credential-storage-2
+  question: Do Nimbus run step logs ever show the value of a connection credential or secret?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-security-credential-storage, section: Controls in place > Use during a run}
+  expected_facts:
+    - Exact credential and secret values are replaced with •••••••• in step logs, inputs, outputs and GET /runs/{id}/steps.
+    - A value changed by a transform, e.g. base64-encoded, isn't recognised and can appear.
+  must_mention:
+    - [masked]
+    - [base64]
+
+- id: gq-security-data-deletion-1
+  question: What happens to the stored credentials when a Builder deletes a connection in Nimbus?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-security-data-deletion, section: Controls in place}
+  expected_facts:
+    - The connection's credentials are erased immediately and can't be recovered; using the app again needs a new connection authorised from scratch.
+  must_mention:
+    - [Erased immediately, erased immediately]
+    - [new connection]
+
+- id: gq-security-data-deletion-2
+  question: How does a CSM get specific Nimbus runs purged for a data subject erasure request before run history ages out?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-security-data-deletion, section: Admin settings > Handling a client deletion request}
+  expected_facts:
+    - Collect the workspace id and run ids (or a date range plus workflow id), open a deletion-request case with OmniCorp support, and pass support's written confirmation to the client.
+  must_mention:
+    - [OmniCorp support]
+    - [run ids]
+
+- id: gq-security-data-residency-1
+  question: Can a client move an existing Nimbus workspace from the US data region to the EU region?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-security-data-residency, section: Controls in place > The region is fixed}
+  expected_facts:
+    - No; the region is fixed at creation. Moving means creating a new workspace in the other region and migrating the workflows, re-authorising connections and re-entering secrets.
+  must_mention:
+    - [new workspace]
+    - [migrat]
+
+- id: gq-security-data-residency-2
+  question: Which data does a Nimbus workspace send outside its data region?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-security-data-residency, section: Controls in place > Data that leaves the region}
+  expected_facts:
+    - Connector step inputs sent to third-party apps, webhook deliveries, streamed audit events and notification emails, all to destinations the client configures.
+  must_mention:
+    - [Connector steps]
+    - [Webhook deliveries]
+
+- id: gq-security-encryption-1
+  question: Which AWS KMS permissions does Nimbus need on a client's customer-managed encryption key?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-security-encryption, section: Admin settings}
+  expected_facts:
+    - The Nimbus IAM role needs kms:Encrypt, kms:Decrypt, kms:GenerateDataKey and kms:DescribeKey on the key.
+  must_mention:
+    - ['kms:GenerateDataKey']
+    - ['kms:Decrypt']
+
+- id: gq-security-encryption-2
+  question: Does Nimbus still accept TLS 1.1 connections to the admin console and API?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-security-encryption, section: Controls in place > In transit}
+  expected_facts:
+    - No; every Nimbus hostname accepts TLS 1.2 or later only, and TLS 1.0 and 1.1 are refused at the handshake.
+  must_mention:
+    - [TLS 1.2 or later]
+    - [refused]
+
+- id: gq-security-gdpr-1
+  question: How does a Nimbus Admin find all of one person's data in the workspace to answer a GDPR access request?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-security-gdpr, section: Admin settings}
+  expected_facts:
+    - Search Settings > Users or GET /users by email, search Runs for the person's details, and filter the audit log by actor with GET /audit-log/events.
+    - Export CSV from the audit log to hand over a copy.
+  must_mention:
+    - [GET /users]
+    - [actor]
+    - [Runs]
+
+- id: gq-security-gdpr-2
+  question: Under GDPR, is OmniCorp a controller or a processor for Nimbus, and where is that set out?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-security-gdpr, section: Controls in place}
+  expected_facts:
+    - OmniCorp is the processor; the client is the controller.
+    - The data processing agreement (DPA) is part of every contract.
+  must_mention:
+    - [processor]
+    - [DPA]
+
+- id: gq-security-incident-notification-1
+  question: Who receives OmniCorp's security incident notice for a client's Nimbus workspace, and where is that set?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-security-incident-notification, section: Controls in place}
+    - {article: nimbus-security-incident-notification, section: Admin settings}
+  expected_facts:
+    - The notice goes by email from security-notices@omnicorp.example to the workspace's Security contacts and every Admin.
+    - Security contacts are set under Settings > Workspace.
+  must_mention:
+    - [Security contacts]
+    - [security-notices@omnicorp.example]
+
+- id: gq-security-incident-notification-2
+  question: What should a CSM do when OmniCorp issues a security incident notice to one of their Nimbus clients?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-security-incident-notification, section: Admin settings > What the CSM does}
+  expected_facts:
+    - Confirm the client's contacts received it the same business day, share only what the notice says, and send questions to the incident lead.
+    - Log contacts on the account record with the incident reference.
+  must_mention:
+    - [incident lead]
+    - [account record]
+
+- id: gq-security-password-policy-1
+  question: How many failed password attempts lock a Nimbus console account, and can an Admin unlock it early?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-security-password-policy, section: Controls in place}
+  expected_facts:
+    - After 10 failed attempts the account is locked for 15 minutes.
+    - There is no unlock button; the lock lifts on its own.
+  must_mention:
+    - [10 failed attempts]
+    - [15 minutes]
+    - [unlock]
+
+- id: gq-security-password-policy-2
+  question: How does an Admin reset two-factor authentication for a Nimbus user who lost their phone and recovery codes?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-security-password-policy, section: Admin settings > Requiring two-factor}
+  expected_facts:
+    - In Settings > Users, select the user and click Reset two-factor; the user then signs in with their password and enrols a new authenticator app.
+  must_mention:
+    - [Reset two-factor]
+    - [Settings > Users]
+
+- id: gq-security-session-management-1
+  question: What is the default idle timeout for Nimbus admin console sessions, and what range can an Admin set it to?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-security-session-management, section: Controls in place}
+    - {article: nimbus-security-session-management, section: Admin settings}
+  expected_facts:
+    - The default is 8 hours; an Admin can choose between 15 minutes and 24 hours under Settings > Security > Sessions.
+  must_mention:
+    - [15 minutes]
+    - [24 hours]
+    - [Settings > Security > Sessions]
+
+- id: gq-security-session-management-2
+  question: Does the Nimbus console idle timeout also expire API keys that haven't been used?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-security-session-management, section: Controls in place > API keys versus console sessions}
+  expected_facts:
+    - No; API keys aren't sessions. A key stays valid until its optional expiry date or until it is revoked, however long it goes unused.
+  must_mention:
+    - [idle timeout]
+    - [expiry date]
+
+- id: gq-security-vulnerability-disclosure-1
+  question: Where should a client report a security vulnerability they found in Nimbus, and how quickly will OmniCorp acknowledge it?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-security-vulnerability-disclosure, section: Controls in place}
+  expected_facts:
+    - Report to security@omnicorp.example.
+    - Every report is acknowledged within 2 business days with a tracking reference.
+  must_mention:
+    - [security@omnicorp.example]
+    - [2 business days]
+
+- id: gq-security-vulnerability-disclosure-2
+  question: Is the legacy Nimbus platform still getting security patches, and which releases have shipped?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-security-vulnerability-disclosure, section: Controls in place > Fixes on the legacy platform}
+  expected_facts:
+    - The legacy platform receives security fixes only, with no new features, until end of support.
+    - Security-fix releases 2.16.1, 2.16.2 and 2.16.3.
+  must_mention:
+    - [security fixes only]
+    - [2.16.3]
+
 - id: gq-tier-active-connector-limits-1
   question: If a client has two Salesforce connections (sandbox and production) used by active workflows, how many active connectors does that count as in Nimbus?
   category: single-article
@@ -2584,6 +2939,484 @@
     - [Save as template]
     - [unbound]
 
+- id: gq-troubleshooting-api-errors-1
+  question: Why does the Nimbus API return 409 conflict when the client's HTTP library retries a POST with the same Idempotency-Key?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-api-errors, section: Common causes}
+  expected_facts:
+    - A key reused with a different body is rejected with 409
+    - Nimbus remembers an Idempotency-Key for 24 hours
+  must_mention:
+    - [Idempotency-Key]
+    - [24 hours]
+    - ['409']
+
+- id: gq-troubleshooting-api-errors-2
+  question: A client's Nimbus API key is valid but every call returns 403 forbidden. What does that mean?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-api-errors, section: Error reference}
+  expected_facts:
+    - The workspace's Plan Tier has no API access (Starter)
+    - Keys have no scopes, so the key's permissions are never the cause
+  must_mention:
+    - [Starter]
+    - [no scopes]
+
+- id: gq-troubleshooting-approvals-1
+  question: What happens to a Nimbus run if nobody approves its approval step within 7 days?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-approvals, section: Error reference}
+  expected_facts:
+    - The approval expires and the run fails with WF-410
+    - Retry the run to create a new request
+  must_mention:
+    - [WF-410]
+    - [7 days]
+
+- id: gq-troubleshooting-approvals-2
+  question: How can an Admin approve a pending Nimbus approval request through the API when the only named approver has left the company?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-approvals, section: Fixes}
+  expected_facts:
+    - POST /approvals/{id}/approve with an API key, which acts with Admin permissions
+    - Record who decided in the comment
+  must_mention:
+    - [/approve]
+    - [Admin permissions]
+
+- id: gq-troubleshooting-connection-errors-1
+  question: Which Nimbus error code means a connection's OAuth token was revoked, and what status does the connection show under Connections?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-connection-errors, section: Error reference}
+  expected_facts:
+    - CONN-401 means the authorisation expired or was revoked
+    - The connection shows Needs attention and connector.disconnected is sent
+  must_mention:
+    - [CONN-401]
+    - [Needs attention]
+
+- id: gq-troubleshooting-connection-errors-2
+  question: After a Builder reconnects a Nimbus connection that showed Needs attention, are the runs that failed with CONN-401 retried automatically?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-connection-errors, section: Fixes > Reconnecting}
+  expected_facts:
+    - Runs that failed before the reconnect are not retried automatically; retry them from Runs
+    - Reconnecting keeps the connection id, so workflows need no edits
+  must_mention:
+    - [automatically]
+    - [Reconnect]
+
+- id: gq-troubleshooting-data-mapping-1
+  question: Why do all Nimbus workflow runs fail with WF-400 after a Builder renamed a step key and published?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-data-mapping, section: Common causes}
+  expected_facts:
+    - Expressions refer to steps by key, so references to the old key point to a step that doesn't exist
+    - Publishing is still allowed, and every run fails with WF-400
+  must_mention:
+    - [step key]
+    - [WF-400]
+
+- id: gq-troubleshooting-data-mapping-2
+  question: How do I give a Nimbus data mapping a fallback value when an optional source field is empty?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-data-mapping, section: Fixes}
+  expected_facts:
+    - Use default(), which returns its second argument when the first is empty
+  must_mention:
+    - [default(]
+    - [second argument]
+
+- id: gq-troubleshooting-database-connections-1
+  question: Which Nimbus API call shows whether a PostgreSQL or MySQL connection test failed at the TLS or the authentication stage?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-database-connections, section: Diagnosing the problem}
+  expected_facts:
+    - POST /connections/{id}/test returns the failing stage (connect, tls, authenticate, query) and the database's message
+  must_mention:
+    - [/connections/con_8Hq2LmR4/test, 'POST /connections/{id}/test']
+    - [stage]
+
+- id: gq-troubleshooting-database-connections-2
+  question: A client's SQL Server database is only reachable inside their own network. How can a Nimbus connection reach it?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-database-connections, section: Fixes > Permissions and private networks}
+  expected_facts:
+    - Through the private connector agent, an Enterprise feature, selected in the connection's Route through agent field
+  must_mention:
+    - [private connector agent]
+    - [Enterprise]
+    - [Route through agent]
+
+- id: gq-troubleshooting-failed-runs-1
+  question: How many times does Nimbus retry a failed connector step before the workflow run is marked failed, and how long does it wait between retries?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-failed-runs, section: Common causes}
+  expected_facts:
+    - Retried 3 times by default (configurable 0 to 5 per step)
+    - After 30 seconds, 2 minutes and 10 minutes
+  must_mention:
+    - [3 times]
+    - [30 seconds]
+    - [10 minutes]
+
+- id: gq-troubleshooting-failed-runs-2
+  question: When a Builder retries a failed Nimbus run with POST /runs/{id}/retry, does it run on the old workflow version?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-failed-runs, section: Fixes > Retrying a run}
+  expected_facts:
+    - The retry starts a new run with the same trigger input on the currently published version
+    - The new run's retry_of field holds the original run id
+  must_mention:
+    - [currently published version]
+    - [retry_of]
+
+- id: gq-troubleshooting-file-transfers-1
+  question: An SFTP step in Nimbus fails because the client rebuilt their SFTP server and the host key changed. How does the Builder accept the new key?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-file-transfers, section: Fixes > Host key changes}
+  expected_facts:
+    - Open the SFTP connection under Connections and click Reconnect
+    - Compare the shown fingerprint with ssh-keyscan output, then click Trust this key
+  must_mention:
+    - [Reconnect]
+    - [fingerprint]
+    - [Trust this key]
+
+- id: gq-troubleshooting-file-transfers-2
+  question: What is the largest file a Nimbus step can pass to an Amazon S3 or Azure Blob Storage upload step?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-file-transfers, section: Common causes}
+  expected_facts:
+    - A single file passed between steps can be up to 100 MB
+    - Server-side copy actions don't pass the file between steps
+  must_mention:
+    - [100 MB]
+
+- id: gq-troubleshooting-inbound-triggers-1
+  question: Why does a Nimbus inbound webhook trigger URL return 404 after someone clicked Regenerate URL in the builder?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-inbound-triggers, section: Common causes}
+  expected_facts:
+    - Regenerating issues a new token and invalidates the old URL immediately
+    - Senders still using the old URL get 404 Not Found
+  must_mention:
+    - [Regenerate URL]
+    - ['404']
+
+- id: gq-troubleshooting-inbound-triggers-2
+  question: What HTTP status does a Nimbus inbound webhook trigger return when the JSON payload is over 1 MB, and is a run started?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-inbound-triggers, section: Error reference}
+  expected_facts:
+    - 400 Bad Request with the code invalid_request
+    - No run is started
+  must_mention:
+    - ['400']
+    - [1 MB]
+
+- id: gq-troubleshooting-notifications-1
+  question: Which sender address should a client trust in their mail filter so Nimbus failure alert emails stop landing in quarantine?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-notifications, section: Fixes}
+  expected_facts:
+    - notifications@nimbus.omnicorp.example; trust it and release quarantined messages
+  must_mention:
+    - [notifications@nimbus.omnicorp.example]
+
+- id: gq-troubleshooting-notifications-2
+  question: Why did Nimbus stop posting failure alerts to a private Slack channel with CONN-403 in the Delivery log?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-notifications, section: Error reference}
+  expected_facts:
+    - The Nimbus Slack app isn't a member of the channel, usually a private channel it was never invited to
+  must_mention:
+    - [CONN-403]
+    - [invited, member]
+
+- id: gq-troubleshooting-password-sign-in-1
+  question: How long is a Nimbus user locked out after too many wrong passwords, and can an Admin unlock them sooner?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-password-sign-in, section: Common causes}
+    - {article: nimbus-troubleshooting-password-sign-in, section: Fixes > Locked accounts and resets}
+  expected_facts:
+    - After 10 failed attempts the account is locked for 15 minutes
+    - Neither a password reset nor an Admin can shorten the lock
+  must_mention:
+    - [10 failed attempts]
+    - [15 minutes]
+
+- id: gq-troubleshooting-password-sign-in-2
+  question: How does a Nimbus Admin reset a user's two-factor authentication after they lost their phone and recovery codes?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-password-sign-in, section: Fixes > Lost authenticator app}
+  expected_facts:
+    - Settings > Users, select the user, click Reset two-factor in the Sign-in panel
+    - The user re-enrols at next sign-in
+  must_mention:
+    - [Reset two-factor]
+    - [Settings > Users]
+
+- id: gq-troubleshooting-private-agent-1
+  question: How long without a heartbeat before Nimbus shows a private connector agent as Offline under Settings > Agents?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-private-agent, section: Symptoms}
+    - {article: nimbus-troubleshooting-private-agent, section: Error reference}
+  expected_facts:
+    - After 2 minutes without a heartbeat the agent is shown Offline
+    - Steps routed through it then fail with CONN-503
+  must_mention:
+    - [2 minutes]
+    - [Offline]
+
+- id: gq-troubleshooting-private-agent-2
+  question: The private connector agent log says "registration rejected token already used or expired" after the container was recreated. What went wrong and how is it fixed?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-private-agent, section: Common causes}
+    - {article: nimbus-troubleshooting-private-agent, section: Fixes}
+  expected_facts:
+    - The token works once and expires 24 hours after creation; without a persistent volume the agent loses its credential and re-registers
+    - Create a New registration token and recreate the container with a persistent volume
+  must_mention:
+    - [24 hours]
+    - [New registration token]
+    - [/var/lib/nimbus-agent]
+
+- id: gq-troubleshooting-promotion-1
+  question: Why does POST /workflows/{id}/promote return a 409 conflict when a client promotes a Nimbus workflow to Production?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-promotion, section: Error reference}
+    - {article: nimbus-troubleshooting-promotion, section: Common causes}
+  expected_facts:
+    - A step has no Production connection or an env. variable has no Production value, or Production was restored since the last promotion
+    - Promotion would overwrite that change, so Nimbus stops
+  must_mention:
+    - ['409']
+    - [restored, Production connection]
+
+- id: gq-troubleshooting-promotion-2
+  question: How does a Builder fix a promotion that is blocked because a step has no Production connection?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-promotion, section: Fixes}
+  expected_facts:
+    - Map a Production connection for each listed connector under Workflows > Environments > Connection mapping, then promote again
+  must_mention:
+    - [Connection mapping]
+    - [Production]
+
+- id: gq-troubleshooting-run-quota-1
+  question: When does the Nimbus monthly workflow run quota reset after a workspace hits WF-300, and are the rejected runs replayed?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-run-quota, section: Fixes > Getting runs back now}
+  expected_facts:
+    - The quota resets at 00:00 UTC on the 1st of each month
+    - Runs rejected with WF-300 are not queued or replayed
+  must_mention:
+    - [1st]
+    - [UTC]
+    - [replayed, queued]
+
+- id: gq-troubleshooting-run-quota-2
+  question: Do step retries and retried runs count against a Nimbus workspace's monthly workflow run quota?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-run-quota, section: Common causes}
+  expected_facts:
+    - A retried run starts a new run and counts again
+    - Step retries happen inside the same run and don't count
+  must_mention:
+    - [Step retries]
+    - [new run]
+
+- id: gq-troubleshooting-schedules-1
+  question: Why didn't a Nimbus scheduled workflow set for 01:30 Europe/London run on the night the clocks went forward?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-schedules, section: Common causes}
+  expected_facts:
+    - The schedule follows local clock time, and 01:30 doesn't exist that night
+    - The job is skipped and doesn't run that day
+  must_mention:
+    - [skipped]
+    - ['01:30']
+
+- id: gq-troubleshooting-schedules-2
+  question: Which error code does Nimbus show when a schedule trigger's cron expression is invalid, and what cron format does it accept?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-schedules, section: Error reference}
+  expected_facts:
+    - WF-100 means the trigger configuration is invalid
+    - Only five-field cron is accepted
+  must_mention:
+    - [WF-100]
+    - [five-field]
+
+- id: gq-troubleshooting-third-party-throttling-1
+  question: What does Nimbus do when a step gets CONN-429 because a third-party app like Zendesk throttled the connector?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-third-party-throttling, section: Error reference}
+  expected_facts:
+    - Nimbus backs off and retries the step using the step's retry schedule
+    - The run fails only if the last retry is throttled too
+  must_mention:
+    - [CONN-429]
+    - [retries, retry]
+
+- id: gq-troubleshooting-third-party-throttling-2
+  question: How can a client stop a Salesforce polling trigger and per-record loop from getting throttled with CONN-429 in Nimbus?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-third-party-throttling, section: Fixes}
+  expected_facts:
+    - Replace per-item actions with batch actions such as Upsert records (bulk)
+    - Filter the polling trigger with the Filter field
+  must_mention:
+    - [batch, bulk]
+    - [Filter]
+
+- id: gq-troubleshooting-timeouts-1
+  question: Does the time a Nimbus run spends waiting for an approval count towards the 60-minute run timeout?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-timeouts, section: Common causes}
+  expected_facts:
+    - Only time in the running status counts
+    - A run in waiting_for_approval isn't running, so approval waits don't count towards the 60 minutes
+  must_mention:
+    - [waiting_for_approval]
+    - [60 minutes]
+
+- id: gq-troubleshooting-timeouts-2
+  question: Which error code does Nimbus show when a single SQL query step runs longer than 10 minutes, and is the step retried?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-timeouts, section: Error reference}
+  expected_facts:
+    - 'WF-200: a step ran longer than 10 minutes and was stopped'
+    - The step is retried if it has retries left
+  must_mention:
+    - [WF-200]
+    - [10 minutes]
+
+- id: gq-troubleshooting-webhook-deliveries-1
+  question: Why does a client's webhook endpoint reject genuine Nimbus deliveries with 401 when their framework parses the JSON before checking the signature?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-webhook-deliveries, section: Common causes}
+  expected_facts:
+    - The HMAC must be computed over the raw request body; re-serialised JSON differs from what Nimbus signed
+    - The comparison is against the X-Nimbus-Signature-256 header
+  must_mention:
+    - [raw request body]
+    - [X-Nimbus-Signature-256]
+
+- id: gq-troubleshooting-webhook-deliveries-2
+  question: How do I resend a failed Nimbus webhook delivery to a client's endpoint, and will their de-duplication still work?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-troubleshooting-webhook-deliveries, section: Fixes}
+  expected_facts:
+    - Click Redeliver in the delivery log or call POST /webhooks/deliveries/{id}/redeliver
+    - A redelivery keeps the original X-Nimbus-Delivery id
+  must_mention:
+    - ['/webhooks/deliveries/{id}/redeliver', Redeliver]
+    - [X-Nimbus-Delivery]
+
 - id: gq-v2-admin-api-keys-1
   question: Do API keys expire on the legacy Nimbus console, and how does an Admin revoke one?
   category: single-article
@@ -2775,3 +3608,57 @@
   must_mention:
     - [channel_is_archived]
     - [archived]
+
+- id: gq-v2-security-sessions-1
+  question: What is the minimum password length and session lifetime on a legacy Nimbus workspace?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-v2-security-sessions, section: Controls in place}
+  expected_facts:
+    - Passwords need at least 10 characters.
+    - A session lasts 12 hours from sign-in, with no idle timeout.
+  must_mention:
+    - [10 characters]
+    - [12 hours]
+
+- id: gq-v2-security-sessions-2
+  question: Can an Admin force two-factor authentication for all users on a legacy Nimbus workspace?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-v2-security-sessions, section: Controls in place}
+  expected_facts:
+    - No. Two-factor is optional per user and can't be required by an Admin; an Admin can only see who has it and reset it.
+  must_mention:
+    - [can't require, Not available]
+    - [optional]
+
+- id: gq-v2-troubleshooting-workflow-runs-1
+  question: How long is workflow run history kept on the deprecated Nimbus platform, and what happens to older failed runs?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-v2-troubleshooting-workflow-runs, section: Common causes}
+  expected_facts:
+    - Run history is kept for 30 days
+    - Older runs are gone from the console and the API
+  must_mention:
+    - [30 days]
+
+- id: gq-v2-troubleshooting-workflow-runs-2
+  question: There's no retry button for a failed run on the legacy Nimbus platform. How does the client run an event-triggered workflow again?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-v2-troubleshooting-workflow-runs, section: Fixes}
+  expected_facts:
+    - Copy the trigger input from the failed run's Input panel and start a run with POST /workflows/{id}/runs
+    - Manual or scheduled workflows use Run now
+  must_mention:
+    - ['POST /workflows/{id}/runs']
+    - [Input]

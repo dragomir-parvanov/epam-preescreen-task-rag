@@ -33,6 +33,9 @@ def test_matches_word_terms_only_at_word_boundaries(text: str, term: str) -> Non
 
 # --- The committed fact sheet and Knowledge Base ----------------------------------------------
 
+# Loaded once: the forbidden-topic check runs per Article, 150 times.
+FACT_SHEET = load_fact_sheet()
+
 
 def article_text(article_id: str) -> str:
     return (KNOWLEDGE_BASE_DIR / f"{article_id}.md").read_text(encoding="utf-8")
@@ -58,7 +61,7 @@ def test_article_mentions_no_forbidden_topic(path: Path) -> None:
 
     hits = [
         f"{topic.id}: {term!r}"
-        for topic in load_fact_sheet().forbidden_topics
+        for topic in FACT_SHEET.forbidden_topics
         for term in topic.terms
         if mentions(text, term)
     ]
