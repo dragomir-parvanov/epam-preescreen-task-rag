@@ -52,6 +52,7 @@ Workflow runs are not audit events; they live in run history and the [Runs API](
 | `target` | object or null | What it was done to: `type`, `id` and `display`, e.g. a user, a workflow or a key. |
 | `changes` | object or null | For updates, each changed field as `{"from": ..., "to": ...}`. Secrets and credentials are never included. |
 | `source` | string | Where it came from: `console`, `api`, `scim` or `sso`. |
+| `reason` | string or null | For `auth.sign_in_failed`, why the sign-in failed, e.g. `invalid_password` or `invalid_second_factor`. |
 | `user_agent` | string or null | The browser or HTTP client string, when there was one. |
 
 Changes made by the platform itself, such as an endpoint switched off after failed deliveries, have an actor of type `system`. Changes pushed by an identity provider over SCIM have actor and source `scim`.

@@ -45,7 +45,7 @@ To register an endpoint in the console:
 1. Open **Settings > Developers > Webhooks** and click **Add endpoint**.
 2. Enter the **Endpoint URL**, which must start with `https://`, and a **Description** such as "ServiceDesk incident bridge (prod)".
 3. Under **Events**, tick the events to send.
-4. Click **Create endpoint**. The page shows the endpoint's **Signing secret**; click **Copy** and hand it to the client's developers through their secrets manager. Admins can show it again later with **Reveal**.
+4. Click **Create endpoint**. The page shows the endpoint's **Signing secret**; click **Copy** and hand it to the client's developers through their secrets manager. This is the only time the secret is shown; if it is lost, roll it (below).
 5. Click **Send test event**, pick an event type and click **Send**. Nimbus sends a sample delivery marked `"test": true` and shows the receiver's response status in the dialog.
 6. Check the **Deliveries** tab: the test should be listed with a 2xx status.
 
@@ -79,7 +79,7 @@ A healthy endpoint shows **Enabled** and a recent delivery with a 2xx status on 
 | What the client sees | What to check |
 |---|---|
 | Test event shows "Connection failed" | The URL is wrong, the host doesn't resolve publicly, or the certificate isn't from a public authority. Fix the receiver and send the test again. |
-| Test event shows HTTP 401 from the receiver | The receiver rejected the signature, usually because it has an old or mistyped secret. Copy the secret again with **Reveal**. |
+| Test event shows HTTP 401 from the receiver | The receiver rejected the signature, usually because it has an old or mistyped secret. The secret can't be shown again: click **Roll secret** and give the developers the new one. |
 | Deliveries show "Timed out" | The receiver took longer than 15 seconds. It should acknowledge at once and process the event afterwards. |
 | No deliveries at all for an event | The endpoint isn't subscribed to it. Edit the endpoint and tick the event. |
 | The endpoint shows **Disabled** | It failed for too long and Nimbus switched it off. Fix the receiver, turn **Enabled** back on, and redeliver what was missed. |

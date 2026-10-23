@@ -29,6 +29,31 @@ jobs:
       - name: Generated API types are fresh
         run: pixi run check-types-fresh
 
+  # The keyless retrieval eval (#28): the real embedder over the whole Knowledge Base, recall@k and
+  # the threshold gate checked for every Golden Question. A job of its own, so it runs in parallel.
+  eval-retrieval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # fastembed downloads bge-small-en-v1.5 here once; the cache below keeps it between runs.
+      FASTEMBED_CACHE_PATH: ${{ github.workspace }}/.cache/fastembed
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: prefix-dev/setup-pixi@v0.11.2
+        with:
+          pixi-version: v0.81.0
+          locked: true
+          cache: true
+
+      - uses: actions/cache@v4
+        with:
+          path: .cache/fastembed
+          key: fastembed-BAAI-bge-small-en-v1.5
+
+      - name: Retrieval eval
+        run: pixi run eval-retrieval
+
   # The real Compose stack (image builds, Knowledge Base mount, ingestion, /ready, nginx streaming)
   # on the keyless `fake` LLM provider. No secrets, so it runs on PRs from forks too.
   smoke:

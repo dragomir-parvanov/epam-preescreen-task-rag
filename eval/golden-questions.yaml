@@ -550,14 +550,14 @@
   origin: generated
   expected_sources:
     - {article: nimbus-admin-exporting-the-audit-log, section: How it works}
-    - {article: nimbus-admin-exporting-the-audit-log, section: Step-by-step}
+    - {article: nimbus-admin-exporting-the-audit-log, section: Step-by-step, alternatives: [{article: nimbus-security-audit-events, section: Admin settings}]}
   expected_facts:
-    - id, occurred_at, actor type/id/email, action, target type/id and details
-    - details is exported as a JSON string
+    - id, occurred_at, actor type/id/display, action, target type/id and changes
+    - changes is exported as a JSON string
   must_mention:
     - [occurred_at]
     - [actor.type, actor]
-    - [details]
+    - [changes]
 
 - id: gq-admin-exporting-the-audit-log-2
   question: Can a client schedule a nightly export of the Nimbus audit log without Enterprise streaming?
@@ -936,7 +936,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-api-api-keys, section: Object fields}
+    - {article: nimbus-api-api-keys, section: Object fields, alternatives: [{article: nimbus-admin-api-keys, section: How it works}]}
   expected_facts:
     - Each key has last_four, the last four characters of the secret
     - The key_ id is not the secret and can be logged
@@ -1354,7 +1354,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-api-webhook-endpoints, section: Endpoints > Registering an endpoint}
+    - {article: nimbus-api-webhook-endpoints, section: Endpoints > Registering an endpoint, alternatives: [{article: nimbus-admin-webhook-endpoints, section: Step-by-step}]}
   expected_facts:
     - No, signing_secret is only in the POST response
     - If lost, the secret has to be rolled under Settings > Developers > Webhooks
@@ -3325,7 +3325,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-tier-customer-managed-keys, section: How it works > Rotation and revocation}
+    - {article: nimbus-tier-customer-managed-keys, section: How it works > Rotation and revocation, alternatives: [{article: nimbus-release-3-6, section: New features > Customer-managed encryption keys}]}
   expected_facts:
     - 'The workspace becomes unreadable: the console shows Encryption key unavailable and no new runs start'
     - Restoring access to the same key brings the workspace back within minutes with no data loss

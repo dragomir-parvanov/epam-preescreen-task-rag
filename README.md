@@ -53,7 +53,7 @@ At the defaults (`top_k` 8, `min_score` 0.66), on 150 Articles (1,150 Passages) 
 | recall@8 | hybrid (served) | dense-only | hybrid, no query prefix |
 | --- | --- | --- | --- |
 | curated (12, plus 2 known misses) | 100% | 83.3% | 100% |
-| generated (290) | 94.5% | 81.0% | 93.8% |
+| generated (290) | 95.5% (277; the bar needs 276) | 82.1% | 94.8% |
 
 - **Hybrid retrieval pays for itself.** BM25 adds 13–17 points over dense-only (ADR-0005).
 - **The bge query prefix is neutral** (within a point either way), so it stays on, as the model recommends.

@@ -53,14 +53,15 @@ Each event has an `evt_` id, a UTC timestamp, the action, the actor, the target 
   "id": "evt_01JZ7Q4M2KX8",
   "occurred_at": "2026-06-30T14:02:51Z",
   "action": "user.role_changed",
-  "actor": {"type": "user", "id": "usr_5TzW91kD", "email": "anna.berg@examplelogistics.example"},
-  "target": {"type": "user", "id": "usr_9PcL22xA", "email": "tom.reyes@examplelogistics.example"},
+  "actor": {"type": "user", "id": "usr_5TzW91kD", "display": "anna.berg@examplelogistics.example"},
+  "target": {"type": "user", "id": "usr_9PcL22xA", "display": "tom.reyes@examplelogistics.example"},
   "changes": {"role": {"from": "viewer", "to": "builder"}},
-  "context": {"source": "console", "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+  "source": "console",
+  "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
 }
 ```
 
-`actor.type` is `user`, `api_key` (with the `key_` id), `scim` or `system`. `context.source` is `console`, `api` or `scim`. A `secret.updated` event carries the secret's name in `target` and has no `changes` block, because the value is never logged.
+`actor.type` is `user`, `api_key` (with the `key_` id), `scim` or `system`. `source` is `console`, `api`, `scim` or `sso`. A `secret.updated` event carries the secret's name in `target` and has no `changes` block, because the value is never logged.
 
 ## Admin settings
 

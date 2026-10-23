@@ -27,7 +27,7 @@ Nimbus encrypts each workspace's data with AES-256 data keys. With a customer-ma
 
 An Admin sets it up in three parts: choose the provider, enter the key reference (an AWS KMS key ARN, or an Azure Key Vault key identifier), and grant the Nimbus service principal shown on the page permission to use the key. **Verify access** then performs a test wrap and unwrap before the key can be activated. Activation re-wraps existing data keys in the background, and the page shows progress; workflows keep running throughout.
 
-Key rotation in AWS KMS or Azure Key Vault needs no action in Nimbus, as the provider keeps earlier key versions available for unwrapping. If the key is disabled, deleted, or Nimbus's permission is removed, Nimbus stops starting new runs, scheduled runs are skipped, and every Admin sees a **Customer-managed key unavailable** banner; nothing is deleted, and the workspace resumes once access is restored. An Admin can also switch back to OmniCorp-managed keys from the same page. Background on encryption is in [Encryption in Transit and at Rest](nimbus-security-encryption.md).
+Key rotation in AWS KMS or Azure Key Vault needs no action in Nimbus, as the provider keeps earlier key versions available for unwrapping. If the key is disabled, deleted, or Nimbus's permission is removed, Nimbus stops starting new runs, scheduled runs are skipped, and every user sees an **Encryption key unavailable** banner; nothing is deleted, and the workspace resumes once access is restored. An Admin can also switch back to OmniCorp-managed keys from the same page. Background on encryption is in [Encryption in Transit and at Rest](nimbus-security-encryption.md).
 
 ### Audit-log streaming
 

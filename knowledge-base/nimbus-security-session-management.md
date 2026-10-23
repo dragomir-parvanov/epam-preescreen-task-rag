@@ -70,9 +70,9 @@ Content-Type: application/json
     {
       "id": "evt_5Tg2Hn8Lx",
       "action": "security.session_timeout_updated",
-      "actor": "usr_3Fh8Wq2Kd",
+      "actor": {"type": "user", "id": "usr_3Fh8Wq2Kd", "display": "it.admin@client.example"},
       "occurred_at": "2026-08-11T09:42:17Z",
-      "details": { "idle_timeout_minutes": { "from": 480, "to": 60 } }
+      "changes": {"idle_timeout_minutes": {"from": 480, "to": 60}}
     }
   ],
   "next_cursor": null

@@ -358,6 +358,11 @@ settled_details:
   - "Audit-log action names are the ones listed in nimbus-security-audit-events, e.g. `user.role_changed`, `api_key.created`, `workflow.published`."
   - "Notification emails come from notifications@nimbus.omnicorp.example."
   - "Two-factor enrolment gives 10 single-use recovery codes; password reset links are valid for 60 minutes."
+  # Settled by hand on 2026-10-23 (#28), where generated Articles contradicted each other.
+  - "A webhook endpoint's signing secret is shown once, when the endpoint is registered (in the console, or in the POST /webhooks/endpoints response). It can't be shown again; a lost secret is rolled with Roll secret."
+  - "Every audit event has the shape nimbus-api-audit-log documents: id, occurred_at, action, actor {type, id, display}, target {type, id, display}, changes ({field: {from, to}} or null), source, user_agent, and reason for auth.sign_in_failed. A CSV export has the same fields, with changes as a JSON string."
+  - "When a customer-managed key becomes unusable, every user sees an \"Encryption key unavailable\" banner."
+  - "An API key is identified in lists by its `key_` id and the last four characters of its secret (`last_four` in the API); no other part of the secret is shown after creation."
 
 # The planted facts from #6, as #6 states them, with the literal strings their Article must contain.
 planted_facts:

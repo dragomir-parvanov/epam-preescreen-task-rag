@@ -73,9 +73,9 @@ Authorization: Bearer <api-key>
     {
       "id": "evt_9aK3mX0p",
       "action": "security.session_timeout_updated",
-      "actor": {"type": "user", "id": "usr_2Lw7eT5d"},
+      "actor": {"type": "user", "id": "usr_2Lw7eT5d", "display": "a.ferreira@client.example"},
       "occurred_at": "2026-08-04T09:12:44Z",
-      "details": {"previous_minutes": 480, "new_minutes": 30}
+      "changes": {"idle_timeout_minutes": {"from": 480, "to": 30}}
     }
   ],
   "next_cursor": null

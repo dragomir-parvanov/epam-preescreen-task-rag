@@ -38,7 +38,7 @@ Each key has these properties:
 |---|---|
 | Name | Free text up to 80 characters, shown in the key list and the audit log. |
 | ID | A `key_` id used in the API and the audit log. Not secret. |
-| Prefix | The first 8 characters of the key, shown so a key found in a config file can be matched to its entry. |
+| Last four | The last four characters of the secret, shown so a key found in a config file can be matched to its entry. |
 | Expiry date | Optional. After this date the key is rejected with 401 `unauthorized`. Admins are emailed 7 days before it. |
 | Created by, Created | The Admin who created it and when. |
 | Last used | The time of the most recent authenticated request. |
@@ -86,9 +86,9 @@ A new key works when a harmless read such as `GET /workspace` returns 200 with i
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Every request returns 401 `unauthorized` | The key was revoked, has expired, or was copied with a missing character. | Check its status and expiry in the list; compare the prefix; create a new key if needed. |
+| Every request returns 401 `unauthorized` | The key was revoked, has expired, or was copied with a missing character. | Check its status and expiry in the list; compare its last four characters; create a new key if needed. |
 | 401 after it worked for months | The key reached its expiry date. | Rotate to a new key and set a later expiry, or none. |
 | The key was pasted into a ticket or chat | It is exposed. | Rotate it at once and revoke the exposed key. |
-| Nobody knows which system uses an old key | It was named vaguely. | Note **Last used**, revoke it during a quiet period and see what breaks, or ask the client to search their configs for the prefix. |
+| Nobody knows which system uses an old key | It was named vaguely. | Note **Last used**, revoke it during a quiet period and see what breaks, or ask the client to search their configs for a key ending in its last four characters. |
 | 401 right after an Admin left the client | Not caused by the departure; keys belong to the workspace. | Look for an expiry or a revocation in the audit log. |
 | No **Create API key** button | The Plan Tier doesn't include API access. | Discuss an upgrade with the client. |

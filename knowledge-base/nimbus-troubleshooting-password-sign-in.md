@@ -47,7 +47,8 @@ GET /audit-log/events?actor=usr_5Kd2Mw8R&action=auth.sign_in_failed&from=2026-09
 Authorization: Bearer <api-key>
 
 {"data": [{"id": "evt_9Qa3Lt7V", "action": "auth.sign_in_failed",
-  "actor": "usr_5Kd2Mw8R", "reason": "invalid_password",
+  "actor": {"type": "user", "id": "usr_5Kd2Mw8R", "display": "j.lind@client.example"},
+  "reason": "invalid_password",
   "occurred_at": "2026-09-27T07:58:41Z"}],
  "next_cursor": null}
 ```

@@ -27,7 +27,7 @@ On Starter and Business, the **Streaming** tab is visible but greyed out with an
 
 Every time Nimbus writes an event to the workspace audit log, it also places a copy on the stream for each enabled destination. Events are batched and delivered in near real time: a batch is sent as soon as it holds 100 events or 5 seconds after its first event, whichever comes first, so an event normally reaches the destination within a few seconds of the action that caused it.
 
-Each event is a JSON object with the same fields that `GET /audit-log/events` returns. Splunk receives one HEC event per audit event with the sourcetype `nimbus:audit`; Datadog receives log entries tagged `source:nimbus` and `service:nimbus-audit`; an HTTPS endpoint receives a JSON array of events in the request body.
+Each event is a JSON object with the same fields that `GET /audit-log/events` returns, plus the `workspace_id` it came from. Splunk receives one HEC event per audit event with the sourcetype `nimbus:audit`; Datadog receives log entries tagged `source:nimbus` and `service:nimbus-audit`; an HTTPS endpoint receives a JSON array of events in the request body.
 
 ```json
 {
@@ -38,10 +38,11 @@ Each event is a JSON object with the same fields that `GET /audit-log/events` re
   "actor": {
     "type": "user",
     "id": "usr_7HD2PL0C",
-    "email": "jana.novak@client.example"
+    "display": "jana.novak@client.example"
   },
-  "target": { "type": "api_key", "id": "key_3XW8VN1B", "name": "ERP sync" },
-  "origin": "console",
+  "target": { "type": "api_key", "id": "key_3XW8VN1B", "display": "ERP sync" },
+  "changes": null,
+  "source": "console",
   "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
 }
 ```
