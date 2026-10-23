@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { http, HttpResponse } from "msw";
 import { describe, expect, test, vi } from "vite-plus/test";
 import type { components } from "../api/schema";
-import { server } from "../test/server";
+import { READY, server } from "../test/server";
 import { sseChannel, sseEvents } from "../test/sse";
 import { ChatPage } from "./ChatPage";
 
@@ -66,9 +66,17 @@ function serveTurns(...scripts: (() => Response)[]) {
   return requests;
 }
 
-function renderPage() {
+/**
+ * Render the page and let its first `GET /ready` (all ok) be answered before the test asks
+ * anything. Under MSW 3 in Node, a `/ready` answered while a held SSE stream (`sseChannel`) is
+ * open was seen to end that stream early, after its first chunk; browsers don't do this.
+ */
+async function renderPage() {
   const onOpenSection = vi.fn<(passage: Passage) => void>();
+  const ready = vi.fn<() => Response>(() => HttpResponse.json(READY));
+  server.use(http.get("*/api/ready", ready));
   render(<ChatPage onOpenSection={onOpenSection} />);
+  await waitFor(() => expect(ready).toHaveBeenCalled());
   return { onOpenSection };
 }
 
@@ -92,7 +100,7 @@ async function askAndFinish(question: string) {
 describe("the empty state", () => {
   test("offers suggested questions that ask themselves when clicked", async () => {
     const requests = serveTurns(() => sseEvents([answerDone()]));
-    renderPage();
+    await renderPage();
 
     fireEvent.click(
       screen.getByRole("button", { name: "What is the API rate limit for a Business client?" }),
@@ -113,7 +121,7 @@ describe("a first Turn", () => {
   test("shows progress, then streams text with markers hidden, then the cited Answer", async () => {
     const channel = sseChannel();
     serveTurns(() => channel.response());
-    renderPage();
+    await renderPage();
 
     ask(QUESTION);
     const t = turn(QUESTION);
@@ -146,7 +154,7 @@ describe("a Follow-up Question", () => {
       () => sseEvents([{ type: "passages", passages: [signing] }, answerDone()]),
       () => channel.response(),
     );
-    renderPage();
+    await renderPage();
     await askAndFinish(QUESTION);
 
     ask("and on v2?");
@@ -185,7 +193,7 @@ describe("a Follow-up Question", () => {
           },
         ]),
     );
-    renderPage();
+    await renderPage();
     await askAndFinish(QUESTION);
 
     const followUp = await askAndFinish("Does Nimbus support LDAP?");
@@ -211,7 +219,7 @@ describe("an Answer", () => {
         },
       ]),
     );
-    renderPage();
+    await renderPage();
     const t = await askAndFinish(QUESTION);
     const chip = t.getByRole("button", { name: "Citation 1" });
 
@@ -235,7 +243,7 @@ describe("an Answer", () => {
 
   test("a Citation row expands to its verbatim quote and offers Open Section", async () => {
     serveTurns(() => sseEvents([answerDone()]));
-    const { onOpenSection } = renderPage();
+    const { onOpenSection } = await renderPage();
     const t = await askAndFinish(QUESTION);
     const citations = within(t.getByRole("list", { name: "Citations" }));
     expect(citations.queryByText(signing.text)).not.toBeInTheDocument();
@@ -249,7 +257,7 @@ describe("an Answer", () => {
 
   test("lists every retrieved Passage behind a toggle, marked cited or not cited", async () => {
     serveTurns(() => sseEvents([answerDone()]));
-    renderPage();
+    await renderPage();
     const t = await askAndFinish(QUESTION);
     expect(t.queryByRole("list", { name: "Retrieved Passages" })).not.toBeInTheDocument();
 
@@ -281,7 +289,7 @@ test("an Uncited Answer warns and lists the retrieved Passages, not cited", asyn
       },
     ]),
   );
-  const { onOpenSection } = renderPage();
+  const { onOpenSection } = await renderPage();
   const t = await askAndFinish(QUESTION);
 
   expect(t.getByText(/didn't point to any Passage/)).toBeInTheDocument();
@@ -310,7 +318,7 @@ test("a Refusal shows the server's message and no reason or Citations", async ()
       },
     ]),
   );
-  renderPage();
+  await renderPage();
   const t = await askAndFinish("How much does the Enterprise tier cost per seat?");
 
   expect(t.getByText("The Knowledge Base doesn't cover this question.")).toBeInTheDocument();
@@ -326,7 +334,7 @@ describe("Stop", () => {
       () => channel.response(),
       () => sseEvents([answerDone()]),
     );
-    renderPage();
+    await renderPage();
     await askAndFinish(QUESTION);
 
     ask("and on v2?");
@@ -362,7 +370,7 @@ describe("errors", () => {
         ),
       () => sseEvents([answerDone()]),
     );
-    renderPage();
+    await renderPage();
     const failed = await askAndFinish(QUESTION);
 
     const card = within(failed.getByRole("alert"));
@@ -388,7 +396,7 @@ describe("errors", () => {
         { type: "error", error: { code: "llm_timeout", message: "The model took too long." } },
       ]),
     );
-    renderPage();
+    await renderPage();
     const failed = await askAndFinish(QUESTION);
 
     expect(failed.getByText("Use the X-Nimbus")).toBeInTheDocument();
@@ -404,7 +412,7 @@ test("New conversation clears the Turns and their history", async () => {
     () => sseEvents([answerDone()]),
     () => sseEvents([answerDone()]),
   );
-  renderPage();
+  await renderPage();
   await askAndFinish(QUESTION);
 
   fireEvent.click(screen.getByRole("button", { name: "New conversation" }));

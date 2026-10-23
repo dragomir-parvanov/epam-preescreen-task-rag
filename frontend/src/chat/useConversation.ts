@@ -1,4 +1,5 @@
 import { useEffect, useReducer, useRef } from "react";
+import type { components } from "../api/schema";
 import { streamChat } from "./chatStream";
 import {
   conversationReducer,
@@ -7,6 +8,8 @@ import {
   isInProgress,
   type Turn,
 } from "./conversation";
+
+type ErrorBody = components["schemas"]["ErrorBody"];
 
 export type ConversationControls = {
   turns: Turn[];
@@ -18,8 +21,13 @@ export type ConversationControls = {
   reset: () => void;
 };
 
-/** The Conversation in this tab, wired to `POST /api/chat`. Nothing is persisted. */
-export function useConversation(): ConversationControls {
+/**
+ * The Conversation in this tab, wired to `POST /api/chat`. Nothing is persisted. `onTurnError`
+ * hears each Turn that ends in an error.
+ */
+export function useConversation({
+  onTurnError,
+}: { onTurnError?: (error: ErrorBody) => void } = {}): ConversationControls {
   const [conversation, dispatch] = useReducer(conversationReducer, emptyConversation);
   const inFlight = useRef<AbortController | null>(null);
 
@@ -42,6 +50,7 @@ export function useConversation(): ConversationControls {
         // An event can be in hand when Stop lands; it belongs to a Turn that's over.
         if (controller.signal.aborted) return;
         dispatch({ type: "received", event });
+        if (event.type === "error") onTurnError?.(event.error);
       }
     })();
   };

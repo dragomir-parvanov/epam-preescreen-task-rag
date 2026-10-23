@@ -277,3 +277,27 @@ test("a reply that isn't the error envelope shows a stand-in message and offers 
     await within(panel).findByRole("region", { name: "Webhooks › Signing" }),
   ).toBeInTheDocument();
 });
+
+test("the readiness banner stays reachable while an Article is open", async () => {
+  serveArticles(webhooks);
+  server.use(
+    http.get("*/api/ready", () =>
+      HttpResponse.json({
+        status: "ready",
+        checks: {
+          database: { ok: true },
+          index: { ok: true },
+          llm: { ok: false, detail: "auth_failed" },
+        },
+      }),
+    ),
+  );
+  const turn = await renderAnswered(cited(signing));
+  const banner = screen.getByRole("status", { name: "The assistant isn't set up correctly" });
+
+  openSection(turn, "Citations", signing);
+
+  expect(screen.getByRole("dialog", { name: webhooks.title })).toBeInTheDocument();
+  expect(turn.getByText(/It's signed/).closest("[inert]")).not.toBeNull();
+  expect(banner.closest("[inert]")).toBeNull();
+});

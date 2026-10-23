@@ -10,10 +10,9 @@ function App() {
   const [opened, setOpened] = useState<Passage | null>(null);
   return (
     <>
-      {/* Inert behind the open panel, so focus and screen readers stay in the panel. */}
-      <div inert={opened !== null}>
-        <ChatPage onOpenSection={setOpened} />
-      </div>
+      {/* Inert behind the open panel, so focus and screen readers stay in the panel; all but
+          the readiness banner, which must stay reachable. */}
+      <ChatPage onOpenSection={setOpened} covered={opened !== null} />
       {opened && <ArticlePanel key={opened.id} passage={opened} onClose={() => setOpened(null)} />}
     </>
   );

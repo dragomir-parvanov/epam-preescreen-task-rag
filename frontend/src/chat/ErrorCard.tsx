@@ -15,7 +15,7 @@ const TITLES: Record<ErrorCode, string> = {
   llm_auth_failed: NOT_SET_UP,
   llm_not_configured: NOT_SET_UP,
   index_not_ready: "The Knowledge Base is still loading",
-  retrieval_unavailable: "The Knowledge Base can't be searched right now",
+  retrieval_unavailable: "The Knowledge Base can't be reached right now",
   validation_error: "This question couldn't be sent",
   not_found: GENERIC,
   method_not_allowed: GENERIC,
