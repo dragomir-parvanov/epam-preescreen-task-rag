@@ -412,8 +412,8 @@
     - 'Yes: approvers can be specific users or a role; any active user with that role can decide'
     - The first decision closes the request for everyone
   must_mention:
-    - [A role]
-    - [first decision]
+    - [role]
+    - [first]
 
 - id: gq-admin-bulk-user-import-1
   question: What columns does the Nimbus bulk user import CSV need, and how many rows can one file have?
@@ -695,8 +695,8 @@
     - It creates a new version with the old definition and the note Restored from vN
     - An active workflow uses the new version from its next run
   must_mention:
-    - [version 28, creates version]
-    - [Restored from]
+    - [new version, creates version, version 28]
+    - [Restored from, restored]
 
 - id: gq-admin-run-history-1
   question: How long does Nimbus keep run history with step inputs and outputs, and does it depend on the Plan Tier?
@@ -2048,7 +2048,7 @@
   expected_facts:
     - No, the Snowflake connector has no triggers; schedule a workflow that queries rows newer than a stored watermark.
   must_mention:
-    - [no triggers]
+    - [no triggers, trigger]
     - [schedule]
 
 - id: gq-connector-sql-server-1
@@ -2158,6 +2158,669 @@
   must_mention:
     - [API token]
     - [Token access]
+
+- id: gq-faq-api-and-integrations-1
+  question: How long does the Nimbus API remember an Idempotency-Key sent on a POST request?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-faq-api-and-integrations, section: Setup questions}
+  expected_facts:
+    - An Idempotency-Key is remembered for 24 hours; a repeat request returns the original response.
+  must_mention:
+    - [Idempotency-Key]
+    - [24 hours]
+
+- id: gq-faq-api-and-integrations-2
+  question: Does calling a Nimbus inbound webhook trigger URL need an API key, and what does it return?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-faq-api-and-integrations, section: General questions}
+  expected_facts:
+    - No API key; the trigger token in the URL authenticates the call.
+    - It answers 202 Accepted with the run id.
+  must_mention:
+    - [trigger token]
+    - [202 Accepted]
+
+- id: gq-faq-connectors-1
+  question: Does a Nimbus connection that isn't used by any active workflow count towards the workspace's active connector limit?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-faq-connectors, section: General questions}
+  expected_facts:
+    - A connector counts as active only when at least one of its connections is used by an active workflow; unused connections don't count.
+  must_mention:
+    - [active workflow]
+    - [don't count]
+
+- id: gq-faq-connectors-2
+  question: How do I install the Nimbus private connector agent so a workflow can reach an internal database?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-faq-connectors, section: Setup questions}
+  expected_facts:
+    - Register the agent under Settings > Agents to get a one-time registration token, then run the omnicorp/nimbus-agent Docker image inside the network.
+  must_mention:
+    - [Settings > Agents]
+    - [omnicorp/nimbus-agent]
+
+- id: gq-faq-getting-started-1
+  question: How long does a Nimbus workspace invitation stay valid, and does an invited user take a seat before accepting?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-faq-getting-started, section: 'Setup questions > How do I invite my team?'}
+  expected_facts:
+    - Invitations expire after 7 days.
+    - An invited user takes a seat only once they accept.
+  must_mention:
+    - [7 days]
+    - [accept]
+
+- id: gq-faq-getting-started-2
+  question: Do test runs in the Nimbus workflow builder count towards a new client's monthly run quota?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-faq-getting-started, section: Limits and edge cases}
+  expected_facts:
+    - Test runs in the builder don't count; a run counts when it starts.
+  must_mention:
+    - [Test runs]
+    - [don't count]
+
+- id: gq-faq-notifications-and-alerts-1
+  question: When does Nimbus email Admins about the monthly workflow run quota, and what happens at 100%?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-faq-notifications-and-alerts, section: Limits and edge cases}
+  expected_facts:
+    - Quota alerts are sent at 80% and 100%.
+    - At 100% runs are rejected with WF-300 until the quota resets on the 1st of the month (UTC) or the tier is upgraded.
+  must_mention:
+    - [80%]
+    - [WF-300]
+
+- id: gq-faq-notifications-and-alerts-2
+  question: How do I switch Nimbus run failure notifications to a daily digest?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-faq-notifications-and-alerts, section: 'Setup questions > How do I set up failure notifications?'}
+  expected_facts:
+    - Under Settings > Notifications, choose Daily digest under Run failures; it is sent at 08:00 in the workspace time zone.
+  must_mention:
+    - [Daily digest]
+    - [Settings > Notifications]
+
+- id: gq-faq-security-1
+  question: Where should a client report a security vulnerability in Nimbus, and how quickly is the report acknowledged?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-faq-security, section: Troubleshooting questions}
+  expected_facts:
+    - Email security@omnicorp.example.
+    - Reports are acknowledged within 2 business days.
+  must_mention:
+    - [security@omnicorp.example]
+    - [2 business days]
+
+- id: gq-faq-security-2
+  question: What is the default idle session timeout in the Nimbus admin console, and what range can an Admin set it to?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-faq-security, section: Setup questions}
+  expected_facts:
+    - 8 hours by default.
+    - An Admin can set 15 minutes to 24 hours under Settings > Security > Sessions.
+  must_mention:
+    - [8 hours]
+    - [24 hours]
+
+- id: gq-faq-upgrading-from-v2-1
+  question: Who books a Nimbus workspace upgrade from v2 to v3, and how long is the workspace unavailable?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-faq-upgrading-from-v2, section: General questions}
+  expected_facts:
+    - The client's CSM books the window with OmniCorp support.
+    - The upgrade takes under an hour; runs are paused and queued.
+  must_mention:
+    - [CSM]
+    - [under an hour]
+
+- id: gq-faq-upgrading-from-v2-2
+  question: How does API pagination change for a client upgrading from the legacy Nimbus platform to v3?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-faq-upgrading-from-v2, section: Setup questions}
+  expected_facts:
+    - page and per_page are replaced by cursor-based pagination with limit and cursor, until next_cursor is null.
+  must_mention:
+    - [cursor]
+    - [per_page]
+
+- id: gq-faq-user-management-1
+  question: How many rows can a single CSV file have when bulk importing users into Nimbus?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-faq-user-management, section: 'Setup questions > How do I import users in bulk?'}
+  expected_facts:
+    - Up to 500 rows per file; each row becomes an invitation.
+  must_mention:
+    - [500 rows]
+
+- id: gq-faq-user-management-2
+  question: Does a suspended Nimbus user still take a seat, and can the suspension be undone?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-faq-user-management, section: General questions}
+  expected_facts:
+    - A suspended user doesn't take a seat.
+    - Suspension is undone with Reactivate.
+  must_mention:
+    - [seat]
+    - [Reactivate]
+
+- id: gq-faq-workflow-builder-1
+  question: How many versions of a Nimbus workflow are kept in Version history, and what does restoring one do?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-faq-workflow-builder, section: Limits and edge cases}
+  expected_facts:
+    - The last 50 versions are kept.
+    - Restoring a version creates a new version.
+  must_mention:
+    - ['50']
+    - [new version]
+
+- id: gq-faq-workflow-builder-2
+  question: In the Nimbus workflow builder, how do I reference the current item inside a Loop step?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-faq-workflow-builder, section: 'Setup questions > How do I loop over a list of records?'}
+  expected_facts:
+    - Inside the loop the current item is {{steps.<loop-key>.output.item}}, e.g. {{steps.each_invoice.output.item.amount}}.
+  must_mention:
+    - [output.item]
+
+- id: gq-faq-workspace-and-account-1
+  question: Can a client move an existing Nimbus workspace to a different data region, and if not, what do they do instead?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-faq-workspace-and-account, section: 'Setup questions > How do I move a workspace to another data region?'}
+  expected_facts:
+    - The data region can't be changed after creation.
+    - Create a new workspace in the target region and migrate the workflows.
+  must_mention:
+    - [new workspace]
+    - [migrat]
+
+- id: gq-faq-workspace-and-account-2
+  question: How long can OmniCorp support restore a Nimbus workspace after an Admin deletes it?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-faq-workspace-and-account, section: Limits and edge cases}
+  expected_facts:
+    - Support can restore a deleted workspace for 14 days; after that everything is permanently deleted.
+  must_mention:
+    - [14 days]
+    - [permanently deleted]
+
+- id: gq-release-2-15-1
+  question: How do I export run history to a CSV file on the legacy Nimbus console after the 2.15 release, and how far back does the export go?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-2-15, section: New features > Run history CSV export}
+  expected_facts:
+    - Use the Export CSV button on the Runs page; it exports every run matching the current filters.
+    - It covers the 30 days of run history the platform keeps.
+  must_mention:
+    - [Export CSV]
+    - [30 days]
+
+- id: gq-release-2-15-2
+  question: Why does a legacy Nimbus API call with page=0 return HTTP 400 after the 2.15 release?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-2-15, section: Deprecations and breaking changes}
+  expected_facts:
+    - 'From 2.15 list endpoints validate pagination strictly: page starts at 1, so page=0 returns 400 instead of the first page.'
+    - per_page above 100 is also rejected with 400.
+  must_mention:
+    - [page=0]
+    - ['400']
+
+- id: gq-release-2-16-1
+  question: Is Nimbus 2.16 the last feature release of the legacy platform, and what will later 2.16.x releases contain?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-2-16, section: Deprecations and breaking changes}
+  expected_facts:
+    - 2.16 ends feature development; no new features, connectors or API endpoints are added to the 2.x line after it.
+    - Later 2.16.x releases carry security fixes only.
+  must_mention:
+    - [No new features]
+    - [security fixes only]
+
+- id: gq-release-2-16-1-1
+  question: Does the Nimbus 2.16.1 release add any new features for legacy workspaces?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-2-16-1, section: New features}
+  expected_facts:
+    - No; 2.16.1 is a maintenance release that carries security fixes only.
+    - New functionality is only on the current platform.
+  must_mention:
+    - [security fix]
+
+- id: gq-release-2-16-1-2
+  question: After Nimbus 2.16.1, why is a legacy webhook endpoint refused or no longer receiving deliveries?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-2-16-1, section: Deprecations and breaking changes}
+  expected_facts:
+    - 2.16.1 refuses webhook endpoint URLs whose hostname resolves to OmniCorp's hosting network (fix for NIM-2744); existing endpoints of that kind stop receiving deliveries.
+    - The registration returns 400 with a plain-message error; the endpoint must be registered again with the client's real URL.
+  must_mention:
+    - [hosting network]
+    - ['400']
+
+- id: gq-release-2-16-2
+  question: How can an Admin find users who haven't signed in for a long time on the legacy Nimbus console after the 2.16 release?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-2-16, section: New features}
+  expected_facts:
+    - Sort Admin > Users by the new Last sign-in column; users who never signed in show Never.
+    - The Users API returns the same value as last_sign_in_at.
+  must_mention:
+    - [Last sign-in]
+    - [last_sign_in_at]
+
+- id: gq-release-2-16-2-1
+  question: Why were all users signed out of the legacy Nimbus console when 2.16.2 was applied, and what is the session cookie called now?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-2-16-2, section: Deprecations and breaking changes}
+  expected_facts:
+    - 2.16.2 hardened the session cookie, so every existing console session ended once and users sign in again.
+    - The cookie is now called __Host-nimbus_session and is set with SameSite=Strict.
+  must_mention:
+    - [__Host-nimbus_session]
+    - [sign in]
+
+- id: gq-release-2-16-2-2
+  question: How long is a password reset link valid on the legacy platform after Nimbus 2.16.2?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-2-16-2, section: Fixed issues}
+  expected_facts:
+    - Reset links are single-use and expire after 1 hour (NIM-2858).
+  must_mention:
+    - [1 hour]
+    - [single-use]
+
+- id: gq-release-2-16-3-1
+  question: What should a CSM do to plan a client's move off the legacy platform, as recommended in the Nimbus 2.16.3 release notes?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-2-16-3, section: Upgrade notes}
+  expected_facts:
+    - Agree an upgrade date, prepare webhook verification, API limits and identity provider attributes, inventory users and workflows, then book the upgrade window with OmniCorp support.
+    - The upgrade takes under an hour, during which runs are paused and queued.
+  must_mention:
+    - [upgrade date]
+    - [OmniCorp support]
+    - [under an hour]
+
+- id: gq-release-2-16-3-2
+  question: Why do connection password fields open empty under Admin > Connections after Nimbus 2.16.3?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-2-16-3, section: Fixed issues}
+    - {article: nimbus-release-2-16-3, section: Deprecations and breaking changes}
+  expected_facts:
+    - 'NIM-2953: saved credentials are no longer sent to the browser when a connection is edited; they stay on the server.'
+    - Leaving the field empty keeps the stored value; typing a new value replaces it.
+  must_mention:
+    - [NIM-2953]
+    - [empty]
+
+- id: gq-release-3-0-1
+  question: How did API pagination change with Nimbus 3.0, and what should clients use instead of page and per_page?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-3-0, section: Deprecations and breaking changes}
+  expected_facts:
+    - List endpoints switched to cursor pagination with limit and cursor
+    - Responses carry next_cursor, null on the last page; page, per_page and total are gone
+  must_mention:
+    - [cursor]
+    - [next_cursor]
+
+- id: gq-release-3-0-2
+  question: Which connectors were available when Nimbus 3.0 reached general availability?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-3-0, section: New features > Identity and data residency}
+  expected_facts:
+    - Salesforce, HubSpot, Slack, Jira Cloud, Zendesk, Amazon S3, PostgreSQL, MySQL, SharePoint Online, Box, Dropbox, GitHub, Asana, BambooHR, Twilio, SFTP and HTTP Request
+  must_mention:
+    - [BambooHR]
+    - [Twilio]
+    - [SharePoint Online]
+
+- id: gq-release-3-1-1
+  question: How long does Nimbus remember an Idempotency-Key, and what happens if the key is reused with a different body?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-3-1, section: New features > Idempotency keys}
+  expected_facts:
+    - Keys are remembered for 24 hours
+    - Reusing a key with a different body returns 409 conflict
+  must_mention:
+    - [24 hours]
+    - ['409']
+
+- id: gq-release-3-1-2
+  question: Which token types can the GitLab connector added in Nimbus 3.1 use, and what scope does the token need?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-3-1, section: New features > New connectors}
+  expected_facts:
+    - Personal, group or project access token
+    - The token needs the api scope
+  must_mention:
+    - [project access token]
+    - ['`api` scope', api scope]
+
+- id: gq-release-3-2-1
+  question: After Nimbus 3.2, why does a workflow change made with PATCH /workflows/{id} not show up in Production?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-3-2, section: Deprecations and breaking changes}
+  expected_facts:
+    - PATCH now changes only the Development definition on Business and Enterprise
+    - Call POST /workflows/{id}/promote afterwards to reach Production
+  must_mention:
+    - [Development]
+    - [/promote]
+
+- id: gq-release-3-2-2
+  question: Which NetSuite role permissions does the Nimbus NetSuite connector need?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-3-2, section: New features > NetSuite and Intercom connectors}
+  expected_facts:
+    - The role needs Log in using Access Tokens and REST Web Services
+    - It connects with token-based authentication
+  must_mention:
+    - [Log in using Access Tokens]
+    - [REST Web Services]
+
+- id: gq-release-3-3-1
+  question: What happens to a Nimbus run when nobody decides on its approval step?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-3-3, section: New features > Approval steps}
+  expected_facts:
+    - The request expires after 7 days without a decision
+    - The run fails with WF-410
+  must_mention:
+    - [7 days]
+    - [WF-410]
+
+- id: gq-release-3-3-2
+  question: What does a Microsoft Entra ID administrator have to do before users can connect the Microsoft Teams connector in Nimbus?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-3-3, section: New features > Microsoft Teams connector}
+  expected_facts:
+    - Grant admin consent once for the Microsoft Graph permissions
+    - Permissions include ChannelMessage.Send
+  must_mention:
+    - [admin consent]
+    - [ChannelMessage.Send]
+
+- id: gq-release-3-4-1
+  question: How many secrets can a Business workspace store in the Nimbus secrets vault introduced in 3.4?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-3-4, section: New features > Secrets vault}
+  expected_facts:
+    - Business workspaces can store 250 secrets
+    - Starter 25, Enterprise unlimited
+  must_mention:
+    - ['250']
+
+- id: gq-release-3-4-2
+  question: How does the Snowflake connector authenticate, and does it have triggers?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-3-4, section: New features > Snowflake connector}
+  expected_facts:
+    - Key-pair authentication with an RSA public key on a Snowflake service user
+    - It has no triggers, only actions
+  must_mention:
+    - [key-pair]
+    - [no triggers]
+
+- id: gq-release-3-5-1
+  question: When does Nimbus send quota alert emails about workflow runs, and who receives them?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-3-5, section: New features > Usage API and quota alerts}
+  expected_facts:
+    - At 80% and at 100% of the monthly run quota
+    - Sent to every Admin in the workspace
+  must_mention:
+    - [80%]
+    - [100%]
+    - [Admin]
+
+- id: gq-release-3-5-2
+  question: Which meters does the Settings > Usage dashboard added in Nimbus 3.5 show, and are builder test runs counted?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-3-5, section: New features > Usage dashboard}
+  expected_facts:
+    - Workflow runs, seats, active connectors and secrets
+    - Test runs in the builder are excluded
+  must_mention:
+    - [Active connectors]
+    - [test runs]
+
+- id: gq-release-3-6-1
+  question: What happens to a Nimbus Enterprise workspace if the customer-managed key in AWS KMS is disabled or Nimbus loses access to it?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-3-6, section: New features > Customer-managed encryption keys}
+  expected_facts:
+    - Nimbus stops starting new runs and scheduled runs are skipped; Admins see a banner
+    - Nothing is deleted and the workspace resumes once access is restored
+  must_mention:
+    - [new runs]
+    - [deleted]
+
+- id: gq-release-3-6-2
+  question: What does an Admin need to enter to stream Nimbus audit events to Splunk?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-3-6, section: New features > Audit-log streaming}
+  expected_facts:
+    - The HTTP Event Collector URL and an HEC token
+    - Optional index and source type; configured under Settings > Audit log > Streaming
+  must_mention:
+    - [HTTP Event Collector]
+    - [HEC token]
+
+- id: gq-release-3-7-1
+  question: How do I register the Nimbus private connector agent, and when is it shown as Offline?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-3-7, section: New features > Private connector agent}
+  expected_facts:
+    - An Admin registers it under Settings > Agents and uses a one-time registration token
+    - It is shown as Offline after 2 minutes without a heartbeat
+  must_mention:
+    - [registration token]
+    - [2 minutes]
+
+- id: gq-release-3-7-2
+  question: Which authentication methods does the ServiceNow connector support in Nimbus?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-3-7, section: New features > ServiceNow connector}
+  expected_facts:
+    - OAuth 2.0 via an Application Registry endpoint
+    - Basic auth with an integration user with Web service access only
+  must_mention:
+    - [OAuth 2.0]
+    - [integration user]
+
+- id: gq-release-3-8-1
+  question: Since Nimbus 3.8, how many workflow runs can a Business workspace run at the same time, and what happens to a run that goes over the limit?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-3-8, section: New features}
+  expected_facts:
+    - Business workspaces run 25 runs at the same time.
+    - Extra runs are created as queued with the notice WF-310 and start in order when a slot frees up; it is not a failure.
+  must_mention:
+    - ['25']
+    - [WF-310]
+    - [queued]
+
+- id: gq-release-3-8-2
+  question: Which run statuses can be retried with the POST /runs/{id}/retry endpoint added in Nimbus 3.8, and what does it return for other statuses?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-3-8, section: New features}
+  expected_facts:
+    - Runs with status failed, timed_out or cancelled can be retried; the retry is a new run from the first step with the original trigger input on the currently published version.
+    - Any other status returns 409 with the code conflict.
+  must_mention:
+    - [timed_out]
+    - ['409']
+
+- id: gq-release-3-9-1
+  question: How many rows can one CSV file hold when bulk importing users in Nimbus 3.9, and what role does a row with an empty role column get?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-3-9, section: New features > Bulk user import}
+  expected_facts:
+    - One file holds up to 500 rows.
+    - A blank role cell gives the user Viewer.
+  must_mention:
+    - ['500']
+    - [Viewer]
+
+- id: gq-release-3-9-2
+  question: What has to be set up in the client's Microsoft tenant before connecting the Nimbus Microsoft Dynamics 365 connector released in 3.9?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-release-3-9, section: New features > Microsoft Dynamics 365 connector}
+  expected_facts:
+    - A Microsoft Entra ID app registration with a client secret.
+    - An application user for the app in the Power Platform admin center with a security role that can read and write the tables used.
+  must_mention:
+    - [app registration]
+    - [application user]
+    - [security role]
 
 - id: gq-security-access-reviews-1
   question: How can a client export all Nimbus users with their roles and last sign-in date for a user access review?
@@ -2343,8 +3006,8 @@
   expected_facts:
     - Connector step inputs sent to third-party apps, webhook deliveries, streamed audit events and notification emails, all to destinations the client configures.
   must_mention:
-    - [Connector steps]
-    - [Webhook deliveries]
+    - [connector]
+    - [webhook]
 
 - id: gq-security-encryption-1
   question: Which AWS KMS permissions does Nimbus need on a client's customer-managed encryption key?
@@ -2767,7 +3430,7 @@
     - Admins are emailed a list of paused schedules and a Builder must edit the expression to resume it
   must_mention:
     - [paused]
-    - [WF-100]
+    - [email]
 
 - id: gq-tier-seat-limits-1
   question: Does a pending invitation or a suspended user take up a seat in a Nimbus workspace?
@@ -3049,7 +3712,6 @@
     - Use default(), which returns its second argument when the first is empty
   must_mention:
     - [default(]
-    - [second argument]
 
 - id: gq-troubleshooting-database-connections-1
   question: Which Nimbus API call shows whether a PostgreSQL or MySQL connection test failed at the TLS or the authentication stage?
@@ -3608,6 +4270,32 @@
   must_mention:
     - [channel_is_archived]
     - [archived]
+
+- id: gq-v2-faq-1
+  question: How far back does run history go on the legacy Nimbus platform?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-v2-faq, section: Limits and edge cases}
+  expected_facts:
+    - Run history is kept for 30 days; older runs are removed.
+  must_mention:
+    - [30 days]
+
+- id: gq-v2-faq-2
+  question: How do I page through API results on the legacy Nimbus platform, and what are the default and maximum page sizes?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-v2-faq, section: 'Setup questions > How do I page through API results?'}
+  expected_facts:
+    - Page-based with page (from 1) and per_page (default 50, maximum 100); responses carry total.
+  must_mention:
+    - [per_page]
+    - ['50']
+    - ['100']
 
 - id: gq-v2-security-sessions-1
   question: What is the minimum password length and session lifetime on a legacy Nimbus workspace?

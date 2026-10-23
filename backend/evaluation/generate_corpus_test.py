@@ -20,7 +20,7 @@ from evaluation.generate_corpus import (
     render_article,
     review,
 )
-from evaluation.golden import parse_golden_questions
+from evaluation.golden import load_golden_questions, parse_golden_questions
 from evaluation.knowledge_base import KNOWLEDGE_BASE_DIR, parse_article
 
 FACT_SHEET = load_fact_sheet()
@@ -324,13 +324,28 @@ def test_the_plan_covers_145_articles_in_8_families_about_a_tenth_of_them_v2() -
     assert 12 <= len(v2) <= 18
 
 
-def test_every_planned_article_is_on_disk_and_matches_its_plan() -> None:
+def test_the_knowledge_base_is_the_5_planted_and_the_145_planned_articles() -> None:
     plan = load_plan()
     on_disk = {path.stem for path in KNOWLEDGE_BASE_DIR.glob("*.md")}
-    planned = [spec for spec in plan.articles if spec.id in on_disk]
+    planted = {fact.article for fact in FACT_SHEET.planted_facts}
 
-    for spec in planned:
+    assert len(on_disk) == 150
+    assert on_disk == planted | {spec.id for spec in plan.articles}
+
+
+def test_every_generated_article_matches_its_plan_and_has_its_golden_questions() -> None:
+    plan = load_plan()
+    golden = load_golden_questions()
+    generated_sources = {
+        source.article
+        for question in golden
+        if question.origin == "generated"
+        for source in question.expected_sources
+    }
+
+    for spec in plan.articles:
         article = parse_article((KNOWLEDGE_BASE_DIR / f"{spec.id}.md").read_text())
         expected = parse_article(render_article(spec, plan, "Intro.\n"))
         assert article.front_matter == expected.front_matter, spec.id
-    assert len(on_disk) == 5 + len(planned), "every non-planted Article comes from the plan"
+    assert generated_sources == {spec.id for spec in plan.articles}
+    assert all(q.category == "single-article" for q in golden if q.origin == "generated")

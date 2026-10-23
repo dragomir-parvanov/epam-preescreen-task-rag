@@ -17,6 +17,8 @@ lint, Golden Questions grounded in the cited Sections), and only then writes
 Committed run: 2026-10-23, model `claude-opus-5-5`. No API key was available to that session, so
 the prompts were written with `prompts`, answered by Claude Opus 5.5 subagents in Claude Code (one
 per batch of Articles), and the replies went through `ingest`, the same review `run` applies.
+One more subagent pass made the replies agree on details the fact sheet left open (now its
+`settled_details`), and 6 generated Golden Questions were edited by hand in the spot check (#34).
 """
 
 import argparse
