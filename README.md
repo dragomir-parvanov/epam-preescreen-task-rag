@@ -5,10 +5,12 @@
 Everything (Python, Node and the tools) is installed by [pixi](https://pixi.sh); the stack runs in Docker Compose.
 
 ```sh
-cp .env.example .env   # optional: host ports and backend settings
-pixi run up            # build and start postgres + backend + frontend, wait until healthy
+cp .env.example .env   # then set ANTHROPIC_API_KEY, or switch to the keyless Ollama block
+pixi run up            # check the config, then build and start the stack and wait until healthy
 pixi run down          # stop
 ```
+
+The LLM is Claude (`claude-opus-5-5`) by default, which needs `ANTHROPIC_API_KEY` in `.env` or exported in your shell. Without a key, `BACKEND_LLM_PROVIDER=ollama` plus `COMPOSE_PROFILES=ollama` runs `qwen3.5:2b` locally instead: the first `up` downloads about 8 GB (the Ollama image and the model) into Docker, and `docker compose logs -f ollama-pull` follows the model download. `pixi run up` first runs `pixi run check-config`, which validates `.env` with the backend's own settings and prints the fix before any Docker build.
 
 The app is at <http://localhost:8080>, the backend's API docs at <http://localhost:8000/docs>.
 
@@ -16,6 +18,7 @@ Development tasks:
 
 | Task | What it does |
 | --- | --- |
+| `pixi run check-config` | Validate `.env` and the shell's backend settings; exits non-zero with the fix |
 | `pixi run dev-backend` / `pixi run dev-frontend` | Run the backend (reload) and the Vite+ dev server locally |
 | `pixi run lint` | ruff + `vp check` (oxfmt, type-aware oxlint) |
 | `pixi run typecheck` | pyright (strict) + TypeScript 7 via `vp check` |
