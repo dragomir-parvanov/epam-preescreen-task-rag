@@ -10,6 +10,8 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+# The prompts render Section paths with `›`, and the rewrite parser strips curly quotes.
+allowed-confusables = ["›", "‘", "’"]
 
 [tool.pyright]
 typeCheckingMode = "strict"
