@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: prefix-dev/setup-pixi@v0.11.2
+        with:
+          pixi-version: v0.81.0
+          locked: true
+          cache: true
+
+      - name: Lint
+        run: pixi run lint
+
+      - name: Typecheck
+        run: pixi run typecheck
+
+      - name: Test
+        run: pixi run test
+
+      - name: Generated API types are fresh
+        run: pixi run check-types-fresh

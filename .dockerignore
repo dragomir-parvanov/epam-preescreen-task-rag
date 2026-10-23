@@ -1,0 +1,15 @@
+.git
+.pixi
+.claude
+.agents
+chats
+docs
+**/node_modules
+**/dist
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+.env
+**/*_test.py
+**/*.test.ts
+**/*.test.tsx
