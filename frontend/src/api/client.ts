@@ -3,7 +3,7 @@ import createQueryClient from "openapi-react-query";
 import type { paths } from "./schema";
 
 // The backend is served under /api by the Vite dev proxy and by nginx in Docker.
-const fetchClient = createFetchClient<paths>({
+export const fetchClient = createFetchClient<paths>({
   baseUrl: new URL("/api", window.location.origin).href,
 });
 
