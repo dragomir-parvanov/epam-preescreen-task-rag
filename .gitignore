@@ -1,0 +1,10 @@
+# pixi environments
+.pixi/
+
+# Local configuration
+.env
+
+# Python
+__pycache__/
+.pytest_cache/
+.ruff_cache/
