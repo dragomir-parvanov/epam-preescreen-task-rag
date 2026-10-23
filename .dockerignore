@@ -13,3 +13,5 @@ docs
 **/*_test.py
 **/*.test.ts
 **/*.test.tsx
+**/conftest.py
+backend/app/pgvector_testing.py

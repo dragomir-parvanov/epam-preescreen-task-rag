@@ -22,6 +22,9 @@ ruff = "*"
 
 [feature.backend-dev.pypi-dependencies]
 httpx2 = "*"
+# A real pgvector for the adapter tests (ADR-0004).
+testcontainers = "==4.15.0"
+psycopg = { version = "==3.3.6", extras = ["binary"] }
 
 # --- frontend: Node comes from conda-forge, npm manages the JS packages ---
 

@@ -1,4 +1,23 @@
 services:
+  # The Passage store (ADR-0004). The credentials are fixed, local-only and not secret: the
+  # port is published on 127.0.0.1 only, so `pixi run dev-backend` and psql can reach it.
+  postgres:
+    image: ${POSTGRES_IMAGE:-pgvector/pgvector:0.8.6-pg18-trixie}
+    environment:
+      POSTGRES_USER: rag
+      POSTGRES_PASSWORD: rag
+      POSTGRES_DB: rag
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    ports:
+      - "127.0.0.1:${POSTGRES_HOST_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "--username", "rag", "--dbname", "rag"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+      start_period: 10s
+
   backend:
     build:
       context: .
@@ -6,8 +25,14 @@ services:
     env_file:
       - path: .env
         required: false
+    environment:
+      # Overrides .env's host-side URL: inside Compose, Postgres is the `postgres` service.
+      BACKEND_DATABASE_URL: postgresql://rag:rag@postgres:5432/rag
     ports:
       - "${BACKEND_HOST_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 5s
@@ -24,3 +49,6 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+
+volumes:
+  postgres-data:
