@@ -1,13 +1,16 @@
 # The Nimbus fact sheet: the canonical facts about OmniCorp Nimbus.
 #
 # Every Article in knowledge-base/ is written from this sheet. The 5 planted Articles were written by
-# hand (#6, #17); the generated ones are written from it by eval/corpus/generate.py (#34).
+# hand (#6, #17); the generated ones are written from it by `pixi run generate-corpus`
+# (backend/evaluation/generate_corpus.py, #34), following the plan in eval/corpus/articles.yaml.
 #
 # Two sections are machine-checked by backend/evaluation/fact_sheet_test.py:
 #   planted_facts     each `verbatim` string must appear, character for character, in `article`.
 #   forbidden_topics  no Article may mention any `term` (case-insensitive, whole words). These are
 #                     the topics the Knowledge Base is deliberately silent on, so the unanswerable
 #                     and partial Golden Questions stay unanswerable as the Knowledge Base grows.
+#   conflict_rules    (at the end) no generated Article may state a value that contradicts a
+#                     planted fact; checked by backend/evaluation/corpus_lint_test.py.
 # Everything else is canon for the generator: a generated Article may restate it, never contradict
 # it, and must not invent values for anything listed under forbidden_topics.
 
@@ -127,6 +130,220 @@ webhooks:
   response_timeout: An endpoint must answer with a 2xx status within 15 seconds.
   retries: 8 retries with exponential backoff over 24 h.
   auto_disable: An endpoint is disabled automatically after 3 days of failed deliveries.
+
+# --- Canon added for the generated Articles (#34) ----------------------------------------------
+# Not planted, but every generated Article is written from it, so the 145 Articles agree with each
+# other: one value per fact, stated here once.
+
+admin_console_paths:
+  # Where things live in the v3 admin console. Generated Articles use these exact paths.
+  - "Settings > Plan: Plan Tier and effective limits."
+  - "Settings > Usage: the usage dashboard (runs, seats, active connectors, secrets)."
+  - "Settings > Users: invite, change role, suspend, reactivate, delete; Import CSV."
+  - "Settings > Workspace: name, time zone, default notification recipients, Delete workspace."
+  - "Settings > Security > Single sign-on, Settings > Security > User provisioning (SCIM)."
+  - "Settings > Security > Sessions: idle timeout. Settings > Security > Two-factor authentication."
+  - "Settings > Security > Encryption keys: customer-managed encryption keys (Enterprise)."
+  - "Settings > Developers > API keys, Settings > Developers > Webhooks."
+  - "Settings > Audit log: search, export CSV; Settings > Audit log > Streaming (Enterprise)."
+  - "Settings > Secrets: the secrets vault. Settings > Notifications: failure alerts."
+  - "Settings > Agents: private connector agents (Enterprise)."
+  - "Workflows: the workflow list and builder (folders, version history, environments)."
+  - "Connections: the connections a workspace has made to connectors. Runs: run history."
+  - "Approvals: the approval inbox."
+
+workflows:
+  model: >-
+    A workflow is one trigger followed by ordered steps. A step is a connector action, a transform
+    (field mapping with expressions), a condition, a loop over a list, a delay, or an approval step.
+  triggers:
+    - "Schedule: a cron expression in the workspace time zone (or a chosen IANA time zone)."
+    - "Inbound webhook trigger: a unique URL https://hooks.nimbus.omnicorp.example/t/<trigger-token>; POST JSON up to 1 MB; answers 202 Accepted with the run id."
+    - "Connector event: push events delivered by the app within seconds, or polling every 5 minutes for connectors that can't push."
+    - "Manual: Run now in the builder or POST /workflows/{id}/runs."
+  expressions: >-
+    Double-brace expressions: {{trigger.body.<field>}}, {{steps.<step-key>.output.<field>}},
+    {{secrets.<NAME>}}, {{env.<NAME>}} and functions such as {{now()}}, {{lower(x)}},
+    {{default(x, y)}}. There is no other template syntax.
+  run_statuses: [queued, running, waiting_for_approval, succeeded, failed, cancelled, timed_out]
+  run_timeout: A run that is still running after 60 minutes is stopped with status timed_out (WF-210).
+  step_timeout: A single step that takes longer than 10 minutes fails with WF-200.
+  step_retries: >-
+    A failed connector step is retried 3 times by default (configurable 0 to 5 per step), after
+    30 seconds, 2 minutes and 10 minutes. The run fails when the last retry fails.
+  run_history_retention: Run history (inputs, outputs and step logs) is kept for 90 days on every Plan Tier.
+  run_quota: >-
+    Workflow runs per month follow plan_tiers. A run counts when it starts; test runs in the builder
+    don't count. Admins are emailed at 80% and 100% of the quota. At 100%, scheduled and
+    event-triggered runs are rejected with WF-300 until the quota resets on the 1st of the month
+    (UTC) or the tier is upgraded; manual runs are rejected too.
+  versions: >-
+    Publishing a workflow creates a new version. The last 50 versions are kept; any of them can be
+    restored from Version history, which creates a new version.
+  folders: Workflows can be organised in folders, one level deep; folders don't change permissions.
+  ownership: >-
+    Every workflow has an owner (a Builder or Admin). When the owner is suspended or deleted, an
+    Admin must transfer ownership; the workflow keeps running in the meantime.
+  file_size_limit: A single file passed between steps can be up to 100 MB.
+
+connectors:
+  connection_model: >-
+    A connector is an integration Nimbus offers (e.g. Salesforce); a connection is a client's
+    authorised account on it. Active connectors (per plan_tiers) counts connectors with at least
+    one connection used by an active workflow.
+  credentials: Connection credentials are encrypted and never shown again after saving.
+  reauthorization: >-
+    When a connection's authorisation expires or is revoked, its steps fail with CONN-401, the
+    connection shows "Needs attention", and the connector.disconnected webhook event is sent.
+    A Builder or Admin clicks Reconnect.
+  private_agent: >-
+    Enterprise only. A small service the client runs inside their own network (Docker image
+    omnicorp/nimbus-agent) that opens an outbound TLS connection to Nimbus, so databases and SFTP
+    servers that aren't reachable from the internet can be used. Registered under Settings > Agents
+    with a one-time registration token. Shown "Offline" after 2 minutes without a heartbeat.
+  catalogue:
+    # name: auth method; trigger type; available since
+    Salesforce: OAuth 2.0 (production or sandbox org); polling triggers; 3.0
+    HubSpot: OAuth 2.0; push triggers; 3.0
+    Slack: OAuth 2.0 (Slack app install); push triggers; 3.0
+    Microsoft Teams: OAuth 2.0 with Microsoft Entra ID admin consent; push triggers; 3.3
+    Jira Cloud: OAuth 2.0; push triggers; 3.0
+    ServiceNow: OAuth 2.0 or basic auth with an integration user; polling triggers; 3.7
+    Zendesk: API token with the agent's email; push triggers; 3.0
+    Snowflake: key-pair authentication; no triggers (actions only); 3.4
+    Amazon S3: access key or IAM role; polling trigger on new objects; 3.0
+    Azure Blob Storage: connection string or SAS token; polling trigger on new blobs; 3.1
+    PostgreSQL: username and password over TLS; polling trigger on a query; 3.0
+    MySQL: username and password over TLS; polling trigger on a query; 3.0
+    Microsoft SQL Server: SQL authentication over TLS; polling trigger on a query; 3.1
+    SharePoint Online: OAuth 2.0 with Microsoft Entra ID; polling triggers; 3.0
+    Box: OAuth 2.0; push triggers; 3.0
+    Dropbox: OAuth 2.0; push triggers; 3.0
+    GitHub: GitHub App installation; push triggers; 3.0
+    GitLab: personal, group or project access token; push triggers; 3.1
+    Asana: OAuth 2.0; push triggers; 3.0
+    Workday: OAuth 2.0 API client with an integration system user; polling triggers; 3.8
+    BambooHR: API key; polling triggers; 3.0
+    NetSuite: token-based authentication; polling triggers; 3.2
+    Marketo: client ID and client secret; polling triggers; 3.1
+    Twilio: account SID and auth token; push triggers (status callbacks); 3.0
+    Intercom: OAuth 2.0; push triggers; 3.2
+    Microsoft Dynamics 365: OAuth 2.0 with Microsoft Entra ID; polling triggers; 3.9
+    SFTP: username with SSH key or password; polling trigger on new files; 3.0
+    HTTP Request: none, API key header, basic auth or OAuth 2.0 client credentials; no triggers; 3.0
+
+features_by_tier:
+  # Values per tier: [Starter, Business, Enterprise], with the release that introduced the feature.
+  version_history: [Yes, Yes, Yes]          # 3.1
+  environments: [No, Yes, Yes]              # 3.2: Development and Production, promotion
+  approval_steps: [No, Yes, Yes]            # 3.3: approvals expire after 7 days
+  secrets_vault: [25 secrets, 250 secrets, Unlimited]  # 3.4
+  usage_dashboard: [Yes, Yes, Yes]          # 3.5, with quota alerts at 80% and 100%
+  customer_managed_keys: [No, No, Yes]      # 3.6
+  audit_log_streaming: [No, No, Yes]        # 3.6: to Splunk, Datadog or an HTTPS endpoint
+  private_connector_agent: [No, No, Yes]    # 3.7
+  concurrent_runs: ["5", "25", "100"]       # 3.8: extra runs wait as queued (WF-310)
+  minimum_schedule_interval: [15 minutes, 5 minutes, 1 minute]
+  bulk_user_import: [Yes, Yes, Yes]         # 3.9: CSV, up to 500 rows per file
+  sandbox_workspace: [No, No, Yes]          # one sandbox workspace, not counted against limits
+  workflow_templates: [Yes, Yes, Yes]
+
+users_and_access:
+  invitations: Invitations are emailed and expire after 7 days; an invited user takes a seat once they accept.
+  seats: Every active user takes a seat, whatever their role. Suspended users don't take a seat.
+  default_role: New users invited without a role get Viewer.
+  passwords: >-
+    Password sign-in needs at least 12 characters. After 10 failed attempts the account is locked
+    for 15 minutes. Admins can require two-factor authentication (authenticator app, TOTP) for
+    everyone who signs in with a password.
+  sessions: >-
+    Console sessions end after an idle timeout, 8 hours by default, which an Admin can set from
+    15 minutes to 24 hours under Settings > Security > Sessions.
+  workspace_deletion: >-
+    An Admin deletes a workspace under Settings > Workspace. OmniCorp support can restore it for
+    14 days; after that every workflow, run, connection and user is permanently deleted.
+
+api_conventions:
+  base_url: https://api.nimbus.omnicorp.example, with no version segment in the path.
+  format: JSON request and response bodies; timestamps are ISO 8601 in UTC.
+  ids: "Prefixed ids: ws_ (workspace), wf_ (workflow), run_ (run), usr_ (user), inv_ (invitation), con_ (connection), key_ (API key), whk_ (webhook endpoint), dlv_ (delivery), evt_ (event), fld_ (folder), apr_ (approval)."
+  pagination: >-
+    Cursor-based: `limit` (default 25, maximum 100) and `cursor`; list responses are
+    {"data": [...], "next_cursor": "..."} and next_cursor is null on the last page.
+  errors: >-
+    {"error": {"code": "...", "message": "..."}} with codes invalid_request (400), unauthorized
+    (401), forbidden (403), not_found (404), conflict (409), rate_limited (429), internal_error (500).
+  idempotency: POST requests accept an `Idempotency-Key` header; a key is remembered for 24 hours.
+  permissions: An API key acts with Admin permissions in its workspace; keys have no scopes.
+  api_keys: Shown once at creation; optional expiry date; revoked keys get 401 from the next request.
+  endpoints:
+    - "Workflows: GET/POST /workflows, GET/PATCH/DELETE /workflows/{id}, POST /workflows/{id}/activate, POST /workflows/{id}/deactivate, GET /workflows/{id}/versions"
+    - "Runs: POST /workflows/{id}/runs, GET /runs, GET /runs/{id}, POST /runs/{id}/cancel, POST /runs/{id}/retry, GET /runs/{id}/steps"
+    - "Users: GET /users, GET/PATCH/DELETE /users/{id}, POST /users/{id}/suspend, POST /users/{id}/reactivate"
+    - "Invitations: GET/POST /invitations, DELETE /invitations/{id}"
+    - "Connections: GET /connections, GET/DELETE /connections/{id}, POST /connections/{id}/test; GET /connectors (catalogue)"
+    - "Webhook endpoints: GET/POST /webhooks/endpoints, GET/PATCH/DELETE /webhooks/endpoints/{id}, POST /webhooks/endpoints/{id}/test, GET /webhooks/endpoints/{id}/deliveries, POST /webhooks/deliveries/{id}/redeliver"
+    - "Audit log: GET /audit-log/events (filters: actor, action, from, to)"
+    - "API keys: GET/POST /api-keys, DELETE /api-keys/{id}"
+    - "Workspace: GET /workspace, GET /workspace/entitlements, GET /workspace/usage"
+    - "Secrets: GET /secrets (names only), PUT /secrets/{name}, DELETE /secrets/{name}"
+    - "Schedules: GET/PUT/DELETE /workflows/{id}/schedule"
+    - "Environments: POST /workflows/{id}/promote"
+    - "Approvals: GET /approvals, POST /approvals/{id}/approve, POST /approvals/{id}/reject"
+    - "Folders: GET/POST /folders, PATCH/DELETE /folders/{id}"
+
+error_codes:
+  # Workflow and connector error codes shown in run history and returned by GET /runs/{id}/steps.
+  WF-100: The trigger configuration is invalid (bad cron expression or missing trigger field).
+  WF-200: A step ran longer than 10 minutes and was stopped.
+  WF-210: The run was still running after 60 minutes and was stopped (status timed_out).
+  WF-300: The workspace has used its monthly workflow runs; the run was rejected.
+  WF-310: The concurrent-run limit was reached; the run waits as queued (a notice, not a failure).
+  WF-400: A data-mapping expression failed, e.g. a required field resolved to empty.
+  WF-410: An approval expired after 7 days without a decision; the run fails.
+  WF-500: An internal Nimbus error; the run can be retried.
+  CONN-401: The connection's authorisation expired or was revoked; reconnect it.
+  CONN-403: The connected account lacks permission in the third-party app for this action.
+  CONN-404: The record, file or object the step refers to doesn't exist in the third-party app.
+  CONN-429: The third-party app throttled the connector; Nimbus backs off and retries the step.
+  CONN-503: The third-party app or the private connector agent is unavailable.
+
+security_and_compliance:
+  encryption: TLS 1.2 or later in transit; AES-256 at rest. Enterprise can use customer-managed keys in AWS KMS or Azure Key Vault.
+  reports: OmniCorp holds a SOC 2 Type II report and an ISO/IEC 27001 certificate; clients get them through their CSM under NDA.
+  gdpr: A data processing agreement (DPA) is part of every contract; OmniCorp is the processor.
+  breach_notification: Clients are notified without undue delay, and within 72 hours, of a confirmed personal-data breach.
+  vulnerability_reports: security@omnicorp.example; acknowledged within 2 business days.
+
+releases:
+  # Version numbers are plain (3.4.0); only v2 and v3 Platform Versions exist.
+  "3.0.0": 2025-04-07, general availability of v3 (see platform_versions.v3.notes).
+  "3.1.0": 2025-06-02, workflow version history; Idempotency-Key header; Azure Blob Storage, Microsoft SQL Server, GitLab and Marketo connectors.
+  "3.2.0": 2025-08-04, environments (Business and Enterprise) and the promote endpoint; NetSuite and Intercom connectors.
+  "3.3.0": 2025-10-06, approval steps (Business and Enterprise); Microsoft Teams connector.
+  "3.4.0": 2025-12-01, secrets vault; Snowflake connector.
+  "3.5.0": 2026-02-02, usage dashboard, GET /workspace/usage, quota alert emails at 80% and 100%.
+  "3.6.0": 2026-04-06, customer-managed encryption keys and audit-log streaming (Enterprise).
+  "3.7.0": 2026-06-01, private connector agent (Enterprise); ServiceNow connector.
+  "3.8.0": 2026-08-03, concurrent-run limits and WF-310; POST /runs/{id}/retry; Workday connector.
+  "3.9.0": 2026-10-05, bulk user import from CSV; Microsoft Dynamics 365 connector.
+  "2.15.0": 2024-06-10, the last but one feature release of v2.
+  "2.16.0": 2024-09-09, the last feature release of v2.
+  "2.16.1": 2025-05-12, security fixes only.
+  "2.16.2": 2025-11-10, security fixes only.
+  "2.16.3": 2026-04-13, security fixes only.
+
+v2_details:
+  # Only for applies_to [v2] Articles. They state these plainly, like nimbus-v2-legacy.
+  - The admin console has an Admin menu (Admin > Users, Admin > API keys, Admin > Webhooks, Admin > Connections) instead of Settings.
+  - "API pagination is page-based: `page` (from 1) and `per_page` (default 50, maximum 100); list responses carry `total`."
+  - "API errors are {\"error\": \"<message>\"} with the HTTP status; there are no error codes."
+  - No Idempotency-Key header, no environments, no approval steps, no secrets vault, no version history.
+  - Connection credentials are stored per connection; to change one, edit the connection.
+  - API keys never expire; they are revoked by deleting them.
+  - Run history is kept for 30 days.
+  - Webhook signing secrets can't be rolled; the endpoint is deleted and registered again.
+  - Upgrading a workspace to v3 is booked by the CSM with OmniCorp support and takes under an hour.
 
 # The planted facts from #6, as #6 states them, with the literal strings their Article must contain.
 planted_facts:
@@ -306,3 +523,177 @@ forbidden_topics:
   - id: uptime-sla
     description: Uptime guarantees, SLAs or service credits.
     terms: [SLA, SLAs, uptime, service credit, service credits, "99.9"]
+
+# The planted-value conflict lint (#34): no generated Article may contradict a planted fact.
+# Checked against every Article that isn't planted by backend/evaluation/corpus_lint_test.py, and by
+# the generator before it writes an Article.
+#
+# A rule looks at each statement of an Article: a sentence of prose, a table row or a code line.
+# It applies to Articles whose applies_to versions are all in `versions`. A statement it applies to
+# is one that matches every `when` pattern (case-insensitive regexes). Then either:
+#   value + allowed  every match of `value` must be one of `allowed` (compared ignoring case,
+#                    spaces, hyphens and commas); an empty `allowed` forbids any match, or
+#   requires         the statement must also match `requires`, e.g. a negation for a v2 absence.
+# Rules are deliberately strict: a generated Article should link to the planted Article rather than
+# restate its values, so a statement that trips a rule is rewritten, not the rule loosened.
+conflict_rules:
+  - id: scim-tier
+    facts: [tier-scim, scim-requires-enterprise]
+    versions: [v3]
+    when: ['\bSCIM\b']
+    value: '\b(?:Starter|Business)\b|\b(?:all|every|any)\s+(?:Plan\s+)?tiers?\b'
+    allowed: []
+  - id: scim-absent-on-v2
+    facts: []
+    versions: [v2]
+    when: ['\bSCIM\b']
+    requires: &negation '\b(?:no|not|never|without|none|isn''t|aren''t|doesn''t|don''t|can''t|cannot|unavailable)\b'
+  - id: rate-limit-values
+    facts: [api-rate-limits]
+    versions: [v3]
+    when: [&per_time '\breq(?:uests?)?\s*(?:/|per|a|an|each)\s*(?:s|sec|second|min|minute|h|hr|hour|day)\b']
+    value: &rate_number '\b\d[\d,]*(?=\s*req(?:uests?)?\s*(?:/|per|a|an|each)\s*(?:s|sec|second|min|minute|h|hr|hour|day)\b)'
+    allowed: ["600", "1,200", "3,000", "6,000"]
+  - id: rate-limit-starter
+    facts: [api-rate-limits, tier-api]
+    versions: [v3]
+    when: ['\bStarter\b', *per_time]
+    value: *rate_number
+    allowed: []
+  - id: rate-limit-business
+    facts: [api-rate-limits]
+    versions: [v3]
+    when: ['\bBusiness\b', *per_time]
+    value: *rate_number
+    allowed: ["600", "1,200"]
+  - id: rate-limit-enterprise
+    facts: [api-rate-limits]
+    versions: [v3]
+    when: ['\bEnterprise\b', *per_time]
+    value: *rate_number
+    allowed: ["3,000", "6,000"]
+  - id: rate-limit-v2
+    facts: [v2-rate-limit]
+    versions: [v2]
+    when: [*per_time]
+    value: *rate_number
+    allowed: ["300"]
+  - id: burst
+    facts: [api-rate-limits]
+    versions: [v3]
+    when: ['\bburst']
+    value: '×\s*\d+|\b\d+\s*(?:x|×|times)(?!\w)|\b\d+[\s-]*(?:s|secs?|seconds?)\b'
+    allowed: ["×2", "2x", "2×", "2 times", "10 s", "10 sec", "10 secs", "10 seconds", "10 second"]
+  - id: burst-absent-on-v2
+    facts: [v2-rate-limit]
+    versions: [v2]
+    when: ['\bburst']
+    requires: *negation
+  - id: webhook-signature-header
+    facts: [webhook-signature]
+    versions: [v3]
+    when: ['X-Nimbus-Signature']
+    value: 'X-Nimbus-Signature(?:-\w+)?'
+    allowed: [X-Nimbus-Signature-256]
+  - id: webhook-signature-header-v2
+    facts: [v2-webhook-signature]
+    versions: [v2]
+    when: ['X-Nimbus-Signature']
+    value: 'X-Nimbus-Signature(?:-\w+)?'
+    allowed: [X-Nimbus-Signature]
+  - id: webhook-signature-algorithm
+    facts: [webhook-signature]
+    versions: [v3]
+    when: ['\bHMAC|\bsignature|\bsigned\b|\bsigning\b|\bsha\d']
+    value: '\bSHA[\s-]*\d+'
+    allowed: [SHA256, SHA-256]
+  - id: webhook-signature-algorithm-v2
+    facts: [v2-webhook-signature]
+    versions: [v2]
+    when: ['\bHMAC|\bsignature|\bsigned\b|\bsigning\b|\bsha\d']
+    value: '\bSHA[\s-]*\d+'
+    allowed: [SHA1, SHA-1]
+  - id: saml-email-attribute
+    facts: [sso-attribute-mapping]
+    versions: [v3]
+    when: ['\b(?:SAML|attributes?|assertions?|claims?)\b']
+    value: '`e?mail`'
+    allowed: ['`email`']
+  - id: saml-email-attribute-v2
+    facts: [v2-saml-email-attribute]
+    versions: [v2]
+    when: ['\b(?:SAML|attributes?|assertions?|claims?)\b']
+    value: '`e?mail`'
+    allowed: ['`mail`']
+  - id: audit-log-retention
+    facts: [tier-audit-retention]
+    versions: [v2, v3]
+    when: ['\baudit\b']
+    value: &days '\b\d[\d,]*(?=[\s-]*days?\b)'
+    allowed: ["30", "90", "365"]
+  - id: audit-log-retention-starter
+    facts: [tier-audit-retention]
+    versions: [v3]
+    when: ['\baudit\b', '\bStarter\b']
+    value: *days
+    allowed: ["30"]
+  - id: audit-log-retention-business
+    facts: [tier-audit-retention]
+    versions: [v3]
+    when: ['\baudit\b', '\bBusiness\b']
+    value: *days
+    allowed: ["90"]
+  - id: audit-log-retention-enterprise
+    facts: [tier-audit-retention]
+    versions: [v3]
+    when: ['\baudit\b', '\bEnterprise\b']
+    value: *days
+    allowed: ["365"]
+  - id: auth-401-meaning
+    facts: [sso-auth-401]
+    versions: [v2, v3]
+    when: ['\bAUTH-401\b']
+    requires: '\bclock'
+  - id: auth-403-meaning
+    facts: [sso-auth-403]
+    versions: [v2, v3]
+    when: ['\bAUTH-403\b']
+    requires: '\bassign'
+  - id: auth-409-meaning
+    facts: [sso-auth-409]
+    versions: [v2, v3]
+    when: ['\bAUTH-409\b']
+    requires: '\bduplicate|\balready\b'
+  - id: scim-sync-interval
+    facts: [scim-sync-interval]
+    versions: [v3]
+    when: ['\bSCIM\b']
+    value: '\b\d+[\s-]*(?:minutes?|mins?|hours?|hrs?|h)\b'
+    allowed: ["40 minutes", "40 minute", "40 min", "40 mins"]
+  - id: deprovisioned-data-retention
+    facts: [scim-deprovisioning]
+    versions: [v3]
+    when: ['\b(?:deprovision|suspend|deactivat)\w*']
+    value: *days
+    allowed: ["30"]
+  - id: apac-tier
+    facts: [tier-regions]
+    versions: [v3]
+    when: ['\bAPAC\b']
+    value: '\b(?:Starter|Business)\b|\b(?:all|every|any)\s+(?:Plan\s+)?tiers?\b'
+    allowed: []
+  - id: apac-absent-on-v2
+    facts: []
+    versions: [v2]
+    when: ['\bAPAC\b']
+    requires: *negation
+  - id: rate-limit-headers-absent-on-v2
+    facts: []
+    versions: [v2]
+    when: ['X-RateLimit']
+    requires: *negation
+  - id: webhook-auto-disable-absent-on-v2
+    facts: []
+    versions: [v2]
+    when: ['auto-disabl\w*|disabled\s+automatically']
+    requires: *negation

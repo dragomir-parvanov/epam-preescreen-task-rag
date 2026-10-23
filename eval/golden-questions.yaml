@@ -4,7 +4,7 @@
 #   id                       gq-<slug>, unique
 #   question                 what the CSM types
 #   category                 cross-article | version-conflict | table-lookup | near-duplicate |
-#                            unanswerable | partial | follow-up
+#                            unanswerable | partial | follow-up | single-article (generated)
 #   answerable               false -> a Refusal is expected, with no expected_sources or must_mention
 #   origin                   curated (hand-designed, below) | generated (written with a generated Article)
 #   expected_sources         [{article, section}]: the Article id and Section path the Answer should cite

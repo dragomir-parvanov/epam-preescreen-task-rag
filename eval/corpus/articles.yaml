@@ -1,0 +1,1162 @@
+# The plan for the 145 generated Articles (#12, #34): what `pixi run generate-corpus` writes.
+#
+# families  each Article family's front-matter (doc_type, owner) and its fixed Section skeleton:
+#           the H2 headings every Article of the family has, in this order, so headings such as
+#           "Troubleshooting" repeat across the Knowledge Base as they do in a real manual set.
+#           An Article may add up to `max_h3` H3 Sections under those H2s (4-8 Sections in all).
+# articles  one entry per generated Article. `applies_to` defaults to [v3]; a [v2] Article is
+#           `status: deprecated`. `brief` steers the content; the fact sheet decides the values.
+#
+# The 5 planted Articles (#6, #17) are written by hand and are not listed here. Families are listed
+# in landing order; an Article may link to the planted Articles, its own family and earlier ones.
+
+families:
+  connector-guide:
+    doc_type: guide
+    owner: Integrations Team
+    max_h3: 2
+    sections:
+      - Prerequisites
+      - Creating the connection
+      - Triggers and actions
+      - Field mapping
+      - Limits and behaviour
+      - Troubleshooting
+    guidance: >-
+      How to connect one third-party app and use it in workflows. Prerequisites lists the account,
+      permissions and Plan Tier needs; Creating the connection is numbered console steps;
+      Triggers and actions is a table of what the connector offers; Field mapping shows a mapping
+      or expression example in a code block; Limits and behaviour covers polling, paging, file
+      sizes and retries; Troubleshooting is a table of CONN-/WF- errors and fixes for this app.
+
+  admin-howto:
+    doc_type: guide
+    owner: Workspace Administration Team
+    max_h3: 2
+    sections:
+      - Before you begin
+      - How it works
+      - Step-by-step
+      - Verifying the change
+      - Troubleshooting
+    guidance: >-
+      A task an Admin (or Builder) does in the console. Before you begin lists role, Plan Tier and
+      prerequisites; How it works explains the behaviour; Step-by-step is numbered console steps
+      plus the equivalent API call in a code block; Verifying the change says how to confirm it;
+      Troubleshooting is a table of problems and fixes.
+
+  tier-feature-guide:
+    doc_type: guide
+    owner: Product Operations
+    max_h3: 2
+    sections:
+      - Availability by Plan Tier
+      - How it works
+      - Turning it on
+      - Limits
+      - When the Plan Tier changes
+    guidance: >-
+      One feature or limit and how it differs by Plan Tier. Availability by Plan Tier is a table
+      with a Starter, Business and Enterprise column; How it works explains the feature; Turning
+      it on is numbered steps with a config or API example; Limits gives the numbers; When the
+      Plan Tier changes covers upgrades and downgrades for this feature.
+
+  api-reference:
+    doc_type: reference
+    owner: Platform API Team
+    max_h3: 3
+    sections:
+      - Endpoints
+      - Object fields
+      - Example request and response
+      - Filtering and pagination
+      - Errors
+    guidance: >-
+      One API resource. Endpoints is a table of method, path and purpose (H3s may detail up to
+      three important endpoints); Object fields is a table of the resource's JSON fields; Example
+      request and response shows an HTTP request and JSON response in code blocks; Filtering and
+      pagination explains query parameters and includes numbered steps for paging through a list;
+      Errors is a table of the error codes this resource returns and why.
+
+  security-note:
+    doc_type: reference
+    owner: Security & Compliance
+    max_h3: 2
+    sections:
+      - Scope
+      - Controls in place
+      - Admin settings
+      - Shared responsibilities
+      - Evidence for auditors
+    guidance: >-
+      One security or compliance topic, written for a CSM answering a client's security review.
+      Scope says what the note covers; Controls in place describes what Nimbus does; Admin
+      settings is numbered console steps with a config or API example; Shared responsibilities is
+      a table of what OmniCorp does versus what the client does; Evidence for auditors says what
+      a client can show or request.
+
+  troubleshooting-reference:
+    doc_type: reference
+    owner: Support Engineering
+    max_h3: 2
+    sections:
+      - Symptoms
+      - Common causes
+      - Diagnosing the problem
+      - Error reference
+      - Fixes
+      - Escalating to support
+    guidance: >-
+      One class of problem. Symptoms describes what the client sees; Common causes explains
+      them; Diagnosing the problem is numbered steps with a log line, API call or query in a code
+      block; Error reference is a table of codes and meanings (use only codes from the fact
+      sheet); Fixes gives the remedies; Escalating to support lists what to collect before
+      opening a ticket.
+
+  release-notes:
+    doc_type: release-notes
+    owner: Release Management
+    max_h3: 2
+    sections:
+      - Highlights
+      - New features
+      - Improvements
+      - Fixed issues
+      - Deprecations and breaking changes
+      - Upgrade notes
+    guidance: >-
+      The notes for one release, consistent with fact_sheet.releases. Highlights is a short
+      summary; New features describes what shipped (for a security-only release, say there are
+      none); Improvements lists smaller changes; Fixed issues is a table of issue ids
+      (e.g. NIM-4821) and descriptions; Deprecations and breaking changes says what clients must
+      change, or that nothing breaks; Upgrade notes is numbered steps with a config or API example.
+
+  faq:
+    doc_type: reference
+    owner: Customer Success Enablement
+    max_h3: 3
+    sections:
+      - General questions
+      - Setup questions
+      - Limits and edge cases
+      - Troubleshooting questions
+      - Where to find more
+    guidance: >-
+      Questions CSMs hear from clients about one area, each as a bold question followed by its
+      answer. Up to three of the most important questions may instead be H3 headings. At least
+      one answer has numbered steps, one has a code or config block, and one has a table.
+      Where to find more links to the detailed Articles.
+
+articles:
+  # --- connector-guide ---------------------------------------------------------------------------
+  - id: nimbus-connector-salesforce
+    family: connector-guide
+    title: Salesforce Connector
+    last_updated: 2026-03-16
+    brief: >-
+      OAuth 2.0 to a production or sandbox org; the connecting user needs API Enabled; polling
+      triggers on new or updated records; actions create, update, upsert by external id, and run
+      a SOQL query; mapping picklists and lookups.
+  - id: nimbus-connector-hubspot
+    family: connector-guide
+    title: HubSpot Connector
+    last_updated: 2026-02-09
+    brief: >-
+      OAuth 2.0 install by a HubSpot super admin; push triggers for contact, company and deal
+      events; actions create or update contacts, deals and tickets, add to a list; mapping
+      custom properties by internal name.
+  - id: nimbus-connector-slack
+    family: connector-guide
+    title: Slack Connector
+    last_updated: 2026-05-04
+    brief: >-
+      Install the Nimbus Slack app with OAuth 2.0; push triggers for new messages in a channel
+      and reactions; actions post a message, post with Block Kit, create a channel, invite users;
+      the bot must be invited to private channels.
+  - id: nimbus-connector-microsoft-teams
+    family: connector-guide
+    title: Microsoft Teams Connector
+    last_updated: 2026-01-19
+    brief: >-
+      Added in 3.3. OAuth 2.0 with Microsoft Entra ID admin consent; push triggers for new
+      channel messages; actions post to a channel, send a chat message, post an adaptive card,
+      used by approval steps to notify approvers.
+  - id: nimbus-connector-jira-cloud
+    family: connector-guide
+    title: Jira Cloud Connector
+    last_updated: 2026-04-13
+    brief: >-
+      OAuth 2.0 to an Atlassian site; push triggers for issue created, updated and transitioned;
+      actions create issue, transition issue, add comment; mapping custom fields by field id and
+      Atlassian Document Format for descriptions.
+  - id: nimbus-connector-servicenow
+    family: connector-guide
+    title: ServiceNow Connector
+    last_updated: 2026-07-06
+    brief: >-
+      Added in 3.7. OAuth 2.0 or basic auth with a dedicated integration user and the roles it
+      needs; polling triggers on incident and change tables using sys_updated_on; actions create
+      and update records, add work notes; mapping reference fields by sys_id.
+  - id: nimbus-connector-zendesk
+    family: connector-guide
+    title: Zendesk Connector
+    last_updated: 2025-11-24
+    brief: >-
+      API token plus the agent email; push triggers for ticket created and updated; actions
+      create ticket, update ticket, add comment (public or internal), set custom fields; mapping
+      custom field ids.
+  - id: nimbus-connector-snowflake
+    family: connector-guide
+    title: Snowflake Connector
+    last_updated: 2026-01-12
+    brief: >-
+      Added in 3.4. Key-pair authentication for a service user with a role and warehouse; no
+      triggers; actions run a query, insert rows, merge rows; generating the RSA key pair; query
+      results are paged.
+  - id: nimbus-connector-amazon-s3
+    family: connector-guide
+    title: Amazon S3 Connector
+    last_updated: 2025-12-15
+    brief: >-
+      Access key or an IAM role that Nimbus assumes with an external id; polling trigger on new
+      objects under a prefix; actions upload, download, list, copy and delete objects; files up
+      to 100 MB; an example IAM policy in JSON.
+  - id: nimbus-connector-azure-blob-storage
+    family: connector-guide
+    title: Azure Blob Storage Connector
+    last_updated: 2026-02-23
+    brief: >-
+      Added in 3.1. Connection string or SAS token with the permissions it needs; polling
+      trigger on new blobs in a container; actions upload, download, list and delete blobs;
+      SAS token expiry causes CONN-401.
+  - id: nimbus-connector-postgresql
+    family: connector-guide
+    title: PostgreSQL Connector
+    last_updated: 2026-06-15
+    brief: >-
+      Username and password over TLS (sslmode require or verify-full); databases on a private
+      network use the private connector agent (Enterprise); polling trigger on a query with a
+      cursor column; actions run query, insert, upsert; parameterised queries.
+  - id: nimbus-connector-mysql
+    family: connector-guide
+    title: MySQL Connector
+    last_updated: 2026-06-22
+    brief: >-
+      Username and password over TLS; a least-privilege database user; polling trigger on a
+      query with an auto-increment or timestamp column; actions run query, insert, update;
+      time zone handling of DATETIME columns.
+  - id: nimbus-connector-sql-server
+    family: connector-guide
+    title: Microsoft SQL Server Connector
+    last_updated: 2026-03-30
+    brief: >-
+      Added in 3.1. SQL authentication over TLS; certificate validation settings; polling
+      trigger on a query using rowversion; actions run query, insert, execute stored procedure;
+      the private connector agent for on-premises servers (Enterprise).
+  - id: nimbus-connector-sharepoint-online
+    family: connector-guide
+    title: SharePoint Online Connector
+    last_updated: 2026-04-20
+    brief: >-
+      OAuth 2.0 with Microsoft Entra ID; site and document library permissions; polling
+      triggers on new files and list items; actions upload file, create list item, update item
+      metadata; files up to 100 MB.
+  - id: nimbus-connector-box
+    family: connector-guide
+    title: Box Connector
+    last_updated: 2025-10-27
+    brief: >-
+      OAuth 2.0 as a Box user or a service account; push triggers for file uploaded and
+      folder events; actions upload, move, share link, add metadata; collaboration on the target
+      folder is required.
+  - id: nimbus-connector-dropbox
+    family: connector-guide
+    title: Dropbox Connector
+    last_updated: 2025-09-29
+    brief: >-
+      OAuth 2.0 for a Dropbox account or team folder; push triggers on file changes in a
+      folder; actions upload, download, create shared link, move; path formats and case
+      sensitivity.
+  - id: nimbus-connector-github
+    family: connector-guide
+    title: GitHub Connector
+    last_updated: 2026-05-25
+    brief: >-
+      Install the Nimbus GitHub App on an organisation and choose repositories; push triggers
+      for pull request, issue and release events; actions create issue, comment, add label,
+      create release; repository permissions the app requests.
+  - id: nimbus-connector-gitlab
+    family: connector-guide
+    title: GitLab Connector
+    last_updated: 2026-02-02
+    brief: >-
+      Added in 3.1. Personal, group or project access token with the api scope; GitLab.com or
+      self-managed URL; push triggers for merge request and pipeline events; actions create
+      issue, comment on merge request, trigger pipeline; token expiry.
+  - id: nimbus-connector-asana
+    family: connector-guide
+    title: Asana Connector
+    last_updated: 2025-08-18
+    brief: >-
+      OAuth 2.0 for an Asana user; push triggers for new task and task completed in a project;
+      actions create task, add subtask, update custom field, add comment; workspace and project
+      gids.
+  - id: nimbus-connector-workday
+    family: connector-guide
+    title: Workday Connector
+    last_updated: 2026-08-31
+    brief: >-
+      Added in 3.8. An API client registered in Workday with an integration system user and
+      security group; polling triggers for new hires, terminations and job changes; actions read
+      worker, update contact information; used for joiner-mover-leaver workflows.
+  - id: nimbus-connector-bamboohr
+    family: connector-guide
+    title: BambooHR Connector
+    last_updated: 2025-07-21
+    brief: >-
+      API key of a BambooHR user and the company subdomain; polling triggers for new employee
+      and changed fields; actions get employee, update employee, add time-off request; field
+      aliases versus ids.
+  - id: nimbus-connector-netsuite
+    family: connector-guide
+    title: NetSuite Connector
+    last_updated: 2026-03-02
+    brief: >-
+      Added in 3.2. Token-based authentication: integration record, role, access token; account
+      id format; polling triggers on saved searches; actions create and update records, run a
+      SuiteQL query; sandbox accounts.
+  - id: nimbus-connector-marketo
+    family: connector-guide
+    title: Marketo Connector
+    last_updated: 2025-12-01
+    brief: >-
+      Added in 3.1. Client ID and client secret of a LaunchPoint custom service and the
+      Munchkin-based endpoint URL; polling triggers for new leads and activity; actions sync
+      lead, add to list, request campaign; daily API quota on the Marketo side.
+  - id: nimbus-connector-twilio
+    family: connector-guide
+    title: Twilio Connector
+    last_updated: 2025-10-13
+    brief: >-
+      Account SID and auth token (or an API key pair); push triggers from status callbacks and
+      incoming SMS; actions send SMS, send WhatsApp template message, make a call with TwiML;
+      phone numbers in E.164 format.
+  - id: nimbus-connector-intercom
+    family: connector-guide
+    title: Intercom Connector
+    last_updated: 2026-01-26
+    brief: >-
+      Added in 3.2. OAuth 2.0 install by an Intercom admin; push triggers for new conversation
+      and conversation closed; actions create contact, reply to conversation, add tag;
+      data attributes mapping.
+  - id: nimbus-connector-dynamics-365
+    family: connector-guide
+    title: Microsoft Dynamics 365 Connector
+    last_updated: 2026-10-12
+    brief: >-
+      Added in 3.9. OAuth 2.0 with a Microsoft Entra ID app registration and an application
+      user in Dataverse with a security role; polling triggers on new and updated rows; actions
+      create, update and upsert rows; logical names versus display names.
+  - id: nimbus-connector-sftp
+    family: connector-guide
+    title: SFTP Connector
+    last_updated: 2026-05-11
+    brief: >-
+      Username with SSH key (recommended) or password; host key fingerprint pinning; servers on
+      a private network through the private connector agent (Enterprise); polling trigger on new
+      files in a directory; actions upload, download, move, delete; files up to 100 MB.
+  - id: nimbus-connector-http-request
+    family: connector-guide
+    title: HTTP Request Connector
+    last_updated: 2026-07-27
+    brief: >-
+      Call any HTTPS API: auth none, API key header, basic auth or OAuth 2.0 client credentials;
+      no triggers (pair with an inbound webhook trigger); method, headers, JSON body with
+      expressions; response parsing; non-2xx handling and retries.
+  - id: nimbus-v2-connector-salesforce
+    family: connector-guide
+    title: Salesforce Connector (v2)
+    applies_to: [v2]
+    last_updated: 2025-03-10
+    brief: >-
+      The legacy Salesforce connector: username, password and security token; polling every
+      15 minutes; actions create and update records only (no upsert, no SOQL action); credentials
+      edited on the connection under Admin > Connections.
+  - id: nimbus-v2-connector-slack
+    family: connector-guide
+    title: Slack Connector (v2)
+    applies_to: [v2]
+    last_updated: 2024-11-18
+    brief: >-
+      The legacy Slack connector: an incoming-webhook URL per channel; no triggers; one action,
+      post a plain-text or markdown message; no Block Kit, no private channels unless the webhook
+      was created there.
+
+  # --- admin-howto --------------------------------------------------------------------------------
+  - id: nimbus-admin-inviting-users
+    family: admin-howto
+    title: Inviting Users and Assigning Roles
+    last_updated: 2026-04-27
+    brief: >-
+      Invite by email under Settings > Users, pick Admin, Builder or Viewer; invitations expire
+      after 7 days and can be resent; a seat is taken on acceptance; POST /invitations.
+  - id: nimbus-admin-changing-roles
+    family: admin-howto
+    title: Changing a User's Role
+    last_updated: 2026-02-16
+    brief: >-
+      What each role can do; changing a role under Settings > Users or PATCH /users/{id}; a
+      workspace must keep at least one Admin; when roles come from the identity provider's
+      groups, console changes are overwritten at the next sign-in or sync (link to SSO and
+      SCIM Articles without restating their details).
+  - id: nimbus-admin-suspending-users
+    family: admin-howto
+    title: Suspending, Reactivating and Deleting Users
+    last_updated: 2026-03-09
+    brief: >-
+      Manual suspension blocks sign-in and frees the seat; reactivation restores access;
+      deletion is permanent and requires transferring the user's workflows first; API endpoints;
+      users managed by SCIM should be changed in the identity provider instead.
+  - id: nimbus-admin-bulk-user-import
+    family: admin-howto
+    title: Importing Users in Bulk from CSV
+    last_updated: 2026-10-12
+    brief: >-
+      Added in 3.9, on every tier. Settings > Users > Import CSV; columns email, firstName,
+      lastName, role; up to 500 rows per file; invitations are sent to every row; the import
+      report and row errors; seat limit checks.
+  - id: nimbus-admin-workspace-settings
+    family: admin-howto
+    title: Managing Workspace Settings
+    last_updated: 2025-11-17
+    brief: >-
+      Settings > Workspace: workspace name, time zone used by schedules, default notification
+      recipients; the data region is shown but can't be changed; GET /workspace.
+  - id: nimbus-admin-creating-a-workspace
+    family: admin-howto
+    title: Creating a Workspace
+    last_updated: 2025-09-08
+    brief: >-
+      How OmniCorp provisions a new workspace for a client: workspace name, the first Admin, the
+      data region (permanent; link to the Plan Tiers Article for which tiers get which region),
+      the time zone; the welcome email; first steps after creation.
+  - id: nimbus-admin-transferring-workflow-ownership
+    family: admin-howto
+    title: Transferring Workflow Ownership
+    last_updated: 2026-01-05
+    brief: >-
+      Why ownership matters (notifications, connections the workflow uses); transferring one
+      workflow or all of a user's workflows to another Builder or Admin; workflows keep running
+      while the owner is suspended; PATCH /workflows/{id} with owner_id.
+  - id: nimbus-admin-api-keys
+    family: admin-howto
+    title: Creating and Rotating API Keys
+    last_updated: 2026-05-18
+    brief: >-
+      Settings > Developers > API keys; the key is shown once; optional expiry date; naming
+      keys per integration; zero-downtime rotation; revoking; keys act with Admin permissions and
+      have no scopes; do not restate rate limits, link to the API Rate Limits and Webhooks
+      Article.
+  - id: nimbus-admin-webhook-endpoints
+    family: admin-howto
+    title: Registering Webhook Endpoints
+    last_updated: 2026-06-08
+    brief: >-
+      Settings > Developers > Webhooks: add an HTTPS endpoint, choose events, copy the signing
+      secret, send a test event, read the delivery log, redeliver a delivery, roll the secret;
+      link to the API Rate Limits and Webhooks Article for signatures and retries instead of
+      restating them.
+  - id: nimbus-admin-secrets-vault
+    family: admin-howto
+    title: Storing Credentials in the Secrets Vault
+    last_updated: 2026-02-23
+    brief: >-
+      Added in 3.4. Settings > Secrets: create a secret, reference it as {{secrets.NAME}} in a
+      step; values are write-only; naming rules (upper case, digits, underscores); rotating a
+      secret updates every workflow that uses it; PUT /secrets/{name}.
+  - id: nimbus-admin-scheduling-workflows
+    family: admin-howto
+    title: Scheduling Workflows
+    last_updated: 2026-04-06
+    brief: >-
+      Add a schedule trigger with a cron expression; workspace time zone or a chosen IANA time
+      zone; daylight saving behaviour; minimum interval depends on the Plan Tier; pausing a
+      schedule; PUT /workflows/{id}/schedule.
+  - id: nimbus-admin-promoting-workflows
+    family: admin-howto
+    title: Promoting Workflows from Development to Production
+    last_updated: 2026-03-23
+    brief: >-
+      Business and Enterprise. Build in Development, promote to Production; connections and
+      {{env.NAME}} variables are set per environment; what promotion copies and what it doesn't;
+      POST /workflows/{id}/promote.
+  - id: nimbus-admin-approval-steps
+    family: admin-howto
+    title: Adding Approval Steps to a Workflow
+    last_updated: 2026-01-12
+    brief: >-
+      Business and Enterprise. Add an approval step, choose approvers (users or a role), the
+      approval message; the run waits as waiting_for_approval; approvers act in the Approvals
+      inbox, by email or in Microsoft Teams or Slack; approvals expire after 7 days (WF-410).
+  - id: nimbus-admin-run-history
+    family: admin-howto
+    title: Searching and Exporting Run History
+    last_updated: 2025-12-08
+    brief: >-
+      The Runs page: filter by workflow, status and date; open a run to see each step's input,
+      output and logs; run history is kept for 90 days; export as CSV; GET /runs with filters;
+      retrying a failed run.
+  - id: nimbus-admin-failure-notifications
+    family: admin-howto
+    title: Configuring Failure Notifications
+    last_updated: 2026-05-04
+    brief: >-
+      Settings > Notifications: email the workflow owner, a list of addresses or a Slack or
+      Microsoft Teams channel when a run fails; per-workflow overrides; digest versus immediate;
+      quota alert emails at 80% and 100% go to Admins.
+  - id: nimbus-admin-requiring-two-factor
+    family: admin-howto
+    title: Requiring Two-Factor Authentication
+    last_updated: 2026-07-13
+    brief: >-
+      Settings > Security > Two-factor authentication: require an authenticator app (TOTP) for
+      everyone who signs in with a password; enrolment on next sign-in; resetting a user's second
+      factor; recovery codes; users who sign in with SSO are not affected.
+  - id: nimbus-admin-session-timeouts
+    family: admin-howto
+    title: Configuring Session Timeouts
+    last_updated: 2026-08-10
+    brief: >-
+      Settings > Security > Sessions: idle timeout from 15 minutes to 24 hours, default 8 hours;
+      signing out all sessions of a user; what counts as activity; the effect on open builder
+      tabs.
+  - id: nimbus-admin-exporting-the-audit-log
+    family: admin-howto
+    title: Searching and Exporting the Audit Log
+    last_updated: 2026-06-29
+    brief: >-
+      Settings > Audit log: filter by actor, action and date range; export the visible range as
+      CSV; GET /audit-log/events; the event fields; scheduling regular exports; never state
+      retention periods (link to the Plan Tiers Article).
+  - id: nimbus-admin-deleting-a-workspace
+    family: admin-howto
+    title: Deleting a Workspace
+    last_updated: 2025-10-20
+    brief: >-
+      Settings > Workspace > Delete workspace: who can do it, the confirmation, what happens to
+      workflows, connections and API keys; OmniCorp support can restore it for 14 days, then
+      everything is permanently deleted; exporting what the client needs first.
+  - id: nimbus-admin-restoring-workflow-versions
+    family: admin-howto
+    title: Restoring a Previous Workflow Version
+    last_updated: 2026-02-02
+    brief: >-
+      Version history in the builder: every publish creates a version, the last 50 are kept;
+      compare two versions; restore creates a new version; GET /workflows/{id}/versions.
+  - id: nimbus-v2-admin-managing-users
+    family: admin-howto
+    title: Inviting and Removing Users (v2)
+    applies_to: [v2]
+    last_updated: 2025-01-27
+    brief: >-
+      Admin > Users on the legacy console: invite, set role, suspend and delete; invitations
+      expire after 7 days; users from SSO are created on first sign-in and must be suspended by
+      hand when they leave.
+  - id: nimbus-v2-admin-api-keys
+    family: admin-howto
+    title: Managing API Keys (v2)
+    applies_to: [v2]
+    last_updated: 2024-12-09
+    brief: >-
+      Admin > API keys on the legacy console: create a key, which never expires; delete it to
+      revoke; one key per integration; keys are shown once.
+
+  # --- tier-feature-guide ------------------------------------------------------------------------
+  - id: nimbus-tier-workflow-run-quotas
+    family: tier-feature-guide
+    title: Workflow Run Quotas
+    last_updated: 2026-02-16
+    brief: >-
+      Runs per month per tier; what counts as a run; test runs don't count; alerts at 80% and
+      100%; what happens at 100% (WF-300); the quota resets on the 1st of the month (UTC);
+      GET /workspace/usage.
+  - id: nimbus-tier-active-connector-limits
+    family: tier-feature-guide
+    title: Active Connector Limits
+    last_updated: 2025-12-15
+    brief: >-
+      Active connectors per tier and how they are counted (a connector with at least one
+      connection used by an active workflow); what happens when activating a workflow would go
+      over the limit; freeing up connectors.
+  - id: nimbus-tier-seat-limits
+    family: tier-feature-guide
+    title: Seat Limits and How Seats Are Counted
+    last_updated: 2026-03-02
+    brief: >-
+      Seats per tier; every active user takes a seat whatever their role; suspended users and
+      pending invitations don't; what happens at the limit; checking seat use under
+      Settings > Usage.
+  - id: nimbus-tier-environments
+    family: tier-feature-guide
+    title: Development and Production Environments
+    last_updated: 2026-01-26
+    brief: >-
+      Business and Enterprise, since 3.2. Two environments per workspace; per-environment
+      connections and variables; what a downgrade to Starter does to Development.
+  - id: nimbus-tier-approval-steps
+    family: tier-feature-guide
+    title: Approval Steps
+    last_updated: 2025-11-03
+    brief: >-
+      Business and Enterprise, since 3.3. Human-in-the-loop approvals; approvers; expiry after
+      7 days; approval runs count once against the run quota; what happens to waiting runs on a
+      downgrade.
+  - id: nimbus-tier-concurrent-runs
+    family: tier-feature-guide
+    title: Concurrent Run Limits
+    last_updated: 2026-08-17
+    brief: >-
+      Since 3.8. Concurrent runs per tier (5, 25, 100); extra runs wait as queued (WF-310)
+      and start in order; long-running runs and the 60-minute run timeout; designing workflows
+      to stay under the limit.
+  - id: nimbus-tier-schedule-intervals
+    family: tier-feature-guide
+    title: Schedule Frequency Limits
+    last_updated: 2025-10-06
+    brief: >-
+      Minimum schedule interval per tier (15 minutes, 5 minutes, 1 minute); cron expressions
+      that run more often are rejected with WF-100; what happens to existing schedules on a
+      downgrade.
+  - id: nimbus-tier-customer-managed-keys
+    family: tier-feature-guide
+    title: Customer-Managed Encryption Keys
+    last_updated: 2026-05-11
+    brief: >-
+      Enterprise only, since 3.6. Encrypt workspace data with a key in the client's AWS KMS or
+      Azure Key Vault; granting Nimbus access to the key; key rotation; revoking the key makes
+      the workspace unreadable; Settings > Security > Encryption keys.
+  - id: nimbus-tier-audit-log-streaming
+    family: tier-feature-guide
+    title: Audit Log Streaming
+    last_updated: 2026-06-01
+    brief: >-
+      Enterprise only, since 3.6. Stream audit-log events to Splunk, Datadog or an HTTPS
+      endpoint in near real time; Settings > Audit log > Streaming; event format; delivery
+      failures; never state retention periods (link to the Plan Tiers Article).
+  - id: nimbus-tier-private-connector-agent
+    family: tier-feature-guide
+    title: Private Connector Agent
+    last_updated: 2026-07-20
+    brief: >-
+      Enterprise only, since 3.7. Run the omnicorp/nimbus-agent Docker image inside the client's
+      network so databases and SFTP servers that aren't reachable from the internet can be used;
+      outbound TLS only; registration token; several agents for high availability; Offline after
+      2 minutes without a heartbeat.
+  - id: nimbus-tier-sandbox-workspace
+    family: tier-feature-guide
+    title: Sandbox Workspace
+    last_updated: 2026-04-13
+    brief: >-
+      Enterprise includes one sandbox workspace for testing changes; it isn't counted against
+      the production workspace's limits; it is in the same data region; copying workflows into
+      it; it is removed if the tier changes below Enterprise.
+  - id: nimbus-tier-usage-dashboard
+    family: tier-feature-guide
+    title: Usage Dashboard and Quota Alerts
+    last_updated: 2026-03-16
+    brief: >-
+      Every tier, since 3.5. Settings > Usage shows runs this month, seats, active connectors and
+      secrets against the tier's limits; alert emails at 80% and 100%; GET /workspace/usage.
+  - id: nimbus-tier-version-history
+    family: tier-feature-guide
+    title: Workflow Version History
+    last_updated: 2025-08-11
+    brief: >-
+      Every tier, since 3.1. Each publish creates a version; the last 50 are kept; restoring;
+      versions and environments; nothing changes on a tier change.
+  - id: nimbus-tier-secrets-vault
+    family: tier-feature-guide
+    title: Secrets Vault Limits
+    last_updated: 2026-01-05
+    brief: >-
+      Since 3.4. Secrets per workspace per tier (25, 250, Unlimited); what happens when a
+      downgrade leaves more secrets than the new limit (existing secrets keep working, new ones
+      can't be added); how secrets are stored.
+  - id: nimbus-tier-workflow-templates
+    family: tier-feature-guide
+    title: Workflow Templates
+    last_updated: 2025-09-22
+    brief: >-
+      Every tier. The template gallery; installing a template creates a draft workflow;
+      templates that use a feature the tier lacks (approval steps, environments) are marked;
+      saving a workflow as a workspace template.
+
+  # --- api-reference --------------------------------------------------------------------------
+  - id: nimbus-api-workflows
+    family: api-reference
+    title: Workflows API
+    last_updated: 2026-05-25
+    brief: List, create, read, update, delete, activate and deactivate workflows; the workflow object; versions.
+  - id: nimbus-api-runs
+    family: api-reference
+    title: Runs API
+    last_updated: 2026-08-10
+    brief: >-
+      Start a run with an input payload, list and filter runs, read a run, cancel, retry (3.8);
+      the run object and statuses; Idempotency-Key when starting runs.
+  - id: nimbus-api-run-steps
+    family: api-reference
+    title: Run Steps and Logs API
+    last_updated: 2026-04-27
+    brief: >-
+      GET /runs/{id}/steps: each step's status, attempts, timing, error code (WF-/CONN-) and
+      truncated input and output; reading step logs for debugging.
+  - id: nimbus-api-users
+    family: api-reference
+    title: Users API
+    last_updated: 2026-03-30
+    brief: List, read, update role, suspend, reactivate and delete users; the user object; filtering by role and status.
+  - id: nimbus-api-invitations
+    family: api-reference
+    title: Invitations API
+    last_updated: 2026-02-09
+    brief: List, create and revoke invitations; the invitation object; expiry after 7 days; seat checks.
+  - id: nimbus-api-connections
+    family: api-reference
+    title: Connections API
+    last_updated: 2026-06-15
+    brief: >-
+      List and read connections, test a connection, delete one; the connection object with its
+      status (connected, needs_attention); GET /connectors for the catalogue.
+  - id: nimbus-api-webhook-endpoints
+    family: api-reference
+    title: Webhook Endpoints API
+    last_updated: 2026-07-06
+    brief: >-
+      Manage webhook endpoints: create (the signing secret is returned once), list, update
+      subscribed events, delete, send a test event; the endpoint object with status; link to the
+      API Rate Limits and Webhooks Article for signatures and retries instead of restating them.
+  - id: nimbus-api-webhook-deliveries
+    family: api-reference
+    title: Webhook Deliveries API
+    last_updated: 2026-07-13
+    brief: >-
+      List an endpoint's deliveries with each attempt's status code and timing; redeliver one
+      delivery; the delivery object (dlv_ id, event, attempts); filtering failed deliveries.
+  - id: nimbus-api-audit-log
+    family: api-reference
+    title: Audit Log API
+    last_updated: 2026-06-22
+    brief: >-
+      GET /audit-log/events with actor, action, from and to filters; the event object; example
+      action names; paging through a large range; never state retention periods.
+  - id: nimbus-api-api-keys
+    family: api-reference
+    title: API Keys API
+    last_updated: 2026-05-04
+    brief: >-
+      List, create (secret returned once) and revoke API keys; the key object (key_ id, name,
+      last four characters, created_at, expires_at, last_used_at); rotation pattern.
+  - id: nimbus-api-workspace
+    family: api-reference
+    title: Workspace API
+    last_updated: 2026-02-23
+    brief: >-
+      GET /workspace (name, data region, time zone, Plan Tier) and GET /workspace/usage (runs,
+      seats, active connectors, secrets); link to the Plan Tiers Article for /workspace/entitlements.
+  - id: nimbus-api-secrets
+    family: api-reference
+    title: Secrets API
+    last_updated: 2026-01-19
+    brief: List secret names (values are never returned), create or replace a secret, delete one; naming rules; limits per tier.
+  - id: nimbus-api-schedules
+    family: api-reference
+    title: Schedules API
+    last_updated: 2025-12-08
+    brief: Read, set and remove a workflow's schedule; cron expression and time zone fields; next_run_at; WF-100 on invalid cron.
+  - id: nimbus-api-environments
+    family: api-reference
+    title: Environments and Promotion API
+    last_updated: 2026-03-09
+    brief: >-
+      POST /workflows/{id}/promote from Development to Production; the environment field on
+      workflows and connections; per-environment variables; errors when a connection is missing
+      in Production.
+  - id: nimbus-api-approvals
+    family: api-reference
+    title: Approvals API
+    last_updated: 2026-01-26
+    brief: List pending approvals, approve or reject with a comment; the approval object (apr_ id, run, approvers, expires_at).
+  - id: nimbus-api-inbound-webhook-triggers
+    family: api-reference
+    title: Inbound Webhook Triggers
+    last_updated: 2026-04-20
+    brief: >-
+      Starting a workflow by POSTing JSON to https://hooks.nimbus.omnicorp.example/t/<trigger-token>;
+      202 Accepted with the run id; payloads up to 1 MB; regenerating the trigger token; no API
+      key needed, so keep the URL secret.
+  - id: nimbus-api-folders
+    family: api-reference
+    title: Folders API
+    last_updated: 2025-11-10
+    brief: List, create, rename and delete folders; moving workflows between folders; folders are one level deep.
+  - id: nimbus-api-error-format
+    family: api-reference
+    title: API Error Format and Idempotency
+    last_updated: 2026-06-29
+    brief: >-
+      The common error envelope and every error code with its HTTP status; the Idempotency-Key
+      header (remembered for 24 hours) and replays; request ids for support; don't restate rate
+      limit values.
+  - id: nimbus-v2-api-workflows
+    family: api-reference
+    title: Workflows API (v2)
+    applies_to: [v2]
+    last_updated: 2025-02-17
+    brief: The legacy workflows endpoints with page-based pagination; no versions or environments.
+  - id: nimbus-v2-api-runs
+    family: api-reference
+    title: Runs API (v2)
+    applies_to: [v2]
+    last_updated: 2025-02-24
+    brief: The legacy runs endpoints; start, list and read runs; run history kept for 30 days; no retry endpoint.
+  - id: nimbus-v2-api-users
+    family: api-reference
+    title: Users API (v2)
+    applies_to: [v2]
+    last_updated: 2025-03-03
+    brief: The legacy users endpoints; list, invite, change role, suspend; page-based pagination; errors as a plain message.
+
+  # --- security-note ---------------------------------------------------------------------------
+  - id: nimbus-security-encryption
+    family: security-note
+    title: Encryption in Transit and at Rest
+    last_updated: 2026-04-06
+    brief: TLS 1.2 or later; AES-256 at rest; key management by OmniCorp; customer-managed keys on Enterprise.
+  - id: nimbus-security-data-residency
+    family: security-note
+    title: Data Residency
+    last_updated: 2026-05-18
+    brief: >-
+      What data stays in the workspace's region (workflows, runs, audit log, users); that the
+      region is chosen at creation and fixed; which data third-party connectors send elsewhere;
+      link to the Plan Tiers Article for which tiers get which region.
+  - id: nimbus-security-data-deletion
+    family: security-note
+    title: Data Retention and Deletion
+    last_updated: 2026-07-27
+    brief: >-
+      Run history kept for 90 days; deleted connections' credentials are erased immediately;
+      workspace deletion and the 14-day restore window; handling client deletion requests; link
+      to the SCIM and Plan Tiers Articles rather than restating their retention values.
+  - id: nimbus-security-password-policy
+    family: security-note
+    title: Password and Two-Factor Policy
+    last_updated: 2026-02-02
+    brief: Minimum 12 characters; lockout after 10 failed attempts for 15 minutes; optional and required TOTP two-factor; break-glass account mentioned only by linking to the SSO Article.
+  - id: nimbus-security-session-management
+    family: security-note
+    title: Session Management
+    last_updated: 2026-08-24
+    brief: Idle timeout (default 8 hours, 15 minutes to 24 hours); secure cookies; signing out sessions; API keys versus console sessions.
+  - id: nimbus-security-api-key-hygiene
+    family: security-note
+    title: API Key Security Practices
+    last_updated: 2026-05-25
+    brief: Keys act as Admin with no scopes, so store them in a secrets manager, set expiry dates, one key per integration, rotate, monitor last_used_at, revoke on suspicion.
+  - id: nimbus-security-credential-storage
+    family: security-note
+    title: How Connection Credentials and Secrets Are Stored
+    last_updated: 2026-03-23
+    brief: Encrypted per workspace, write-only in the console and API, decrypted only inside the run that uses them, masked in step logs.
+  - id: nimbus-security-compliance-reports
+    family: security-note
+    title: Compliance Reports and Certifications
+    last_updated: 2026-09-14
+    brief: SOC 2 Type II report and ISO/IEC 27001 certificate; how a CSM requests them for a client under NDA; security questionnaire process.
+  - id: nimbus-security-gdpr
+    family: security-note
+    title: GDPR and Data Processing
+    last_updated: 2026-06-15
+    brief: OmniCorp as processor, the DPA in every contract, data subject requests, finding a person's data in users, runs and audit log, breach notification within 72 hours.
+  - id: nimbus-security-vulnerability-disclosure
+    family: security-note
+    title: Vulnerability Reporting and Security Fixes
+    last_updated: 2025-12-01
+    brief: Reporting to security@omnicorp.example; acknowledgement within 2 business days; how security fixes ship in releases; legacy platform receives security fixes only.
+  - id: nimbus-security-access-reviews
+    family: security-note
+    title: Running User Access Reviews
+    last_updated: 2026-01-12
+    brief: Exporting users with roles and last sign-in, reviewing Admins and API keys, suspending stale accounts, recording the review for auditors.
+  - id: nimbus-security-incident-notification
+    family: security-note
+    title: Security Incident Notification
+    last_updated: 2026-04-27
+    brief: How OmniCorp notifies clients of security incidents, who receives the notice, what it contains, the 72-hour commitment for personal-data breaches, what the CSM does.
+  - id: nimbus-security-audit-events
+    family: security-note
+    title: Audit Log Event Catalogue
+    last_updated: 2026-07-06
+    brief: >-
+      The audit-log event types by area (sign-in, user, role, SSO, SCIM configuration, API key,
+      webhook endpoint, workflow publish, secret) with example event JSON; never state retention
+      periods (link to the Plan Tiers Article).
+  - id: nimbus-v2-security-sessions
+    family: security-note
+    title: Password and Session Security (v2)
+    applies_to: [v2]
+    last_updated: 2025-04-14
+    brief: The legacy platform's password rules (at least 10 characters), fixed 12-hour session lifetime, no idle timeout setting, two-factor optional per user and not enforceable by an Admin.
+
+  # --- troubleshooting-reference ----------------------------------------------------------------
+  - id: nimbus-troubleshooting-failed-runs
+    family: troubleshooting-reference
+    title: Troubleshooting Failed Workflow Runs
+    last_updated: 2026-08-31
+    brief: Reading a failed run in run history; step retries (3 by default); the WF- error codes; retrying a run; when to fix data versus configuration.
+  - id: nimbus-troubleshooting-connection-errors
+    family: troubleshooting-reference
+    title: Troubleshooting Connector Authorization Errors
+    last_updated: 2026-05-11
+    brief: CONN-401 and CONN-403; the Needs attention status; the connector.disconnected event; reconnecting; permission changes in the third-party app; expired tokens.
+  - id: nimbus-troubleshooting-webhook-deliveries
+    family: troubleshooting-reference
+    title: Troubleshooting Webhook Deliveries
+    last_updated: 2026-07-20
+    brief: >-
+      Failed deliveries seen from the client's endpoint: non-2xx answers, answering after 15
+      seconds, TLS certificate problems, signature verification failures from parsing the body
+      first; the delivery log and redelivery; link to the API Rate Limits and Webhooks Article
+      for retries and auto-disable instead of restating them.
+  - id: nimbus-troubleshooting-api-errors
+    family: troubleshooting-reference
+    title: Troubleshooting API Errors
+    last_updated: 2026-06-08
+    brief: 400 to 500 errors from the API; unauthorized from revoked or expired keys; forbidden for Starter workspaces; conflict on duplicate Idempotency-Key bodies; 429 handled by waiting for Retry-After (no limit values).
+  - id: nimbus-troubleshooting-inbound-triggers
+    family: troubleshooting-reference
+    title: Troubleshooting Inbound Webhook Triggers
+    last_updated: 2026-03-30
+    brief: Calls to the trigger URL that don't start runs; 404 for a regenerated token; 413 over 1 MB; invalid JSON; the workflow is inactive; quota reached (WF-300).
+  - id: nimbus-troubleshooting-schedules
+    family: troubleshooting-reference
+    title: Troubleshooting Scheduled Workflows
+    last_updated: 2026-02-16
+    brief: Schedules that don't fire or fire at the wrong time; time zones and daylight saving; WF-100; deactivated workflows; runs rejected at the quota; minimum interval per tier.
+  - id: nimbus-troubleshooting-run-quota
+    family: troubleshooting-reference
+    title: Troubleshooting Run Quota Errors
+    last_updated: 2026-04-13
+    brief: WF-300 when the monthly runs are used up; finding the workflows that use most runs; reducing runs (polling filters, batching); the reset on the 1st (UTC); upgrading.
+  - id: nimbus-troubleshooting-data-mapping
+    family: troubleshooting-reference
+    title: Troubleshooting Data Mapping Errors
+    last_updated: 2026-01-19
+    brief: WF-400 from expressions; referencing a step key that changed; empty required fields; type conversion; default(); testing expressions in the builder.
+  - id: nimbus-troubleshooting-timeouts
+    family: troubleshooting-reference
+    title: Troubleshooting Step and Run Timeouts
+    last_updated: 2025-12-22
+    brief: WF-200 for steps over 10 minutes and WF-210 for runs over 60 minutes; slow queries and large files; splitting work into smaller runs; loops.
+  - id: nimbus-troubleshooting-database-connections
+    family: troubleshooting-reference
+    title: Troubleshooting Database Connections
+    last_updated: 2026-06-22
+    brief: >-
+      PostgreSQL, MySQL and SQL Server connections that fail to test: TLS settings, wrong
+      credentials, database user permissions, servers on private networks needing the private
+      connector agent (Enterprise); never discuss network addresses or firewall lists.
+  - id: nimbus-troubleshooting-file-transfers
+    family: troubleshooting-reference
+    title: Troubleshooting File Transfer Errors
+    last_updated: 2025-11-17
+    brief: >-
+      SFTP, Amazon S3, Azure Blob Storage, Box and Dropbox steps: files over 100 MB, CONN-404 for missing paths, host key mismatches, permission errors, partial uploads.
+  - id: nimbus-troubleshooting-third-party-throttling
+    family: troubleshooting-reference
+    title: Troubleshooting Third-Party Throttling
+    last_updated: 2026-03-09
+    brief: >-
+      CONN-429 when a third-party app throttles the connector; Nimbus backs off and retries the
+      step; reducing request volume with batching and polling filters; state no request-rate
+      numbers.
+  - id: nimbus-troubleshooting-approvals
+    family: troubleshooting-reference
+    title: Troubleshooting Approval Steps
+    last_updated: 2026-02-23
+    brief: Runs stuck in waiting_for_approval; approvers who don't get the request; expiry after 7 days (WF-410); suspended approvers; approving through the API.
+  - id: nimbus-troubleshooting-promotion
+    family: troubleshooting-reference
+    title: Troubleshooting Workflow Promotion
+    last_updated: 2026-04-06
+    brief: >-
+      Promotion from Development to Production that fails: missing Production connections or variables, a Starter workspace, conflicting edits in Production.
+  - id: nimbus-troubleshooting-private-agent
+    family: troubleshooting-reference
+    title: Troubleshooting the Private Connector Agent
+    last_updated: 2026-08-03
+    brief: An agent shown Offline; CONN-503 from steps routed through it; checking the container logs; outbound TLS blocked by a proxy; expired registration token; running two agents.
+  - id: nimbus-troubleshooting-notifications
+    family: troubleshooting-reference
+    title: Troubleshooting Missing Notifications
+    last_updated: 2025-10-13
+    brief: Failure and quota emails that don't arrive; checking Settings > Notifications; spam filtering of the sender address; Slack or Microsoft Teams channel notifications failing.
+  - id: nimbus-troubleshooting-password-sign-in
+    family: troubleshooting-reference
+    title: Troubleshooting Password Sign-in and Two-Factor Problems
+    last_updated: 2026-09-28
+    brief: >-
+      Users who sign in with a password: locked after 10 failed attempts for 15 minutes,
+      password resets, lost authenticator apps and recovery codes, an Admin resetting a second
+      factor; for SSO sign-in errors link to the SSO Article and never name its error codes.
+  - id: nimbus-v2-troubleshooting-workflow-runs
+    family: troubleshooting-reference
+    title: Troubleshooting Workflow Runs (v2)
+    applies_to: [v2]
+    last_updated: 2025-04-28
+    brief: Failed runs on the legacy platform; run history kept for 30 days; errors as plain messages without codes; no retry button, so a run is started again by hand.
+
+  # --- release-notes ---------------------------------------------------------------------------
+  - id: nimbus-release-3-0
+    family: release-notes
+    title: Nimbus 3.0 Release Notes
+    last_updated: 2025-04-07
+    brief: >-
+      General availability of v3 on 2025-04-07. Name the headline changes (per-tier API rate
+      limits with burst, new webhook signature, SAML `email` attribute, SCIM 2.0 for Enterprise,
+      APAC region for Enterprise, rate-limit headers, webhook auto-disable) and link to the
+      planted Articles for their values instead of restating them.
+  - id: nimbus-release-3-1
+    family: release-notes
+    title: Nimbus 3.1 Release Notes
+    last_updated: 2025-06-02
+    brief: Workflow version history; the Idempotency-Key header; Azure Blob Storage, Microsoft SQL Server, GitLab and Marketo connectors.
+  - id: nimbus-release-3-2
+    family: release-notes
+    title: Nimbus 3.2 Release Notes
+    last_updated: 2025-08-04
+    brief: Development and Production environments (Business and Enterprise) and the promote endpoint; NetSuite and Intercom connectors.
+  - id: nimbus-release-3-3
+    family: release-notes
+    title: Nimbus 3.3 Release Notes
+    last_updated: 2025-10-06
+    brief: Approval steps (Business and Enterprise); Microsoft Teams connector.
+  - id: nimbus-release-3-4
+    family: release-notes
+    title: Nimbus 3.4 Release Notes
+    last_updated: 2025-12-01
+    brief: The secrets vault and {{secrets.NAME}}; Snowflake connector.
+  - id: nimbus-release-3-5
+    family: release-notes
+    title: Nimbus 3.5 Release Notes
+    last_updated: 2026-02-02
+    brief: Usage dashboard, GET /workspace/usage and quota alert emails at 80% and 100%.
+  - id: nimbus-release-3-6
+    family: release-notes
+    title: Nimbus 3.6 Release Notes
+    last_updated: 2026-04-06
+    brief: Customer-managed encryption keys and audit-log streaming, both Enterprise only.
+  - id: nimbus-release-3-7
+    family: release-notes
+    title: Nimbus 3.7 Release Notes
+    last_updated: 2026-06-01
+    brief: The private connector agent (Enterprise); ServiceNow connector.
+  - id: nimbus-release-3-8
+    family: release-notes
+    title: Nimbus 3.8 Release Notes
+    last_updated: 2026-08-03
+    brief: Concurrent-run limits per tier and WF-310; POST /runs/{id}/retry; Workday connector.
+  - id: nimbus-release-3-9
+    family: release-notes
+    title: Nimbus 3.9 Release Notes
+    last_updated: 2026-10-05
+    brief: Bulk user import from CSV; Microsoft Dynamics 365 connector.
+  - id: nimbus-release-2-15
+    family: release-notes
+    title: Nimbus 2.15 Release Notes
+    applies_to: [v2]
+    last_updated: 2024-06-10
+    brief: A feature release of the legacy platform (2024-06-10), e.g. run history CSV export and a BambooHR connector update; written as release notes of its time.
+  - id: nimbus-release-2-16
+    family: release-notes
+    title: Nimbus 2.16 Release Notes
+    applies_to: [v2]
+    last_updated: 2024-09-09
+    brief: The last feature release of the legacy platform (2024-09-09); later 2.16.x releases carry security fixes only.
+  - id: nimbus-release-2-16-1
+    family: release-notes
+    title: Nimbus 2.16.1 Release Notes
+    applies_to: [v2]
+    last_updated: 2025-05-12
+    brief: A security-fix release (2025-05-12); no new features; the end of support date 2027-03-31 may be mentioned only by linking to the legacy reference.
+  - id: nimbus-release-2-16-2
+    family: release-notes
+    title: Nimbus 2.16.2 Release Notes
+    applies_to: [v2]
+    last_updated: 2025-11-10
+    brief: A security-fix release (2025-11-10), e.g. dependency updates and session cookie hardening; no new features.
+  - id: nimbus-release-2-16-3
+    family: release-notes
+    title: Nimbus 2.16.3 Release Notes
+    applies_to: [v2]
+    last_updated: 2026-04-13
+    brief: A security-fix release (2026-04-13); no new features; reminds clients to plan the upgrade with their CSM.
+
+  # --- faq -----------------------------------------------------------------------------------------
+  - id: nimbus-faq-getting-started
+    family: faq
+    title: Getting Started FAQ
+    last_updated: 2026-09-07
+    brief: >-
+      First steps for a new client: inviting the team, first connection, first workflow, templates, roles.
+  - id: nimbus-faq-workspace-and-account
+    family: faq
+    title: Workspace and Account FAQ
+    last_updated: 2026-08-17
+    brief: Workspace name, time zone, region questions (fixed at creation), several workspaces for one client, the Enterprise sandbox, deleting a workspace; no prices.
+  - id: nimbus-faq-workflow-builder
+    family: faq
+    title: Workflow Builder FAQ
+    last_updated: 2026-07-27
+    brief: Expressions, step keys, loops, conditions, test runs not counting against the quota, version history, folders.
+  - id: nimbus-faq-connectors
+    family: faq
+    title: Connectors FAQ
+    last_updated: 2026-06-29
+    brief: What counts as an active connector, push versus polling triggers, reconnecting, the HTTP Request connector for apps without a connector, the private connector agent.
+  - id: nimbus-faq-api-and-integrations
+    family: faq
+    title: API and Integrations FAQ
+    last_updated: 2026-05-25
+    brief: Which tiers have API access (link, don't restate), API keys, pagination, idempotency, inbound webhook triggers versus the Runs API; no rate-limit values.
+  - id: nimbus-faq-security
+    family: faq
+    title: Security FAQ
+    last_updated: 2026-08-03
+    brief: Encryption, compliance reports, two-factor, session timeouts, where credentials are stored, vulnerability reporting.
+  - id: nimbus-faq-user-management
+    family: faq
+    title: User Management FAQ
+    last_updated: 2026-04-20
+    brief: Invitations, roles, seats, suspension versus deletion, bulk import, transferring ownership; link to the SSO and SCIM Articles for identity-provider questions.
+  - id: nimbus-faq-upgrading-from-v2
+    family: faq
+    title: Upgrading from v2 FAQ
+    last_updated: 2026-09-21
+    brief: >-
+      Questions about moving a workspace from the legacy platform to v3: who books the upgrade,
+      the under-an-hour window, what carries over, what the client must change (link to the
+      legacy reference and planted Articles rather than restating header names or limits).
+  - id: nimbus-faq-notifications-and-alerts
+    family: faq
+    title: Notifications and Alerts FAQ
+    last_updated: 2026-03-23
+    brief: Failure notifications, quota alerts at 80% and 100%, approval requests, connection Needs attention emails, webhook events for automation.
+  - id: nimbus-v2-faq
+    family: faq
+    title: Legacy Platform FAQ (v2)
+    applies_to: [v2]
+    last_updated: 2025-06-16
+    brief: >-
+      Questions from clients still on the legacy platform: console paths, API pagination, run history length, credentials per connection, what isn't available and why to upgrade.

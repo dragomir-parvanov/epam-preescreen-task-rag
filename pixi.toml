@@ -85,3 +85,7 @@ test = { depends-on = ["test-backend", "test-frontend"] }
 gen-openapi = { cmd = "python -m app.export_openapi ../frontend/src/api/openapi.json", cwd = "backend" }
 gen-types = { cmd = "npm run gen-types", cwd = "frontend", depends-on = ["gen-openapi", "npm-install"] }
 check-types-fresh = { cmd = "git diff --exit-code -- frontend/src/api/openapi.json frontend/src/api/schema.d.ts", depends-on = ["gen-types"] }
+
+# The generated Knowledge Base Articles (#34), run by hand: `generate-corpus run` calls Claude with
+# ANTHROPIC_API_KEY. CI, startup and ingestion only read the committed Articles.
+generate-corpus = { cmd = "python -m evaluation.generate_corpus", cwd = "backend" }

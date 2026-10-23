@@ -18,6 +18,7 @@ Category = Literal[
     "unanswerable",
     "partial",
     "follow-up",
+    "single-article",  # a generated question one Article answers (#34)
 ]
 
 # Any one term in a group counts; every group must be hit. Matched case-insensitively.
