@@ -344,6 +344,20 @@ v2_details:
   - Run history is kept for 30 days.
   - Webhook signing secrets can't be rolled; the endpoint is deleted and registered again.
   - Upgrading a workspace to v3 is booked by the CSM with OmniCorp support and takes under an hour.
+  - Failed runs show a plain-language message, with no WF- or CONN- code. Failed steps aren't retried automatically; a failed run is started again by hand.
+
+settled_details:
+  # Details the first generated run (2026-10-23) had to invent, settled once so Articles agree.
+  - "API keys belong to the workspace, not to the Admin who created them: suspending, deleting or losing that Admin doesn't affect them. Only revocation, the key's expiry date or a downgrade to Starter stops a key."
+  - "A run rejected because the monthly quota is used up (WF-300) gets 403 `forbidden` from the API and from inbound webhook triggers, with a message starting `WF-300`."
+  - "Inbound webhook triggers: a body over 1 MB or not JSON gets 400 `invalid_request`; an inactive workflow gets 409 `conflict`; an old token after Regenerate URL gets 404 `not_found`."
+  - "Starting a run (POST /workflows/{id}/runs or an inbound trigger) answers 202 Accepted with the run id."
+  - "Retrying a run (the Retry button on the run, or POST /runs/{id}/retry since 3.8) starts a new run from the first step, with the original trigger input, on the currently published version. The new run has `retry_of` and counts against the run quota. Only failed, timed_out and cancelled runs can be retried."
+  - "Time a run spends queued or in waiting_for_approval doesn't count towards the 60-minute run timeout."
+  - "Admins and Builders manage secrets. Secret names are upper-case letters, digits and underscores, at most 64 characters."
+  - "Audit-log action names are the ones listed in nimbus-security-audit-events, e.g. `user.role_changed`, `api_key.created`, `workflow.published`."
+  - "Notification emails come from notifications@nimbus.omnicorp.example."
+  - "Two-factor enrolment gives 10 single-use recovery codes; password reset links are valid for 60 minutes."
 
 # The planted facts from #6, as #6 states them, with the literal strings their Article must contain.
 planted_facts:

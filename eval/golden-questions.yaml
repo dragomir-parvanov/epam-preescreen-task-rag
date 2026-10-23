@@ -354,3 +354,1414 @@
   origin: curated
   expected_facts:
     - Refusal; no uptime figures or SLAs are documented.
+
+# --- Generated (#34) ------------------------------------------------------------------
+# Written by `pixi run generate-corpus` with each generated Article: one or two single-turn
+# questions answered by that Article alone. Regenerating an Article replaces its entries.
+
+- id: gq-admin-api-keys-1
+  question: Can I see a Nimbus API key again after I close the creation dialog?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-api-keys, section: How it works}
+  expected_facts:
+    - No; the key is shown once and Nimbus stores only a hash.
+    - A lost key is replaced, not recovered.
+  must_mention:
+    - [shown once]
+    - [hash]
+
+- id: gq-admin-api-keys-2
+  question: How do I rotate a Nimbus API key without breaking the integration that uses it?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-api-keys, section: Step-by-step > Rotating a key without downtime}
+  expected_facts:
+    - Create a new key, deploy it, watch Last used on both keys, then revoke the old key.
+  must_mention:
+    - [Last used]
+    - [Revoke]
+
+- id: gq-admin-approval-steps-1
+  question: What happens to a Nimbus workflow run if nobody approves or rejects the approval step?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-approval-steps, section: How it works}
+    - {article: nimbus-admin-approval-steps, section: Troubleshooting}
+  expected_facts:
+    - The approval expires after 7 days
+    - The run then fails with WF-410
+  must_mention:
+    - [7 days]
+    - [WF-410]
+
+- id: gq-admin-approval-steps-2
+  question: Can a client set an approval step so that any Admin in the workspace can approve, rather than named users?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-approval-steps, section: How it works}
+  expected_facts:
+    - 'Yes: approvers can be specific users or a role; any active user with that role can decide'
+    - The first decision closes the request for everyone
+  must_mention:
+    - [A role]
+    - [first decision]
+
+- id: gq-admin-bulk-user-import-1
+  question: What columns does the Nimbus bulk user import CSV need, and how many rows can one file have?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-bulk-user-import, section: How it works}
+  expected_facts:
+    - Columns email, firstName, lastName and an optional role.
+    - Up to 500 rows per file, not counting the header.
+  must_mention:
+    - [firstName]
+    - [500 rows]
+
+- id: gq-admin-bulk-user-import-2
+  question: What happens to a Nimbus CSV user import when there aren't enough seats for all the rows?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-bulk-user-import, section: How it works}
+    - {article: nimbus-admin-bulk-user-import, section: Troubleshooting}
+  expected_facts:
+    - The whole import is stopped before any invitation is sent.
+    - The report says how many seats are missing; free seats or upgrade, then upload again.
+  must_mention:
+    - [seats]
+    - [stopped, Nothing was sent]
+
+- id: gq-admin-changing-roles-1
+  question: Can I demote the only Admin in a Nimbus workspace to Builder?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-changing-roles, section: How it works}
+    - {article: nimbus-admin-changing-roles, section: Troubleshooting}
+  expected_facts:
+    - No; a workspace must keep at least one Admin and Nimbus refuses the change.
+    - Promote another user to Admin first.
+  must_mention:
+    - [at least one Admin]
+
+- id: gq-admin-changing-roles-2
+  question: Why does a Nimbus user's role keep reverting after I change it in Settings > Users?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-changing-roles, section: How it works > Roles managed by the identity provider}
+    - {article: nimbus-admin-changing-roles, section: Troubleshooting}
+  expected_facts:
+    - Roles come from identity-provider groups, so the console change is overwritten at the next sign-in or sync.
+    - Change the user's group in the identity provider instead.
+  must_mention:
+    - [overwritten]
+    - [group]
+
+- id: gq-admin-creating-a-workspace-1
+  question: What does a CSM need from the client to request a new Nimbus workspace?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-creating-a-workspace, section: Before you begin}
+  expected_facts:
+    - Workspace name, first Admin's name and work email, data region, IANA time zone, Plan Tier and contract reference.
+  must_mention:
+    - [first Admin]
+    - [data region, Data region]
+
+- id: gq-admin-creating-a-workspace-2
+  question: How long does a client's first Admin have to accept the Nimbus workspace welcome email?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-creating-a-workspace, section: How it works}
+    - {article: nimbus-admin-creating-a-workspace, section: Troubleshooting}
+  expected_facts:
+    - The first Admin's invitation expires after 7 days; provisioning can resend it.
+  must_mention:
+    - [7 days, 7-day]
+
+- id: gq-admin-deleting-a-workspace-1
+  question: Can OmniCorp support restore a Nimbus workspace that a client deleted by mistake, and for how long?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-deleting-a-workspace, section: How it works}
+    - {article: nimbus-admin-deleting-a-workspace, section: Troubleshooting}
+  expected_facts:
+    - Yes, support can restore it for 14 days after deletion
+    - After that every workflow, run, connection and user is permanently deleted
+  must_mention:
+    - [14 days]
+    - [support]
+
+- id: gq-admin-deleting-a-workspace-2
+  question: After support restores a deleted Nimbus workspace, do its workflows and API keys work again straight away?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-deleting-a-workspace, section: How it works}
+  expected_facts:
+    - Workflows are restored but inactive and must be reactivated
+    - API keys stay revoked; new ones must be created
+  must_mention:
+    - [inactive]
+    - [Stay revoked, stay revoked]
+
+- id: gq-admin-exporting-the-audit-log-1
+  question: Which fields does each Nimbus audit log event have when exported to CSV?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-exporting-the-audit-log, section: How it works}
+    - {article: nimbus-admin-exporting-the-audit-log, section: Step-by-step}
+  expected_facts:
+    - id, occurred_at, actor type/id/email, action, target type/id and details
+    - details is exported as a JSON string
+  must_mention:
+    - [occurred_at]
+    - [actor.type, actor]
+    - [details]
+
+- id: gq-admin-exporting-the-audit-log-2
+  question: Can a client schedule a nightly export of the Nimbus audit log without Enterprise streaming?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-exporting-the-audit-log, section: Step-by-step > Scheduling regular exports}
+  expected_facts:
+    - There is no built-in scheduled export
+    - Build a workflow with a schedule trigger that calls GET /audit-log/events and writes the file to S3 or SFTP
+  must_mention:
+    - [schedule]
+    - [GET /audit-log/events]
+
+- id: gq-admin-failure-notifications-1
+  question: How do I switch Nimbus failure alerts to an hourly digest instead of one email per failed run?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-failure-notifications, section: How it works}
+    - {article: nimbus-admin-failure-notifications, section: Step-by-step}
+  expected_facts:
+    - Under Settings > Notifications choose Hourly digest instead of Immediate and save
+    - The digest sends one summary at the top of the hour, grouped by workflow
+  must_mention:
+    - [Hourly digest]
+    - [Settings > Notifications]
+
+- id: gq-admin-failure-notifications-2
+  question: Who gets the Nimbus quota alert emails at 80% and 100% of monthly runs, and can they be redirected?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-failure-notifications, section: How it works > Quota alerts}
+  expected_facts:
+    - Every Admin receives them
+    - They can't be redirected or turned off under Settings > Notifications
+  must_mention:
+    - [every Admin]
+    - [redirect, turned off]
+
+- id: gq-admin-inviting-users-1
+  question: How long does a Nimbus user invitation stay valid, and how do I resend one that expired?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-inviting-users, section: How it works}
+    - {article: nimbus-admin-inviting-users, section: Step-by-step}
+  expected_facts:
+    - Invitations expire after 7 days.
+    - Resend invitation in the row menu on Settings > Users sends a fresh link and starts a new 7-day period.
+  must_mention:
+    - [7 days]
+    - [Resend invitation]
+
+- id: gq-admin-inviting-users-2
+  question: Why does the Nimbus invite dialog say "No free seats", and do pending invitations count towards it?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-inviting-users, section: How it works}
+    - {article: nimbus-admin-inviting-users, section: Troubleshooting}
+  expected_facts:
+    - Nimbus won't send an invitation while active users already fill the seat limit; pending invitations don't count.
+    - Suspend leavers or upgrade the Plan Tier.
+  must_mention:
+    - [active users]
+    - [seat limit]
+
+- id: gq-admin-promoting-workflows-1
+  question: When a Builder promotes a workflow from Development to Production, are the connections and env variables copied over?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-promoting-workflows, section: How it works}
+  expected_facts:
+    - 'No: connection selections and {{env.NAME}} values are set per environment and aren''t copied'
+    - Promotion copies the trigger, steps, mappings and expressions
+  must_mention:
+    - [connection]
+    - [per environment]
+
+- id: gq-admin-promoting-workflows-2
+  question: What does POST /workflows/{id}/promote return if a Production connection is missing?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-promoting-workflows, section: Step-by-step}
+  expected_facts:
+    - The call fails with 409 and the error code conflict, naming the missing item
+  must_mention:
+    - ['409']
+    - [conflict]
+
+- id: gq-admin-requiring-two-factor-1
+  question: How does an Admin reset two-factor authentication for a Nimbus user who lost their phone?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-requiring-two-factor, section: Step-by-step}
+  expected_facts:
+    - Confirm the user's identity, then Settings > Users, open the user, Reset two-factor authentication
+    - The user enrols again at next sign-in
+  must_mention:
+    - [Reset two-factor authentication]
+    - [Settings > Users]
+
+- id: gq-admin-requiring-two-factor-2
+  question: If we require two-factor authentication in Nimbus, are users who sign in with SSO asked for a code too?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-requiring-two-factor, section: How it works}
+  expected_facts:
+    - No, the requirement applies to password sign-in only; SSO users see no change
+  must_mention:
+    - [password]
+    - [SSO]
+
+- id: gq-admin-restoring-workflow-versions-1
+  question: How many previous versions of a workflow does Nimbus keep in Version history?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-restoring-workflow-versions, section: How it works}
+  expected_facts:
+    - The last 50 versions of each workflow
+    - When a 51st is published the oldest drops off and can't be restored
+  must_mention:
+    - ['50']
+
+- id: gq-admin-restoring-workflow-versions-2
+  question: Does restoring an old workflow version in Nimbus overwrite the current version or create a new one?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-restoring-workflow-versions, section: How it works}
+  expected_facts:
+    - It creates a new version with the old definition and the note Restored from vN
+    - An active workflow uses the new version from its next run
+  must_mention:
+    - [version 28, creates version]
+    - [Restored from]
+
+- id: gq-admin-run-history-1
+  question: How long does Nimbus keep run history with step inputs and outputs, and does it depend on the Plan Tier?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-run-history, section: How it works}
+  expected_facts:
+    - 90 days
+    - The same on every Plan Tier; after that the run is deleted
+  must_mention:
+    - [90 days]
+    - [tier]
+
+- id: gq-admin-run-history-2
+  question: When I retry a failed run in Nimbus, does it start from the beginning or from the step that failed?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-run-history, section: How it works}
+  expected_facts:
+    - It creates a new run that starts from the first step with the original trigger input; steps that succeeded run again
+    - It runs on the currently published version and counts towards the run quota
+  must_mention:
+    - [first step]
+    - [new run]
+
+- id: gq-admin-scheduling-workflows-1
+  question: What is the shortest schedule interval a Business-tier Nimbus workspace can use for a scheduled workflow?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-scheduling-workflows, section: Before you begin}
+  expected_facts:
+    - 5 minutes on Business (15 on Starter, 1 on Enterprise).
+  must_mention:
+    - [5 minutes]
+
+- id: gq-admin-scheduling-workflows-2
+  question: What happens to a Nimbus schedule set for 01:30 on the night the clocks go forward for daylight saving?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-scheduling-workflows, section: How it works > Daylight saving time}
+  expected_facts:
+    - The time doesn't exist that night, so the run happens once at the first valid minute after the gap, 02:00.
+  must_mention:
+    - ['02:00']
+
+- id: gq-admin-secrets-vault-1
+  question: If I rotate a secret in the Nimbus secrets vault, do I have to republish the workflows that use it?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-secrets-vault, section: How it works}
+  expected_facts:
+    - No; secrets are resolved when the step runs, so the next step that resolves the name gets the new value without republishing.
+  must_mention:
+    - [republishing]
+    - [resolves, resolved]
+
+- id: gq-admin-secrets-vault-2
+  question: What naming rules apply to secrets in Nimbus Settings > Secrets?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-secrets-vault, section: How it works}
+  expected_facts:
+    - Upper-case letters, digits and underscores only, starting with a letter, up to 64 characters.
+  must_mention:
+    - [underscores]
+    - [64 characters]
+
+- id: gq-admin-session-timeouts-1
+  question: What is the shortest idle session timeout an Admin can set in Nimbus, and what is the default?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-session-timeouts, section: How it works}
+    - {article: nimbus-admin-session-timeouts, section: Step-by-step}
+  expected_facts:
+    - Allowed values run from 15 minutes to 24 hours
+    - The default is 8 hours
+  must_mention:
+    - [15 minutes]
+    - [24 hours]
+
+- id: gq-admin-session-timeouts-2
+  question: What happens to unsaved changes in an open Nimbus builder tab when the session times out?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-session-timeouts, section: How it works > Open builder tabs}
+  expected_facts:
+    - A Session expired dialog appears over the builder; changes after the last autosave are held in the tab and saved after signing in again in that dialog
+    - Closing the tab or signing in elsewhere first loses the last change
+  must_mention:
+    - [Session expired]
+    - [autosave]
+
+- id: gq-admin-suspending-users-1
+  question: Does a suspended Nimbus user still count against the workspace's seats?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-suspending-users, section: How it works}
+  expected_facts:
+    - No; suspended users don't take a seat.
+    - Reactivation needs a free seat because the user takes a seat again.
+  must_mention:
+    - [seat]
+    - [Reactivation]
+
+- id: gq-admin-suspending-users-2
+  question: Why is the Delete user option disabled for someone on the Nimbus Settings > Users page?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-suspending-users, section: Troubleshooting}
+  expected_facts:
+    - The person is the workspace's only Admin; promote another user to Admin first. Owning workflows doesn't block deletion.
+  must_mention:
+    - [only Admin]
+    - [Promote]
+
+- id: gq-admin-transferring-workflow-ownership-1
+  question: How do I move all of a departing user's workflows to a new owner in Nimbus at once?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-transferring-workflow-ownership, section: Step-by-step > All of a user's workflows}
+  expected_facts:
+    - Settings > Users, row menu, Transfer workflows, choose one new owner or Assign individually, then Transfer all.
+  must_mention:
+    - [Transfer workflows]
+    - [Transfer all]
+
+- id: gq-admin-transferring-workflow-ownership-2
+  question: Does transferring Nimbus workflow ownership re-authorise the connections the workflow uses?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-transferring-workflow-ownership, section: How it works}
+  expected_facts:
+    - No; connections keep the account they were authorised with.
+    - If the old owner's personal account is disabled, steps fail with CONN-401 and the connection must be reconnected.
+  must_mention:
+    - [CONN-401]
+    - [Reconnect]
+
+- id: gq-admin-webhook-endpoints-1
+  question: How do I resend a Nimbus webhook delivery that failed while the client's receiver was down?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-webhook-endpoints, section: Step-by-step > Redelivering and rolling the secret}
+  expected_facts:
+    - Open the delivery in the endpoint's Deliveries tab and click Redeliver, or POST /webhooks/deliveries/{id}/redeliver.
+    - The redelivery keeps the same X-Nimbus-Delivery id.
+  must_mention:
+    - [Redeliver, redeliver]
+    - [X-Nimbus-Delivery]
+
+- id: gq-admin-webhook-endpoints-2
+  question: How can a Nimbus Admin check that a newly registered webhook endpoint actually receives events?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-webhook-endpoints, section: Step-by-step}
+    - {article: nimbus-admin-webhook-endpoints, section: Verifying the change}
+  expected_facts:
+    - Use Send test event, which sends a sample delivery marked test and shows the receiver's status.
+    - Check the Deliveries tab for a 2xx status.
+  must_mention:
+    - [Send test event, test event]
+    - [Deliveries]
+
+- id: gq-admin-workspace-settings-1
+  question: What happens to scheduled Nimbus workflows when an Admin changes the workspace time zone in Settings > Workspace?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-workspace-settings, section: How it works}
+  expected_facts:
+    - Schedules without their own IANA time zone move to the new zone from their next occurrence.
+    - Schedules with their own time zone and UTC API timestamps don't change.
+  must_mention:
+    - [next occurrence]
+    - [IANA]
+
+- id: gq-admin-workspace-settings-2
+  question: Can GET /workspace in the Nimbus API be used to change the workspace name?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-admin-workspace-settings, section: Step-by-step}
+  expected_facts:
+    - No; the API can read the workspace settings with GET /workspace but not change them; edits are made in the console.
+  must_mention:
+    - [GET /workspace]
+    - [console]
+
+- id: gq-connector-amazon-s3-1
+  question: How does Nimbus assume an IAM role for the Amazon S3 connector, and what goes in the role's trust policy?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-amazon-s3, section: Creating the connection}
+  expected_facts:
+    - The trust policy allows sts:AssumeRole for the Nimbus AWS account on the condition sts:ExternalId equals the external id Nimbus generates for the connection; the role ARN is pasted into Nimbus.
+  must_mention:
+    - [External id, 'sts:ExternalId']
+    - [Role ARN]
+
+- id: gq-connector-amazon-s3-2
+  question: Which IAM permissions does the Nimbus S3 connector need to copy an object between buckets?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-amazon-s3, section: Prerequisites}
+  expected_facts:
+    - Copy object needs s3:GetObject on the source and s3:PutObject on the destination.
+  must_mention:
+    - ['s3:GetObject']
+    - ['s3:PutObject']
+
+- id: gq-connector-asana-1
+  question: Where do I find the Asana project gid to use in a Nimbus workflow step?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-asana, section: Field mapping > Finding workspace and project gids}
+  expected_facts:
+    - The project gid is the first long number in the Asana project URL
+    - The builder's pickers fill gids in; the workspace gid is shown on the connection page
+  must_mention:
+    - [gid]
+    - [app.asana.com]
+
+- id: gq-connector-asana-2
+  question: Why does the Asana Update custom field step reject the option name I send for a dropdown field?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-asana, section: Field mapping}
+  expected_facts:
+    - Dropdown (enum) fields take the gid of the enum option, not its label
+    - Map labels to option gids in a transform step first
+  must_mention:
+    - [enum option]
+    - [gid]
+
+- id: gq-connector-azure-blob-storage-1
+  question: Why did our Azure Blob Storage connection in Nimbus start failing with CONN-401?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-azure-blob-storage, section: Troubleshooting}
+  expected_facts:
+    - The SAS token passed its se expiry time (or the account key was rotated); generate a new token with a later se and paste it into the connection.
+  must_mention:
+    - [SAS token]
+    - [expired, se]
+
+- id: gq-connector-azure-blob-storage-2
+  question: Which SAS permissions does the Nimbus Azure Blob Storage connector need for the new blob trigger and uploads?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-azure-blob-storage, section: Prerequisites}
+  expected_facts:
+    - List (l) for the New blob trigger; Add/Create (a/c) and Write (w) for Upload blob.
+  must_mention:
+    - [List]
+    - [Create, Write]
+
+- id: gq-connector-bamboohr-1
+  question: How do I reference a custom BambooHR field in the Nimbus Update employee action?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-bamboohr, section: Field mapping}
+  expected_facts:
+    - Custom BambooHR fields have no alias and are addressed by their numeric field id (e.g. 4047); standard fields use aliases such as workEmail.
+  must_mention:
+    - [numeric field id]
+    - [alias]
+
+- id: gq-connector-bamboohr-2
+  question: Why does my BambooHR Employee fields changed trigger fail activation with WF-100?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-bamboohr, section: Triggers and actions}
+    - {article: nimbus-connector-bamboohr, section: Troubleshooting}
+  expected_facts:
+    - The trigger needs at least one watched field; an empty list is rejected with WF-100.
+  must_mention:
+    - [watched fields]
+    - [WF-100]
+
+- id: gq-connector-box-1
+  question: What access does the Box service account need on a folder before a Nimbus workflow can upload files to it?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-box, section: Prerequisites}
+  expected_facts:
+    - It must be added as a collaborator on the folder
+    - with the Editor or Co-owner role; Viewer, Previewer and Uploader aren't enough
+  must_mention:
+    - [collaborator]
+    - [Editor]
+
+- id: gq-connector-box-2
+  question: Which Box events can trigger a Nimbus workflow through the Box connector?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-box, section: Triggers and actions}
+  expected_facts:
+    - File uploaded (FILE.UPLOADED) in a chosen folder
+    - Folder events such as FOLDER.CREATED, FOLDER.RENAMED, FOLDER.MOVED, FILE.MOVED and FILE.TRASHED
+  must_mention:
+    - [FILE.UPLOADED]
+    - [FOLDER.CREATED]
+
+- id: gq-connector-dropbox-1
+  question: Are Dropbox paths case-sensitive when I compare them in a Nimbus workflow?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-dropbox, section: Field mapping}
+  expected_facts:
+    - Dropbox paths are case-insensitive but case-preserving
+    - Compare with path_lower, not path_display
+  must_mention:
+    - [case-insensitive]
+    - [path_lower]
+
+- id: gq-connector-dropbox-2
+  question: How do I connect the Nimbus Dropbox connector to our Dropbox team folders instead of a personal folder?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-dropbox, section: Creating the connection}
+  expected_facts:
+    - Choose Team space as the Root for a team member account
+    - The root can't be changed later; create a second connection to switch
+  must_mention:
+    - [Team space]
+    - [Root]
+
+- id: gq-connector-dynamics-365-1
+  question: How do I set a lookup column such as the parent account when creating a contact with the Nimbus Dynamics 365 connector?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-dynamics-365, section: Field mapping}
+  expected_facts:
+    - Bind to the related row with the entity set name and GUID, e.g. parentcustomerid_account@odata.bind set to /accounts(<guid>), using logical names.
+  must_mention:
+    - ['@odata.bind']
+    - [entity set name]
+
+- id: gq-connector-dynamics-365-2
+  question: What does the Dynamics 365 Upsert row action in Nimbus need before a table can be used?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-dynamics-365, section: Triggers and actions}
+  expected_facts:
+    - The table needs an alternate key defined in Power Apps; without one it doesn't appear in the action's table picker.
+  must_mention:
+    - [alternate key]
+
+- id: gq-connector-github-1
+  question: Which repository permissions does the Nimbus GitHub App ask for when it's installed on an organisation?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-github, section: Prerequisites}
+  expected_facts:
+    - Metadata read-only, Issues read and write, Pull requests read and write, Contents read and write
+    - Owners can't install with a subset
+  must_mention:
+    - [Issues]
+    - [Pull requests]
+    - [Contents]
+
+- id: gq-connector-github-2
+  question: What happens when a GitHub step in Nimbus targets a repository that isn't selected in the GitHub App installation?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-github, section: Troubleshooting}
+  expected_facts:
+    - The step fails with CONN-403
+    - Add the repository to the installation under Configure
+  must_mention:
+    - [CONN-403]
+    - [Configure]
+
+- id: gq-connector-gitlab-1
+  question: Which scope and role does the GitLab access token need for the Nimbus GitLab connector's merge request trigger?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-gitlab, section: Prerequisites}
+  expected_facts:
+    - The api scope; read_api is not enough
+    - Maintainer or higher on the project, because the trigger registers a project webhook
+  must_mention:
+    - [api]
+    - [Maintainer]
+
+- id: gq-connector-gitlab-2
+  question: What happens to Nimbus workflows when the GitLab access token behind the connection expires?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-gitlab, section: Limits and behaviour > Token expiry}
+  expected_facts:
+    - Steps fail with CONN-401, the connection shows Needs attention and connector.disconnected is sent
+    - Create a new token and click Reconnect; triggers and webhooks are kept
+  must_mention:
+    - [CONN-401]
+    - [Needs attention]
+
+- id: gq-connector-http-request-1
+  question: How can a Nimbus workflow branch on a 404 from the HTTP Request connector instead of failing?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-http-request, section: Limits and behaviour}
+  expected_facts:
+    - Switch off Fail on non-2xx; the step then succeeds whatever the status and a condition step can branch on the output status.
+  must_mention:
+    - [Fail on non-2xx]
+    - [condition step]
+
+- id: gq-connector-http-request-2
+  question: Does the HTTP Request connector have a trigger, and how do I start a workflow when another system calls Nimbus?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-http-request, section: Triggers and actions}
+  expected_facts:
+    - It has no triggers; use an Inbound webhook trigger whose unique URL accepts POSTed JSON up to 1 MB and answers 202 Accepted with the run id.
+  must_mention:
+    - [Inbound webhook]
+    - [202 Accepted]
+
+- id: gq-connector-hubspot-1
+  question: Who has to install the Nimbus app in HubSpot when creating the HubSpot connection?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-hubspot, section: Prerequisites}
+  expected_facts:
+    - A HubSpot super admin must install the Nimbus app; the install fails for anyone else.
+  must_mention:
+    - [super admin]
+
+- id: gq-connector-hubspot-2
+  question: How do I map a custom HubSpot property in a Nimbus contact step?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-hubspot, section: Field mapping}
+  expected_facts:
+    - Map the property by its internal name (Settings > Properties > Internal name), not its label; dropdowns take the option's internal value.
+  must_mention:
+    - [internal name]
+
+- id: gq-connector-intercom-1
+  question: What Intercom permission does the admin need to authorise the Nimbus Intercom connection?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-intercom, section: Prerequisites}
+  expected_facts:
+    - The authorising Intercom admin needs the Can install, configure and delete apps permission.
+  must_mention:
+    - ['Can install, configure and delete apps']
+
+- id: gq-connector-intercom-2
+  question: Why does writing a custom attribute with the Nimbus Intercom Create contact action fail?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-intercom, section: Field mapping}
+    - {article: nimbus-connector-intercom, section: Troubleshooting}
+  expected_facts:
+    - Custom data attributes must be created in Intercom first under Settings > Data with the right type; a missing attribute gives CONN-404 and a wrong-type value is rejected.
+  must_mention:
+    - [custom_attributes, custom data attribute]
+    - [Settings > Data]
+
+- id: gq-connector-jira-cloud-1
+  question: How do I set a Jira custom field when creating an issue from a Nimbus workflow?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-jira-cloud, section: Field mapping}
+  expected_facts:
+    - Custom fields are mapped by field id (customfield_ plus a number), found under Settings > Issues > Custom fields; select lists take an object with value.
+  must_mention:
+    - [customfield_]
+
+- id: gq-connector-jira-cloud-2
+  question: What format does the Nimbus Jira Cloud connector need for issue descriptions?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-jira-cloud, section: Field mapping}
+  expected_facts:
+    - Descriptions and comments use Atlassian Document Format (ADF); the Plain text switch wraps plain text in one ADF paragraph.
+  must_mention:
+    - [Atlassian Document Format, ADF]
+
+- id: gq-connector-marketo-1
+  question: Why does the Marketo Request campaign step in Nimbus fail with CONN-404 for an existing smart campaign?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-marketo, section: Triggers and actions}
+  expected_facts:
+    - 'The smart campaign must have the Campaign is Requested trigger with Source: Web Service API; otherwise Marketo reports it as not found and the step fails with CONN-404.'
+  must_mention:
+    - [Campaign is Requested]
+    - [Web Service API]
+
+- id: gq-connector-marketo-2
+  question: When does the Marketo daily API quota reset, and what does Nimbus do when it is used up?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-marketo, section: Limits and behaviour}
+  expected_facts:
+    - It resets at midnight US Central time; Nimbus treats quota exhaustion as CONN-429, backs off and retries, then fails the step after the last retry.
+  must_mention:
+    - [US Central]
+    - [CONN-429]
+
+- id: gq-connector-microsoft-teams-1
+  question: Who has to grant admin consent before we can connect the Microsoft Teams connector in Nimbus?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-microsoft-teams, section: Prerequisites}
+  expected_facts:
+    - A Global Administrator or Privileged Role Administrator of the Entra ID tenant grants tenant-wide admin consent to the OmniCorp Nimbus app.
+  must_mention:
+    - [Global Administrator, Privileged Role Administrator]
+
+- id: gq-connector-microsoft-teams-2
+  question: How do Nimbus approval steps notify approvers through Microsoft Teams?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-microsoft-teams, section: Triggers and actions > Approval notifications}
+  expected_facts:
+    - Each approver gets a Teams chat message with an adaptive card and an Open in Nimbus button; they decide in the Approvals inbox.
+    - Undecided approvals expire after 7 days and the run fails with WF-410.
+  must_mention:
+    - [adaptive card]
+    - [Open in Nimbus]
+
+- id: gq-connector-mysql-1
+  question: How does the Nimbus MySQL connector handle time zones for DATETIME columns?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-mysql, section: Field mapping > DATETIME and time zones}
+  expected_facts:
+    - DATETIME values are interpreted in the connection's Session time zone and converted to ISO 8601 in UTC
+    - Values written back are converted from UTC to the session time zone
+  must_mention:
+    - [Session time zone]
+    - [UTC]
+
+- id: gq-connector-mysql-2
+  question: Which MySQL privileges does the Nimbus database user need for the Update rows action and the polling triggers?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-mysql, section: Prerequisites}
+  expected_facts:
+    - Polling triggers need SELECT on the polled table
+    - Update rows needs UPDATE and SELECT on the key columns; no DELETE, DROP or ALTER
+  must_mention:
+    - [SELECT]
+    - [UPDATE]
+
+- id: gq-connector-netsuite-1
+  question: What format does the NetSuite connector expect for a sandbox account id?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-netsuite, section: Prerequisites}
+  expected_facts:
+    - A sandbox account id is the account number followed by an underscore and the sandbox number in capitals, e.g. 4810325_SB1.
+  must_mention:
+    - [4810325_SB1, _SB1]
+
+- id: gq-connector-netsuite-2
+  question: Which result columns must a NetSuite saved search include to be used as a Nimbus polling trigger?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-netsuite, section: Triggers and actions}
+  expected_facts:
+    - The saved search must include Internal ID and Date Last Modified, otherwise activation fails with WF-100.
+  must_mention:
+    - [Internal ID]
+    - [Date Last Modified]
+
+- id: gq-connector-postgresql-1
+  question: Which sslmode values can I choose when creating a PostgreSQL connection in Nimbus?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-postgresql, section: Creating the connection}
+  expected_facts:
+    - Only require and verify-full are offered
+    - verify-full also checks the certificate chain and host name; a CA certificate can be pasted
+  must_mention:
+    - [require]
+    - [verify-full]
+
+- id: gq-connector-postgresql-2
+  question: How does the Nimbus PostgreSQL polling trigger work out which rows are new?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-postgresql, section: Triggers and actions > Polling with a cursor column}
+  expected_facts:
+    - The trigger query uses a :cursor placeholder and orders by a cursor column that only increases
+    - Nimbus stores the highest cursor value processed and starts from the current maximum on first activation
+  must_mention:
+    - [':cursor']
+    - [cursor column]
+
+- id: gq-connector-salesforce-1
+  question: Which Salesforce permission does the connecting user need for the Nimbus Salesforce connector to work?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-salesforce, section: Prerequisites}
+  expected_facts:
+    - The connecting user needs the API Enabled system permission, through a profile or permission set.
+  must_mention:
+    - [API Enabled]
+
+- id: gq-connector-salesforce-2
+  question: How do I set a Salesforce lookup field in a Nimbus upsert step without querying the related record first?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-salesforce, section: Field mapping}
+  expected_facts:
+    - On Upsert, a lookup can be given as a nested object naming the related object's external id field instead of the 18-character Id.
+  must_mention:
+    - [external id]
+    - [Upsert]
+
+- id: gq-connector-servicenow-1
+  question: Which roles does the ServiceNow integration user need for the Nimbus ServiceNow connector?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-servicenow, section: Prerequisites > The integration user}
+  expected_facts:
+    - itil for incidents, change requests and work notes; snc_platform_rest_api_access if the REST API access policy is enforced.
+  must_mention:
+    - [itil]
+    - [snc_platform_rest_api_access]
+
+- id: gq-connector-servicenow-2
+  question: How does the Nimbus ServiceNow trigger detect updated incidents, and how often does it check?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-servicenow, section: Limits and behaviour}
+  expected_facts:
+    - It polls every 5 minutes for records whose sys_updated_on is later than the last value seen, in pages of 100.
+  must_mention:
+    - [sys_updated_on]
+    - [5 minutes]
+
+- id: gq-connector-sftp-1
+  question: How do I verify the host key fingerprint when setting up the Nimbus SFTP connector?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-sftp, section: Creating the connection}
+  expected_facts:
+    - Click Test to see the server's host key fingerprint, compare it with the one from the server administrator (ssh-keygen -lf), and only then click Trust this host key and save.
+  must_mention:
+    - [Trust this host key and save]
+    - [ssh-keygen]
+
+- id: gq-connector-sftp-2
+  question: What happens when the Nimbus SFTP trigger finds a file larger than 100 MB?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-sftp, section: Limits and behaviour}
+  expected_facts:
+    - Files over 100 MB are skipped by the trigger and listed as skipped on the trigger panel; a download step given one fails.
+  must_mention:
+    - [100 MB]
+    - [skipped]
+
+- id: gq-connector-sharepoint-online-1
+  question: What is the largest file the SharePoint Online connector can upload or pass to later steps?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-sharepoint-online, section: Limits and behaviour}
+  expected_facts:
+    - Files of up to 100 MB
+    - Files over 4 MB are uploaded in chunks through an upload session
+  must_mention:
+    - [100 MB]
+
+- id: gq-connector-sharepoint-online-2
+  question: Why does a SharePoint Online Update item metadata step ignore a column when I use its display name?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-sharepoint-online, section: Field mapping}
+  expected_facts:
+    - Nimbus maps SharePoint columns by internal name, not display name
+    - e.g. Contract Owner has the internal name Contract_x0020_Owner
+  must_mention:
+    - [internal name]
+    - [Contract_x0020_Owner]
+
+- id: gq-connector-slack-1
+  question: Why does the Nimbus Slack connector fail to post to a private Slack channel?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-slack, section: Troubleshooting}
+  expected_facts:
+    - The bot isn't a member of the private channel, so Slack returns not_in_channel or channel_not_found; invite it with /invite @Nimbus.
+  must_mention:
+    - [/invite @Nimbus]
+    - [channel_not_found, not_in_channel]
+
+- id: gq-connector-slack-2
+  question: Does the Slack "New message in channel" trigger fire on messages the Nimbus bot posts itself?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-slack, section: Triggers and actions}
+  expected_facts:
+    - 'No, not by default: Include bot messages is off by default, which stops a workflow triggering itself.'
+  must_mention:
+    - [Include bot messages]
+
+- id: gq-connector-snowflake-1
+  question: How do I generate the RSA key pair for the Nimbus Snowflake connector and attach it to the service user?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-snowflake, section: Prerequisites > Generating the key pair}
+  expected_facts:
+    - Generate a 2048-bit key with openssl genrsa and convert it to PKCS#8; derive the public key with openssl rsa -pubout.
+    - Assign the public key with RSA_PUBLIC_KEY on the service user; the private key goes into Nimbus.
+  must_mention:
+    - [openssl]
+    - [RSA_PUBLIC_KEY]
+
+- id: gq-connector-snowflake-2
+  question: Can a Nimbus workflow be triggered by new rows in Snowflake?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-snowflake, section: Triggers and actions}
+  expected_facts:
+    - No, the Snowflake connector has no triggers; schedule a workflow that queries rows newer than a stored watermark.
+  must_mention:
+    - [no triggers]
+    - [schedule]
+
+- id: gq-connector-sql-server-1
+  question: How do I connect the Nimbus Microsoft SQL Server connector to a server that uses a self-signed certificate?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-sql-server, section: Creating the connection}
+  expected_facts:
+    - Turn on Trust server certificate (off by default), only as a temporary measure
+    - 'Better: paste the internal CA certificate into CA certificate'
+  must_mention:
+    - [Trust server certificate]
+    - [CA certificate]
+
+- id: gq-connector-sql-server-2
+  question: Which column should the SQL Server polling trigger in Nimbus use as its cursor?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-sql-server, section: Triggers and actions}
+  expected_facts:
+    - A rowversion column, which SQL Server increments on every insert and update
+    - The trigger query uses the @cursor parameter
+  must_mention:
+    - [rowversion]
+    - ['@cursor']
+
+- id: gq-connector-twilio-1
+  question: What phone number format does the Nimbus Twilio connector require for SMS and WhatsApp recipients?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-twilio, section: Field mapping}
+  expected_facts:
+    - 'Numbers must be in E.164 format (e.g. +447700900123); WhatsApp numbers take the whatsapp: prefix.'
+  must_mention:
+    - [E.164]
+    - ['whatsapp:']
+
+- id: gq-connector-twilio-2
+  question: What happens to the existing incoming message webhook on a Twilio number when I activate a Nimbus workflow with the Incoming SMS trigger?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-twilio, section: Triggers and actions}
+  expected_facts:
+    - Activation points the number's A message comes in webhook at a Nimbus callback URL unique to the trigger, replacing the previous URL; numbers in a Messaging Service need the URL set on the service.
+  must_mention:
+    - [A message comes in]
+    - [replaced]
+
+- id: gq-connector-workday-1
+  question: Which Workday account and security setup does the Nimbus Workday connector authenticate with?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-workday, section: Prerequisites}
+  expected_facts:
+    - An integration system user (ISU) in an integration system security group with domain permissions
+    - An API client registered with Register API Client for Integrations and a refresh token for the ISU
+  must_mention:
+    - [integration system user, ISU]
+    - [Register API Client for Integrations]
+
+- id: gq-connector-workday-2
+  question: Does the Nimbus Workday Termination trigger fire on the termination's effective date?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-workday, section: Limits and behaviour}
+  expected_facts:
+    - No; it fires when the business process completes, not on the effective date
+    - To act on the last day, record effective_date and process it from a second workflow on a daily schedule
+  must_mention:
+    - [effective date, effective_date]
+    - [daily schedule]
+
+- id: gq-connector-zendesk-1
+  question: How do I add an internal note rather than a public reply to a Zendesk ticket from a Nimbus workflow?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-zendesk, section: Triggers and actions}
+  expected_facts:
+    - Use the Add comment action with Public turned off; the comment becomes an internal note visible to agents only.
+  must_mention:
+    - [Add comment]
+    - [internal note]
+
+- id: gq-connector-zendesk-2
+  question: What credentials does the Nimbus Zendesk connector use, and where is token access turned on in Zendesk?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-connector-zendesk, section: Prerequisites}
+  expected_facts:
+    - An API token plus the agent's email; Token access is turned on in Admin Center > Apps and integrations > APIs > Zendesk API > Settings.
+  must_mention:
+    - [API token]
+    - [Token access]
+
+- id: gq-v2-admin-api-keys-1
+  question: Do API keys expire on the legacy Nimbus console, and how does an Admin revoke one?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-v2-admin-api-keys, section: How it works}
+    - {article: nimbus-v2-admin-api-keys, section: Step-by-step}
+  expected_facts:
+    - Keys never expire; there is no expiry date
+    - An Admin revokes a key by deleting it under Admin > API keys; it gets 401 from the next request
+  must_mention:
+    - [no expiry date, never expire]
+    - [Delete]
+
+- id: gq-v2-admin-api-keys-2
+  question: A client lost the text of an API key on the legacy Nimbus admin console; can it be shown again?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-v2-admin-api-keys, section: Troubleshooting}
+  expected_facts:
+    - No, keys are shown once and can't be retrieved
+    - Create a new key, update the integration, delete the old one
+  must_mention:
+    - [shown once]
+    - [new key]
+
+- id: gq-v2-admin-managing-users-1
+  question: On the legacy Nimbus console, what happens to an SSO user's account when the client removes them from their identity provider?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-v2-admin-managing-users, section: How it works}
+  expected_facts:
+    - They can't sign in through SSO, but the Nimbus account stays active with its role
+    - An Admin must suspend or delete them by hand in Admin > Users
+  must_mention:
+    - [stays active]
+    - [Admin > Users]
+
+- id: gq-v2-admin-managing-users-2
+  question: How long is a user invitation valid on the legacy Nimbus admin console before it has to be resent?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-v2-admin-managing-users, section: How it works}
+    - {article: nimbus-v2-admin-managing-users, section: Troubleshooting}
+  expected_facts:
+    - Invitations expire after 7 days and must be sent again
+  must_mention:
+    - [7 days]
+
+- id: gq-v2-connector-salesforce-1
+  question: Where does an Admin update the password and security token for the legacy Salesforce connector after they change?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-v2-connector-salesforce, section: Creating the connection}
+    - {article: nimbus-v2-connector-salesforce, section: Troubleshooting}
+  expected_facts:
+    - Under Admin > Connections, select the connection, click Edit and enter the new password and security token; workflows pick it up on their next run.
+  must_mention:
+    - [Admin > Connections]
+    - [security token]
+
+- id: gq-v2-connector-salesforce-2
+  question: Does the legacy Salesforce connector support upsert or SOQL queries?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-v2-connector-salesforce, section: Triggers and actions}
+  expected_facts:
+    - No; it offers only Create record and Update record actions, with no upsert action and no SOQL query action.
+  must_mention:
+    - [no upsert]
+    - [SOQL]
+
+- id: gq-v2-connector-slack-1
+  question: Can the legacy Slack connector post to a private channel?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-v2-connector-slack, section: Prerequisites}
+  expected_facts:
+    - Only if the incoming webhook was created for that private channel by a member of it; a webhook can't be pointed at a private channel afterwards.
+  must_mention:
+    - [private channel]
+    - [webhook]
+
+- id: gq-v2-connector-slack-2
+  question: What does a channel_is_archived response mean on the legacy Slack connector's Post message step?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-v2-connector-slack, section: Troubleshooting}
+  expected_facts:
+    - The webhook's channel was deleted or archived; create a webhook for a live channel and edit the connection under Admin > Connections.
+  must_mention:
+    - [channel_is_archived]
+    - [archived]

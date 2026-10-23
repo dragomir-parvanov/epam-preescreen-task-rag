@@ -248,7 +248,7 @@ articles:
   - id: nimbus-connector-sql-server
     family: connector-guide
     title: Microsoft SQL Server Connector
-    last_updated: 2026-03-30
+    last_updated: 2026-07-06
     brief: >-
       Added in 3.1. SQL authentication over TLS; certificate validation settings; polling
       trigger on a query using rowversion; actions run query, insert, execute stored procedure;
@@ -360,7 +360,7 @@ articles:
   - id: nimbus-connector-sftp
     family: connector-guide
     title: SFTP Connector
-    last_updated: 2026-05-11
+    last_updated: 2026-06-08
     brief: >-
       Username with SSH key (recommended) or password; host key fingerprint pinning; servers on
       a private network through the private connector agent (Enterprise); polling trigger on new
@@ -1138,7 +1138,7 @@ articles:
   - id: nimbus-faq-user-management
     family: faq
     title: User Management FAQ
-    last_updated: 2026-04-20
+    last_updated: 2026-10-19
     brief: Invitations, roles, seats, suspension versus deletion, bulk import, transferring ownership; link to the SSO and SCIM Articles for identity-provider questions.
   - id: nimbus-faq-upgrading-from-v2
     family: faq

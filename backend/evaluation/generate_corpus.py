@@ -27,7 +27,7 @@ from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
@@ -483,10 +483,35 @@ def merge_generated(
         ]
     merged = sorted([*kept, *entries], key=lambda entry: str(entry["id"]))
     parse_golden_questions(merged)  # rejects duplicate ids and schema breaks before writing
-    rendered = "\n".join(
-        yaml.safe_dump([entry], sort_keys=False, allow_unicode=True, width=100) for entry in merged
-    )
+    rendered = "\n".join(_render(entry) for entry in merged)
     return curated.rstrip("\n") + "\n\n" + GENERATED_MARKER + "\n" + rendered
+
+
+def _render(entry: dict[str, Any]) -> str:
+    """One entry in the curated entries' style: block keys, flow-style sources and term groups."""
+
+    def flow(value: Any) -> str:
+        return yaml.safe_dump(
+            value, default_flow_style=True, allow_unicode=True, width=1000
+        ).strip()
+
+    def scalar(value: Any) -> str:
+        text = yaml.safe_dump(value, allow_unicode=True, width=1000)
+        return text.removesuffix("\n").removesuffix("\n...")
+
+    lines: list[str] = []
+    for key, value in entry.items():
+        prefix = "- " if not lines else "  "
+        if isinstance(value, list):
+            items = cast(list[Any], value)
+            lines.append(f"{prefix}{key}:")
+            lines += [
+                f"    - {flow(item) if isinstance(item, dict | list) else scalar(item)}"
+                for item in items
+            ]
+        else:
+            lines.append(f"{prefix}{key}: {scalar(value)}")
+    return "\n".join(lines) + "\n"
 
 
 # --- Running it ---------------------------------------------------------------------------------
