@@ -18,10 +18,23 @@ from pydantic import BaseModel, ConfigDict, ValidationError
 
 from app.passages import ArticleStatus, PlatformVersion
 
+# The repo's `knowledge-base/`; the backend image copies it to the same place relative to `app/`.
+KNOWLEDGE_BASE_DIR: Final = Path(__file__).resolve().parents[2] / "knowledge-base"
+
 # The Section that holds an Article's text before its first H2; its heading path is just the title.
 INTRO_SECTION_ID: Final = "intro"
 # Passage ids are `<article-id>#<section-id>-<n>` in a VARCHAR(128) column.
 _MAX_SECTION_ID_LENGTH: Final = 80
+
+# Section boundaries, by the rules of Haystack's `MarkdownHeaderSplitter` (header_split_levels
+# [2, 3]), which splits the same Articles into Passages: an ATX heading with one space after the
+# `#`s, never inside a fenced code block. `app/rag/haystack/section_parity_test.py` checks that the
+# two agree on every Section's id and path.
+_SECTION_HEADING = re.compile(r"^(#{2,3}) (.+)$", re.MULTILINE)
+_CODE_BLOCK = re.compile(
+    r"^(?P<fence>`{3,}|~{3,})[^\n]*\n.*?^(?P=fence)\s*$", re.MULTILINE | re.DOTALL
+)
+_LEADING_H1 = re.compile(r"\A\s*# [^\n]*(?:\n|\Z)")
 
 _FRONT_MATTER = re.compile(r"\A---[ \t]*\n(?P<yaml>.*?)\n---[ \t]*(?:\n|\Z)", re.DOTALL)
 
@@ -38,6 +51,21 @@ class Article:
     status: ArticleStatus
     body: str
     """The markdown after the front-matter."""
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class Section:
+    """A heading-delimited part of an Article, as the Article view shows it."""
+
+    id: str
+    """The `section.id` of the Section's Passages, from `section_ids`."""
+    path: tuple[str, ...]
+    """The Article title, then the H2 and H3 above and including this Section, as Passages have it.
+    The intro's path is just the title."""
+    level: int
+    """The heading's level, 2 or 3; 1 for the intro."""
+    markdown: str
+    """Verbatim, starting with the Section's own heading line, minus surrounding blank lines."""
 
 
 class _FrontMatter(BaseModel):
@@ -107,3 +135,46 @@ def _slugify(text: str) -> str:
     ascii_text = ascii_text.replace("'", "")  # "client's" -> "clients", as GitHub's anchors do
     slug = re.sub(r"[^a-z0-9]+", "-", ascii_text.lower()).strip("-")
     return slug[:_MAX_SECTION_ID_LENGTH].rstrip("-") or "section"
+
+
+def article_sections(article: Article) -> list[Section]:
+    """The Article split at every H2 and H3, in document order: the Sections Passages cite.
+
+    The text before the first H2, minus a leading H1, is the intro. A heading with no text of its
+    own holds no Passage, so it gets no id: it shows at the top of the next Section instead (or at
+    the end of the last one). Deeper headings stay inside their Section.
+    """
+    body = article.body
+    code_blocks = [match.span() for match in _CODE_BLOCK.finditer(body)]
+    headings = [
+        match
+        for match in _SECTION_HEADING.finditer(body)
+        if not any(start <= match.start() < end for start, end in code_blocks)
+    ]
+
+    found: list[tuple[tuple[str, ...], int, str]] = []  # (path below the title, level, markdown)
+    intro = _LEADING_H1.sub("", body[: headings[0].start()] if headings else body, count=1)
+    if intro.strip():
+        found.append(((), 1, intro))
+    parent: str | None = None
+    held = ""  # headings with no text yet, waiting for the next Section
+    for i, heading in enumerate(headings):
+        level, text = len(heading[1]), heading[2].strip()
+        if level == 2:
+            parent = text
+        path = (text,) if level == 2 or parent is None else (parent, text)
+        end = headings[i + 1].start() if i + 1 < len(headings) else len(body)
+        if not body[heading.end() : end].strip():
+            held += body[heading.start() : end]
+            continue
+        found.append((path, level, held + body[heading.start() : end]))
+        held = ""
+    if held and found:
+        path, level, markdown = found[-1]
+        found[-1] = (path, level, markdown.rstrip() + "\n\n" + held)
+
+    ids = section_ids(path for path, _, _ in found)
+    return [
+        Section(id=id, path=(article.title, *path), level=level, markdown=markdown.strip())
+        for (path, level, markdown), id in zip(found, ids, strict=True)
+    ]

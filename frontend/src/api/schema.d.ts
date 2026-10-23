@@ -47,6 +47,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/articles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Articles
+         * @description Every Article in the Knowledge Base, with its Section outline.
+         */
+        get: operations["listArticles"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/articles/{article_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Article
+         * @description One full Article, split into its ordered Sections, for Citation click-through.
+         */
+        get: operations["getArticle"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -67,12 +107,55 @@ export interface components {
             /** Standalone Question */
             standalone_question: string | null;
         };
+        /** ArticleDetail */
+        ArticleDetail: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Applies To */
+            applies_to: ("v2" | "v3")[];
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "current" | "deprecated";
+            /** Sections */
+            sections: components["schemas"]["ArticleSection"][];
+        };
         /** ArticleRef */
         ArticleRef: {
             /** Id */
             id: string;
             /** Title */
             title: string;
+        };
+        /** ArticleSection */
+        ArticleSection: {
+            /** Id */
+            id: string;
+            /** Path */
+            path: string[];
+            /** Level */
+            level: number;
+            /** Markdown */
+            markdown: string;
+        };
+        /** ArticleSummary */
+        ArticleSummary: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Applies To */
+            applies_to: ("v2" | "v3")[];
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "current" | "deprecated";
+            /** Sections */
+            sections: components["schemas"]["SectionSummary"][];
         };
         /** ChatRequest */
         ChatRequest: {
@@ -115,7 +198,7 @@ export interface components {
             request_id?: string | null;
         };
         /** @enum {string} */
-        ErrorCode: "validation_error" | "not_found" | "llm_not_configured" | "llm_auth_failed" | "llm_unavailable" | "llm_timeout" | "index_not_ready" | "retrieval_unavailable" | "internal_error";
+        ErrorCode: "validation_error" | "not_found" | "method_not_allowed" | "llm_not_configured" | "llm_auth_failed" | "llm_unavailable" | "llm_timeout" | "index_not_ready" | "retrieval_unavailable" | "internal_error";
         /**
          * ErrorEvent
          * @description A failure after the stream has started, when the HTTP status has already gone out.
@@ -136,6 +219,11 @@ export interface components {
             msg: string;
             /** Type */
             type: string;
+        };
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
         };
         /** HealthResponse */
         HealthResponse: {
@@ -225,6 +313,13 @@ export interface components {
             /** Path */
             path: string[];
         };
+        /** SectionSummary */
+        SectionSummary: {
+            /** Id */
+            id: string;
+            /** Path */
+            path: string[];
+        };
         /**
          * TokenEvent
          * @description Raw model text. Its markers keep the prompt numbers from `passages`.
@@ -254,6 +349,19 @@ export interface components {
             retrieved_passages: components["schemas"]["Passage"][];
             /** Standalone Question */
             standalone_question: string | null;
+        };
+        /** ValidationError */
+        ValidationError: {
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
+            /** Input */
+            input?: unknown;
+            /** Context */
+            ctx?: Record<string, never>;
         };
     };
     responses: never;
@@ -337,6 +445,68 @@ export interface operations {
                     "application/json": {
                         error: components["schemas"]["ErrorBody"];
                     };
+                };
+            };
+        };
+    };
+    listArticles: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleSummary"][];
+                };
+            };
+        };
+    };
+    getArticle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleDetail"];
+                };
+            };
+            /** @description Error codes: not_found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: components["schemas"]["ErrorBody"];
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

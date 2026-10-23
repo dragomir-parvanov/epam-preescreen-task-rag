@@ -10,5 +10,7 @@ WORKDIR /app/backend
 COPY --from=build /app/.pixi/envs/backend /app/.pixi/envs/backend
 ENV PATH=/app/.pixi/envs/backend/bin:$PATH
 COPY backend/app ./app
+# Read at startup by the Article endpoints, at the path app.knowledge_base expects (/app/...).
+COPY knowledge-base /app/knowledge-base
 EXPOSE 8000
 CMD ["uvicorn", "--factory", "app.main:create_app_from_env", "--host", "0.0.0.0", "--port", "8000"]

@@ -131,6 +131,88 @@
           }
         }
       }
+    },
+    "/articles": {
+      "get": {
+        "summary": "List Articles",
+        "description": "Every Article in the Knowledge Base, with its Section outline.",
+        "operationId": "listArticles",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ArticleSummary"
+                  },
+                  "type": "array",
+                  "title": "Response Listarticles"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/articles/{article_id}": {
+      "get": {
+        "summary": "Get Article",
+        "description": "One full Article, split into its ordered Sections, for Citation click-through.",
+        "operationId": "getArticle",
+        "parameters": [
+          {
+            "name": "article_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Article Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error codes: not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "$ref": "#/components/schemas/ErrorBody"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "title": "ErrorEnvelope",
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -182,6 +264,53 @@
         ],
         "title": "Answer"
       },
+      "ArticleDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "applies_to": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "v2",
+                "v3"
+              ]
+            },
+            "type": "array",
+            "title": "Applies To"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "current",
+              "deprecated"
+            ],
+            "title": "Status"
+          },
+          "sections": {
+            "items": {
+              "$ref": "#/components/schemas/ArticleSection"
+            },
+            "type": "array",
+            "title": "Sections"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "applies_to",
+          "status",
+          "sections"
+        ],
+        "title": "ArticleDetail"
+      },
       "ArticleRef": {
         "properties": {
           "id": {
@@ -199,6 +328,84 @@
           "title"
         ],
         "title": "ArticleRef"
+      },
+      "ArticleSection": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "path": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Path"
+          },
+          "level": {
+            "type": "integer",
+            "title": "Level"
+          },
+          "markdown": {
+            "type": "string",
+            "title": "Markdown"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "path",
+          "level",
+          "markdown"
+        ],
+        "title": "ArticleSection"
+      },
+      "ArticleSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "applies_to": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "v2",
+                "v3"
+              ]
+            },
+            "type": "array",
+            "title": "Applies To"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "current",
+              "deprecated"
+            ],
+            "title": "Status"
+          },
+          "sections": {
+            "items": {
+              "$ref": "#/components/schemas/SectionSummary"
+            },
+            "type": "array",
+            "title": "Sections"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "applies_to",
+          "status",
+          "sections"
+        ],
+        "title": "ArticleSummary"
       },
       "ChatRequest": {
         "properties": {
@@ -357,6 +564,7 @@
         "enum": [
           "validation_error",
           "not_found",
+          "method_not_allowed",
           "llm_not_configured",
           "llm_auth_failed",
           "llm_unavailable",
@@ -417,6 +625,19 @@
           "type"
         ],
         "title": "FieldError"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
       },
       "HealthResponse": {
         "properties": {
@@ -617,6 +838,27 @@
         ],
         "title": "SectionRef"
       },
+      "SectionSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "path": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Path"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "path"
+        ],
+        "title": "SectionSummary"
+      },
       "TokenEvent": {
         "properties": {
           "type": {
@@ -676,6 +918,46 @@
         ],
         "title": "UncitedAnswer",
         "description": "An Answer with no valid Citations, shown with a warning (ADR-0001)."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
       }
     }
   }

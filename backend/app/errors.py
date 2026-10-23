@@ -5,18 +5,22 @@ turns it into a real status plus the envelope, or into an SSE `error` event once
 started. Any other exception becomes `internal_error`, with its details kept out of the response.
 """
 
+from collections.abc import Mapping
 from typing import Any, Literal
 
 from fastapi import FastAPI, Request
+from fastapi.exception_handlers import http_exception_handler
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, Field
+from starlette.exceptions import HTTPException
 
 from app.request_id import REQUEST_ID_HEADER, current_request_id
 
 type ErrorCode = Literal[
     "validation_error",
     "not_found",
+    "method_not_allowed",
     "llm_not_configured",
     "llm_auth_failed",
     "llm_unavailable",
@@ -29,6 +33,7 @@ type ErrorCode = Literal[
 HTTP_STATUS: dict[ErrorCode, int] = {
     "validation_error": 422,
     "not_found": 404,
+    "method_not_allowed": 405,
     "llm_not_configured": 503,
     "llm_auth_failed": 502,
     "llm_unavailable": 503,
@@ -93,7 +98,7 @@ def error_responses(*codes: ErrorCode) -> dict[int | str, dict[str, Any]]:
     }
 
 
-def _envelope(body: ErrorBody, headers: dict[str, str] | None = None) -> JSONResponse:
+def _envelope(body: ErrorBody, headers: Mapping[str, str] | None = None) -> JSONResponse:
     return JSONResponse(
         ErrorEnvelope(error=body).model_dump(mode="json"),
         status_code=HTTP_STATUS[body.code],
@@ -123,6 +128,17 @@ async def _on_app_error(_: Request, exc: Exception) -> JSONResponse:
     return _envelope(exc.body())
 
 
+async def _on_http_error(request: Request, exc: Exception) -> Response:
+    """Routing's own 404 (no such path) and 405 (wrong method), which skip `AppError`."""
+    assert isinstance(exc, HTTPException)
+    if exc.status_code == 404:
+        return _envelope(ErrorBody(code="not_found", message="There is no such endpoint."))
+    if exc.status_code == 405:
+        message = f"This endpoint doesn't support {request.method}."
+        return _envelope(ErrorBody(code="method_not_allowed", message=message), exc.headers)
+    return await http_exception_handler(request, exc)
+
+
 async def _on_unexpected_error(_: Request, exc: Exception) -> JSONResponse:
     # Starlette re-raises the exception after this response is sent, so the server logs it.
     # This handler runs outside the request-id middleware, so it echoes the id itself.
@@ -133,7 +149,8 @@ async def _on_unexpected_error(_: Request, exc: Exception) -> JSONResponse:
 
 
 def install_error_handlers(app: FastAPI) -> None:
-    """Make every error response the envelope, FastAPI's own 422 included."""
+    """Make every error response the envelope, FastAPI's own 422, 404 and 405 included."""
     app.add_exception_handler(RequestValidationError, _on_validation_error)
     app.add_exception_handler(AppError, _on_app_error)
+    app.add_exception_handler(HTTPException, _on_http_error)
     app.add_exception_handler(Exception, _on_unexpected_error)
