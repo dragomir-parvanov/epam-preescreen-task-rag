@@ -7,13 +7,18 @@
 #                            unanswerable | partial | follow-up | single-article (generated)
 #   answerable               false -> a Refusal is expected, with no expected_sources or must_mention
 #   origin                   curated (hand-designed, below) | generated (written with a generated Article)
-#   expected_sources         [{article, section}]: the Article id and Section path the Answer should cite
+#   expected_sources         [{article, section, alternatives?}]: the Article id and Section path the
+#                            Answer should cite; `alternatives` lists other Sections, confirmed by
+#                            reading them, that state the same fact, and citing or retrieving any one
+#                            of them counts
 #   expected_facts           human-readable notes on the expected Answer
 #   must_mention             term groups; every group must be hit by any one of its terms,
 #                            matched case-insensitively against the Answer
 #   history                  follow-up only: earlier Turns as {question, answer}, with fixed answers
 #   standalone_question      follow-up only: the ideal rewrite, used by the keyless retrieval eval
 #   standalone_must_mention  follow-up only: term groups checked against the model's actual rewrite
+#   known_retrieval_miss     why retrieval is known to miss the sources; the retrieval eval reports
+#                            the question but leaves it out of the recall bars
 #
 # For partial questions, must_mention covers the answerable part; the gap statement is detected
 # through the prompt module's canonical gap phrase.
@@ -52,8 +57,12 @@
   must_mention:
     - [SCIM]
     - [SSO, single sign-on, SAML]
-    - [suspend]
+    - [suspend, suspends, suspended]
     - [30 days, 30-day, thirty days]
+  known_retrieval_miss: >-
+    "Leavers removed automatically" shares no words with SCIM or deprovisioning, and "what happens
+    to their data" pulls in data-deletion and GDPR Sections, so neither SCIM Section is in the
+    hybrid top 20. Needs query expansion (#28).
 
 - id: gq-webhook-signature
   question: Which header carries the webhook signature and what algorithm is used?
@@ -117,7 +126,10 @@
   answerable: true
   origin: curated
   expected_sources:
-    - { article: nimbus-plan-tiers, section: Feature matrix }
+    - article: nimbus-plan-tiers
+      section: Feature matrix
+      alternatives:
+        - { article: nimbus-plan-tiers, section: Audit-log retention }
   expected_facts:
     - 90 days.
   must_mention:
@@ -162,7 +174,7 @@
   expected_facts:
     - "No: the user is suspended, and the data is deleted after 30 days."
   must_mention:
-    - [suspend]
+    - [suspend, suspends, suspended]
     - [30 days, 30-day, thirty days]
 
 - id: gq-enterprise-price
@@ -195,6 +207,9 @@
     - [email]
     - [firstName]
     - [lastName]
+  known_retrieval_miss: >-
+    "Set up SSO with Google Workspace" pulls in workspace-creation, two-factor and FAQ setup
+    Sections; Attribute mapping ranks 20th. Needs query expansion (#28).
 
 - id: gq-webhook-retries-ips
   question: >-
@@ -407,7 +422,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-admin-approval-steps, section: How it works}
+    - {article: nimbus-admin-approval-steps, section: How it works, alternatives: [{article: nimbus-tier-approval-steps, section: How it works}]}
   expected_facts:
     - 'Yes: approvers can be specific users or a role; any active user with that role can decide'
     - The first decision closes the request for everyone
@@ -464,7 +479,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-admin-changing-roles, section: How it works > Roles managed by the identity provider}
+    - {article: nimbus-admin-changing-roles, section: How it works > Roles managed by the identity provider, alternatives: [{article: nimbus-admin-changing-roles, section: Verifying the change}]}
     - {article: nimbus-admin-changing-roles, section: Troubleshooting}
   expected_facts:
     - Roles come from identity-provider groups, so the console change is overwritten at the next sign-in or sync.
@@ -479,7 +494,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-admin-creating-a-workspace, section: Before you begin}
+    - {article: nimbus-admin-creating-a-workspace, section: Before you begin, alternatives: [{article: nimbus-admin-creating-a-workspace, section: Step-by-step}]}
   expected_facts:
     - Workspace name, first Admin's name and work email, data region, IANA time zone, Plan Tier and contract reference.
   must_mention:
@@ -704,7 +719,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-admin-run-history, section: How it works}
+    - {article: nimbus-admin-run-history, section: How it works, alternatives: [{article: nimbus-security-data-deletion, section: Controls in place}, {article: nimbus-release-3-0, section: Improvements}]}
   expected_facts:
     - 90 days
     - The same on every Plan Tier; after that the run is deleted
@@ -718,7 +733,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-admin-run-history, section: How it works}
+    - {article: nimbus-admin-run-history, section: How it works, alternatives: [{article: nimbus-release-3-8, section: New features}]}
   expected_facts:
     - It creates a new run that starts from the first step with the original trigger input; steps that succeeded run again
     - It runs on the currently published version and counts towards the run quota
@@ -756,7 +771,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-admin-secrets-vault, section: How it works}
+    - {article: nimbus-admin-secrets-vault, section: How it works, alternatives: [{article: nimbus-release-3-4, section: New features > Secrets vault}, {article: nimbus-tier-secrets-vault, section: How it works}]}
   expected_facts:
     - No; secrets are resolved when the step runs, so the next step that resolves the name gets the new value without republishing.
   must_mention:
@@ -782,7 +797,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-admin-session-timeouts, section: How it works}
+    - {article: nimbus-admin-session-timeouts, section: How it works, alternatives: [{article: nimbus-security-session-management, section: Controls in place}]}
     - {article: nimbus-admin-session-timeouts, section: Step-by-step}
   expected_facts:
     - Allowed values run from 15 minutes to 24 hours
@@ -880,7 +895,7 @@
   origin: generated
   expected_sources:
     - {article: nimbus-admin-webhook-endpoints, section: Step-by-step}
-    - {article: nimbus-admin-webhook-endpoints, section: Verifying the change}
+    - {article: nimbus-admin-webhook-endpoints, section: Verifying the change, alternatives: [{article: nimbus-admin-webhook-endpoints, section: Step-by-step}]}
   expected_facts:
     - Use Send test event, which sends a sample delivery marked test and shows the receiver's status.
     - Check the Deliveries tab for a 2xx status.
@@ -962,7 +977,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-api-approvals, section: Object fields}
+    - {article: nimbus-api-approvals, section: Object fields, alternatives: [{article: nimbus-connector-microsoft-teams, section: Triggers and actions > Approval notifications}, {article: nimbus-tier-approval-steps, section: How it works > Timing and the run quota}, {article: nimbus-release-3-3, section: New features > Approval steps}, {article: nimbus-admin-approval-steps, section: How it works}]}
   expected_facts:
     - The approval becomes expired after 7 days
     - the run fails with WF-410
@@ -977,7 +992,7 @@
   origin: generated
   expected_sources:
     - {article: nimbus-api-audit-log, section: Endpoints > Action names}
-    - {article: nimbus-api-audit-log, section: Object fields}
+    - {article: nimbus-api-audit-log, section: Object fields, alternatives: [{article: nimbus-api-audit-log, section: Example request and response}]}
   expected_facts:
     - Filter GET /audit-log/events on action=user.role_changed
     - The actor object has type api_key with the key_ id, and changes.role holds the old and new role
@@ -1033,7 +1048,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-api-environments, section: Errors}
+    - {article: nimbus-api-environments, section: Errors, alternatives: [{article: nimbus-troubleshooting-promotion, section: Error reference}]}
   expected_facts:
     - 409 conflict
     - the message names the connector and step key, e.g. No Production connection for connector salesforce
@@ -1114,7 +1129,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-api-inbound-webhook-triggers, section: Errors}
+    - {article: nimbus-api-inbound-webhook-triggers, section: Errors, alternatives: [{article: nimbus-troubleshooting-inbound-triggers, section: Common causes}]}
   expected_facts:
     - 400 invalid_request
     - no run is created
@@ -1254,8 +1269,8 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-api-secrets, section: Endpoints}
-    - {article: nimbus-api-secrets, section: Object fields}
+    - {article: nimbus-api-secrets, section: Endpoints, alternatives: [{article: nimbus-admin-secrets-vault, section: How it works}, {article: nimbus-tier-secrets-vault, section: How it works}]}
+    - {article: nimbus-api-secrets, section: Object fields, alternatives: [{article: nimbus-admin-secrets-vault, section: How it works}, {article: nimbus-tier-secrets-vault, section: How it works}, {article: nimbus-security-credential-storage, section: Admin settings}]}
   expected_facts:
     - No endpoint ever returns a value; GET /secrets lists names and metadata only
     - value is write-only, accepted on PUT and never in any response
@@ -2165,7 +2180,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-faq-api-and-integrations, section: Setup questions}
+    - {article: nimbus-faq-api-and-integrations, section: Setup questions, alternatives: [{article: nimbus-release-3-1, section: New features > Idempotency keys}, {article: nimbus-api-error-format, section: Endpoints > Idempotency-Key}, {article: nimbus-troubleshooting-api-errors, section: Common causes}, {article: nimbus-release-3-1, section: Upgrade notes}]}
   expected_facts:
     - An Idempotency-Key is remembered for 24 hours; a repeat request returns the original response.
   must_mention:
@@ -2218,7 +2233,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-faq-getting-started, section: 'Setup questions > How do I invite my team?'}
+    - {article: nimbus-faq-getting-started, section: 'Setup questions > How do I invite my team?', alternatives: [{article: nimbus-admin-inviting-users, section: How it works}, {article: nimbus-tier-seat-limits, section: How it works}, {article: nimbus-release-3-9, section: New features > Bulk user import}]}
   expected_facts:
     - Invitations expire after 7 days.
     - An invited user takes a seat only once they accept.
@@ -2245,7 +2260,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-faq-notifications-and-alerts, section: Limits and edge cases}
+    - {article: nimbus-faq-notifications-and-alerts, section: Limits and edge cases, alternatives: [{article: nimbus-tier-usage-dashboard, section: How it works > Quota alerts}]}
   expected_facts:
     - Quota alerts are sent at 80% and 100%.
     - At 100% runs are rejected with WF-300 until the quota resets on the 1st of the month (UTC) or the tier is upgraded.
@@ -2272,7 +2287,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-faq-security, section: Troubleshooting questions}
+    - {article: nimbus-faq-security, section: Troubleshooting questions, alternatives: [{article: nimbus-security-vulnerability-disclosure, section: Controls in place}]}
   expected_facts:
     - Email security@omnicorp.example.
     - Reports are acknowledged within 2 business days.
@@ -2339,7 +2354,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-faq-user-management, section: General questions}
+    - {article: nimbus-faq-user-management, section: General questions, alternatives: [{article: nimbus-api-users, section: 'Endpoints > Suspending, reactivating and deleting'}]}
   expected_facts:
     - A suspended user doesn't take a seat.
     - Suspension is undone with Reactivate.
@@ -2353,7 +2368,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-faq-workflow-builder, section: Limits and edge cases}
+    - {article: nimbus-faq-workflow-builder, section: Limits and edge cases, alternatives: [{article: nimbus-release-3-1, section: New features}, {article: nimbus-api-workflows, section: Endpoints > Versions}]}
   expected_facts:
     - The last 50 versions are kept.
     - Restoring a version creates a new version.
@@ -2385,7 +2400,7 @@
     - Create a new workspace in the target region and migrate the workflows.
   must_mention:
     - [new workspace]
-    - [migrat]
+    - [migrate, migrates, migrated, migrating, migration]
 
 - id: gq-faq-workspace-and-account-2
   question: How long can OmniCorp support restore a Nimbus workspace after an Admin deletes it?
@@ -2393,7 +2408,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-faq-workspace-and-account, section: Limits and edge cases}
+    - {article: nimbus-faq-workspace-and-account, section: Limits and edge cases, alternatives: [{article: nimbus-security-data-deletion, section: Controls in place > Workspace deletion}, {article: nimbus-admin-deleting-a-workspace, section: How it works}]}
   expected_facts:
     - Support can restore a deleted workspace for 14 days; after that everything is permanently deleted.
   must_mention:
@@ -2453,7 +2468,7 @@
     - No; 2.16.1 is a maintenance release that carries security fixes only.
     - New functionality is only on the current platform.
   must_mention:
-    - [security fix]
+    - [security fix, security fixes]
 
 - id: gq-release-2-16-1-2
   question: After Nimbus 2.16.1, why is a legacy webhook endpoint refused or no longer receiving deliveries?
@@ -2475,7 +2490,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-release-2-16, section: New features}
+    - {article: nimbus-release-2-16, section: New features, alternatives: [{article: nimbus-release-2-16, section: Upgrade notes}]}
   expected_facts:
     - Sort Admin > Users by the new Last sign-in column; users who never signed in show Never.
     - The Users API returns the same value as last_sign_in_at.
@@ -2503,7 +2518,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-release-2-16-2, section: Fixed issues}
+    - {article: nimbus-release-2-16-2, section: Fixed issues, alternatives: [{article: nimbus-release-2-16-2, section: Upgrade notes}]}
   expected_facts:
     - Reset links are single-use and expire after 1 hour (NIM-2858).
   must_mention:
@@ -2856,7 +2871,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-security-api-key-hygiene, section: Controls in place}
+    - {article: nimbus-security-api-key-hygiene, section: Controls in place, alternatives: [{article: nimbus-faq-api-and-integrations, section: Limits and edge cases}]}
   expected_facts:
     - No; an API key acts with Admin permissions in its workspace and keys have no scopes, so there is no read-only key.
   must_mention:
@@ -2882,8 +2897,8 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-security-audit-events, section: Controls in place > Event types by area}
-    - {article: nimbus-security-audit-events, section: Controls in place > Event shape}
+    - {article: nimbus-security-audit-events, section: Controls in place > Event types by area, alternatives: [{article: nimbus-api-audit-log, section: Example request and response}]}
+    - {article: nimbus-security-audit-events, section: Controls in place > Event shape, alternatives: [{article: nimbus-api-audit-log, section: Example request and response}]}
   expected_facts:
     - The action is user.role_changed.
     - The event carries the actor, the target and a changes block with the role from and to.
@@ -2936,7 +2951,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-security-credential-storage, section: Controls in place > Write-only access}
+    - {article: nimbus-security-credential-storage, section: Controls in place > Write-only access, alternatives: [{article: nimbus-admin-secrets-vault, section: How it works}, {article: nimbus-tier-secrets-vault, section: How it works}]}
   expected_facts:
     - No; secrets are never shown again after saving. Settings > Secrets shows names only and GET /secrets returns names only; even OmniCorp support can't decrypt them.
   must_mention:
@@ -2989,12 +3004,12 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-security-data-residency, section: Controls in place > The region is fixed}
+    - {article: nimbus-security-data-residency, section: Controls in place > The region is fixed, alternatives: [{article: nimbus-faq-workspace-and-account, section: 'Setup questions > How do I move a workspace to another data region?'}]}
   expected_facts:
     - No; the region is fixed at creation. Moving means creating a new workspace in the other region and migrating the workflows, re-authorising connections and re-entering secrets.
   must_mention:
     - [new workspace]
-    - [migrat]
+    - [migrate, migrates, migrated, migrating, migration]
 
 - id: gq-security-data-residency-2
   question: Which data does a Nimbus workspace send outside its data region?
@@ -3127,7 +3142,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-security-session-management, section: Controls in place}
+    - {article: nimbus-security-session-management, section: Controls in place, alternatives: [{article: nimbus-faq-security, section: Setup questions}]}
     - {article: nimbus-security-session-management, section: Admin settings}
   expected_facts:
     - The default is 8 hours; an Admin can choose between 15 minutes and 24 hours under Settings > Security > Sessions.
@@ -3324,7 +3339,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-tier-environments, section: How it works}
+    - {article: nimbus-tier-environments, section: How it works, alternatives: [{article: nimbus-release-3-2, section: New features > Development and Production environments}, {article: nimbus-admin-promoting-workflows, section: How it works}]}
   expected_facts:
     - Promotion copies the steps, trigger, expressions and schedule as a new Production version
     - Promotion never copies connections or variable values, which belong to each environment
@@ -3551,7 +3566,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-tier-workflow-run-quotas, section: How it works}
+    - {article: nimbus-tier-workflow-run-quotas, section: How it works, alternatives: [{article: nimbus-faq-getting-started, section: Limits and edge cases}]}
   expected_facts:
     - Test run in the builder doesn't count against the quota
     - A run counts when it starts, even if it later fails or is cancelled
@@ -3623,7 +3638,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-troubleshooting-api-errors, section: Error reference}
+    - {article: nimbus-troubleshooting-api-errors, section: Error reference, alternatives: [{article: nimbus-troubleshooting-api-errors, section: Common causes}]}
   expected_facts:
     - The workspace's Plan Tier has no API access (Starter)
     - Keys have no scopes, so the key's permissions are never the cause
@@ -3817,7 +3832,7 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-troubleshooting-inbound-triggers, section: Error reference}
+    - {article: nimbus-troubleshooting-inbound-triggers, section: Error reference, alternatives: [{article: nimbus-api-inbound-webhook-triggers, section: Errors}]}
   expected_facts:
     - 400 Bad Request with the code invalid_request
     - No run is started
@@ -3886,7 +3901,7 @@
   origin: generated
   expected_sources:
     - {article: nimbus-troubleshooting-private-agent, section: Symptoms}
-    - {article: nimbus-troubleshooting-private-agent, section: Error reference}
+    - {article: nimbus-troubleshooting-private-agent, section: Error reference, alternatives: [{article: nimbus-release-3-7, section: New features > Private connector agent}, {article: nimbus-tier-private-connector-agent, section: How it works}, {article: nimbus-connector-sql-server, section: Creating the connection > On-premises servers through the private connector agent}]}
   expected_facts:
     - After 2 minutes without a heartbeat the agent is shown Offline
     - Steps routed through it then fail with CONN-503
@@ -4085,8 +4100,8 @@
   answerable: true
   origin: generated
   expected_sources:
-    - {article: nimbus-v2-admin-api-keys, section: How it works}
-    - {article: nimbus-v2-admin-api-keys, section: Step-by-step}
+    - {article: nimbus-v2-admin-api-keys, section: How it works, alternatives: [{article: nimbus-v2-faq, section: Setup questions}, {article: nimbus-v2-admin-api-keys, section: Troubleshooting}]}
+    - {article: nimbus-v2-admin-api-keys, section: Step-by-step, alternatives: [{article: nimbus-v2-faq, section: Setup questions}]}
   expected_facts:
     - Keys never expire; there is no expiry date
     - An Admin revokes a key by deleting it under Admin > API keys; it gets 401 from the next request

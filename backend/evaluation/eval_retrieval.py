@@ -12,6 +12,7 @@ last needs no second index: Passages are embedded without the prefix either way.
 """
 
 import asyncio
+import logging
 import sys
 import time
 
@@ -69,6 +70,7 @@ def main() -> None:
     settings = Settings(llm_provider="fake")
     # On stderr, so stdout is the report alone. The first sync logs its progress.
     configure_logging("console", "INFO", stream=sys.stderr)
+    logging.getLogger("haystack").setLevel(logging.WARNING)  # one line per pipeline run otherwise
     top_k, min_score = settings.retrieval_top_k, settings.retrieval_min_score
     try:
         retrievals = asyncio.run(retrieve_all(load_golden_questions(), depth=max(top_k, MAX_TOP_K)))

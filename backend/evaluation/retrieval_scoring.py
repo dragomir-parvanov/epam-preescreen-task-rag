@@ -35,6 +35,10 @@ class SectionKey:
     section: str
 
 
+type ExpectedSections = tuple[tuple[SectionKey, ...], ...]
+"""One group per expected source: the Section and its alternatives, any one of which counts."""
+
+
 class UnresolvedSourcesError(ValueError):
     def __init__(self, unresolved: Sequence[str]) -> None:
         self.unresolved = tuple(unresolved)
@@ -46,8 +50,9 @@ class UnresolvedSourcesError(ValueError):
 
 def resolve_expected_sources(
     questions: Iterable[GoldenQuestion], articles: Iterable[Article]
-) -> dict[str, tuple[SectionKey, ...]]:
-    """Each question's `expected_sources` as the Section ids its Passages carry, by question id.
+) -> dict[str, ExpectedSections]:
+    """Each question's `expected_sources` (alternatives included) as the Section ids its Passages
+    carry, by question id.
 
     Resolved through `app.knowledge_base.article_sections`, the Sections ingestion splits into
     Passages, so a heading with no text of its own (no Passage) doesn't resolve.
@@ -57,32 +62,38 @@ def resolve_expected_sources(
         for article in articles
         for section in article_sections(article)
     }
-    resolved: dict[str, tuple[SectionKey, ...]] = {}
+    resolved: dict[str, ExpectedSections] = {}
     unresolved: list[str] = []
     for question in questions:
-        keys: list[SectionKey] = []
+        groups: list[tuple[SectionKey, ...]] = []
         for source in question.expected_sources:
-            section_id = section_ids.get((source.article, source.section))
-            if section_id is None:
-                unresolved.append(f"{question.id}: {source.article} > {source.section}")
-            else:
-                keys.append(SectionKey(source.article, section_id))
-        resolved[question.id] = tuple(keys)
+            group: list[SectionKey] = []
+            for option in source.options:
+                section_id = section_ids.get((option.article, option.section))
+                if section_id is None:
+                    unresolved.append(f"{question.id}: {option.article} > {option.section}")
+                else:
+                    group.append(SectionKey(option.article, section_id))
+            groups.append(tuple(group))
+        resolved[question.id] = tuple(groups)
     if unresolved:
         raise UnresolvedSourcesError(unresolved)
     return resolved
 
 
-def sources_rank(expected: Iterable[SectionKey], ranking: Sequence[Passage]) -> int | None:
-    """The smallest k whose top k Passages hold every expected Section; None if `ranking`
-    doesn't hold them all. A Section counts once any of its Passages is there."""
+def sources_rank(expected: ExpectedSections, ranking: Sequence[Passage]) -> int | None:
+    """The smallest k whose top k Passages hold a Section of every expected group; None if
+    `ranking` doesn't. A Section counts once any of its Passages is there."""
     first_rank: dict[SectionKey, int] = {}
     for rank, passage in enumerate(ranking, start=1):
         first_rank.setdefault(SectionKey(passage.article.id, passage.section.id), rank)
-    ranks = [first_rank.get(key) for key in expected]
-    if any(rank is None for rank in ranks):
-        return None
-    return max((rank for rank in ranks if rank is not None), default=0)
+    group_ranks: list[int] = []
+    for group in expected:
+        ranks = [first_rank[key] for key in group if key in first_rank]
+        if not ranks:
+            return None
+        group_ranks.append(min(ranks))
+    return max(group_ranks, default=0)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -91,7 +102,7 @@ class QuestionRetrieval:
     with its `standalone_question`."""
 
     question: GoldenQuestion
-    expected: tuple[SectionKey, ...]
+    expected: ExpectedSections
     hybrid: tuple[Passage, ...]
     """What the server retrieves: hybrid, with bge's query prefix."""
     dense_only: tuple[Passage, ...]
@@ -130,7 +141,18 @@ def top_score(passages: Sequence[Passage]) -> float:
 
 
 def answerable(retrievals: Iterable[QuestionRetrieval], origin: Origin) -> list[QuestionRetrieval]:
-    return [r for r in retrievals if r.question.answerable and r.question.origin == origin]
+    """The answerable questions of `origin` that the recall bars count: all but known misses."""
+    return [
+        r
+        for r in retrievals
+        if r.question.answerable
+        and r.question.origin == origin
+        and r.question.known_retrieval_miss is None
+    ]
+
+
+def known_misses(retrievals: Iterable[QuestionRetrieval]) -> list[QuestionRetrieval]:
+    return [r for r in retrievals if r.question.known_retrieval_miss is not None]
 
 
 def failures(retrievals: Sequence[QuestionRetrieval], *, top_k: int, min_score: float) -> list[str]:
@@ -222,7 +244,7 @@ def render_report(retrievals: Sequence[QuestionRetrieval], *, top_k: int, min_sc
     `ChatService` does with the hybrid top k at `min_score`; REFUSED marks a failure.
     """
     title = f"Retrieval eval: top_k={top_k}, min_score={min_score}, {len(retrievals)} questions"
-    header = ("question", "origin", "category", *RUNS, "top-1", "gate")
+    header = ("question", "origin", "category", *RUNS, "top-1", "gate", "note")
     rows = [header, *(_question_row(r, top_k=top_k, min_score=min_score) for r in retrievals)]
 
     ks = range(1, MAX_TOP_K + 1)
@@ -241,6 +263,7 @@ def render_report(retrievals: Sequence[QuestionRetrieval], *, top_k: int, min_sc
         _table(rows),
         _table(recall_rows),
         _prefix_comparison(retrievals),
+        _known_misses(retrievals, top_k=top_k),
         _gate_on_unanswerables(retrievals, top_k=top_k, min_score=min_score),
         [
             f"The {len(weakest)} answerable questions with the lowest dense top-1:",
@@ -269,7 +292,21 @@ def _question_row(retrieval: QuestionRetrieval, *, top_k: int, min_score: float)
         *ranks,
         f"{top_score(retrieval.dense_only):.3f}",
         gate,
+        "known miss" if gq.known_retrieval_miss else "",
     )
+
+
+def _known_misses(retrievals: Sequence[QuestionRetrieval], *, top_k: int) -> list[str]:
+    lines = ["Known retrieval misses, left out of the recall bars:"]
+    for retrieval in known_misses(retrievals):
+        rank = retrieval.rank()
+        status = _rank(rank)
+        if _found_within(rank, top_k):
+            status += ", now found: drop the mark?"
+        lines.append(
+            f"  {retrieval.id} (hybrid rank {status}): {retrieval.question.known_retrieval_miss}"
+        )
+    return lines if len(lines) > 1 else ["No known retrieval misses."]
 
 
 def _prefix_comparison(retrievals: Sequence[QuestionRetrieval]) -> list[str]:

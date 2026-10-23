@@ -1,3 +1,5 @@
+from typing import Any
+
 import pytest
 
 from app.knowledge_base import parse_article
@@ -27,7 +29,12 @@ def question(
     sources: tuple[tuple[str, str], ...] = (("sso", "Okta"),),
     origin: str = "curated",
     answerable: bool = True,
+    alternatives: tuple[tuple[str, str], ...] = (),
+    known_miss: str | None = None,
 ) -> GoldenQuestion:
+    expected: list[dict[str, Any]] = [{"article": a, "section": s} for a, s in sources]
+    if alternatives:
+        expected[0]["alternatives"] = [{"article": a, "section": s} for a, s in alternatives]
     return GoldenQuestion.model_validate(
         {
             "id": id,
@@ -35,10 +42,9 @@ def question(
             "category": "single-article" if answerable else "unanswerable",
             "answerable": answerable,
             "origin": origin,
-            "expected_sources": [{"article": a, "section": s} for a, s in sources]
-            if answerable
-            else [],
+            "expected_sources": expected if answerable else [],
             "must_mention": [["term"]] if answerable else [],
+            "known_retrieval_miss": known_miss,
         }
     )
 
@@ -52,7 +58,24 @@ def test_resolves_a_section_path_to_the_section_id_passages_carry() -> None:
     resolved = resolve_expected_sources([gq], [SSO_ARTICLE])
 
     assert resolved == {
-        "gq-okta": (SectionKey("sso", "okta"), SectionKey("sso", "enforcing-sso-break-glass-admin"))
+        "gq-okta": (
+            (SectionKey("sso", "okta"),),
+            (SectionKey("sso", "enforcing-sso-break-glass-admin"),),
+        )
+    }
+
+
+def test_resolves_a_source_and_its_alternatives_into_one_group() -> None:
+    gq = question(
+        sources=(("sso", "Okta"),), alternatives=(("sso", "Enforcing SSO > Break-glass admin"),)
+    )
+
+    resolved = resolve_expected_sources([gq], [SSO_ARTICLE])
+
+    assert resolved == {
+        "gq-okta": (
+            (SectionKey("sso", "okta"), SectionKey("sso", "enforcing-sso-break-glass-admin")),
+        )
     }
 
 
@@ -62,6 +85,7 @@ def test_names_every_source_that_resolves_to_no_section() -> None:
         # "Enforcing SSO" holds no text of its own, so no Passage cites it.
         question("gq-b", sources=(("sso", "Enforcing SSO"),)),
         question("gq-c", sources=(("scim", "Okta"),)),
+        question("gq-d", alternatives=(("sso", "Entra ID"),)),
     ]
 
     with pytest.raises(UnresolvedSourcesError) as error:
@@ -71,6 +95,7 @@ def test_names_every_source_that_resolves_to_no_section() -> None:
         "gq-a: sso > Entra ID",
         "gq-b: sso > Enforcing SSO",
         "gq-c: scim > Okta",
+        "gq-d: sso > Entra ID",
     )
 
 
@@ -90,7 +115,7 @@ def passage(article: str, section: str, score: float = 0.8, n: int = 1) -> Passa
 
 
 def test_the_sources_rank_is_the_depth_that_holds_every_expected_section() -> None:
-    expected = (SectionKey("sso", "okta"), SectionKey("scim", "prerequisites"))
+    expected = ((SectionKey("sso", "okta"),), (SectionKey("scim", "prerequisites"),))
     ranking = (
         passage("sso", "okta"),
         passage("sso", "okta", n=2),
@@ -100,6 +125,21 @@ def test_the_sources_rank_is_the_depth_that_holds_every_expected_section() -> No
 
     assert sources_rank(expected, ranking) == 4
     assert sources_rank(expected, ranking[:3]) is None
+
+
+def test_any_alternative_of_an_expected_source_counts() -> None:
+    expected = (
+        (SectionKey("plans", "feature-matrix"), SectionKey("plans", "audit-log-retention")),
+        (SectionKey("sso", "okta"),),
+    )
+    ranking = (
+        passage("sso", "okta"),
+        passage("plans", "audit-log-retention"),
+        passage("plans", "feature-matrix"),
+    )
+
+    assert sources_rank(expected, ranking) == 2
+    assert sources_rank(expected, ranking[:1]) is None
 
 
 # --- The CI bars ------------------------------------------------------------------------------
@@ -114,6 +154,7 @@ def retrieval(
     answerable: bool = True,
     rank: int | None = 1,
     top_score: float = 0.8,
+    known_miss: str | None = None,
 ) -> QuestionRetrieval:
     """A question expecting sso > Okta, retrieved at `rank` (None: not at all) among decoys."""
     ranking = [
@@ -124,8 +165,8 @@ def retrieval(
         ranking.insert(rank - 1, passage("sso", "okta", score=top_score - 0.05))
     passages = tuple(ranking[:8])
     return QuestionRetrieval(
-        question=question(id, origin=origin, answerable=answerable),
-        expected=(OKTA,) if answerable else (),
+        question=question(id, origin=origin, answerable=answerable, known_miss=known_miss),
+        expected=((OKTA,),) if answerable else (),
         hybrid=passages,
         dense_only=passages,
         no_prefix=passages,
@@ -162,6 +203,15 @@ def test_generated_questions_must_reach_95_percent_recall_at_top_k() -> None:
     assert failures([*found[:18], missed, missed], top_k=6, min_score=0.6) == [
         "generated recall@6 is 90.0% (18/20), below 95%: gq-g-missed, gq-g-missed"
     ]
+
+
+def test_a_known_retrieval_miss_is_left_out_of_the_recall_bars() -> None:
+    retrievals = [
+        retrieval("gq-a", rank=1),
+        retrieval("gq-known", rank=None, known_miss="Shares no words with its Section."),
+    ]
+
+    assert failures(retrievals, top_k=6, min_score=0.6) == []
 
 
 def test_the_gate_must_not_refuse_an_answerable_question() -> None:
@@ -253,6 +303,21 @@ def test_the_report_compares_recall_across_runs_and_reports_the_gate_on_unanswer
     assert "curated hybrid 50.0% 50.0% 100.0% 100.0% 100.0% 100.0% 100.0% 100.0%" in lines
     assert "curated dense-only 50.0% 50.0% 100.0% 100.0% 100.0% 100.0% 100.0% 100.0%" in lines
     assert "The gate refuses 1 of 2 unanswerable questions (50.0%)." in lines
+
+
+def test_the_report_lists_known_misses_with_their_rank_and_reason() -> None:
+    lines = report_lines(
+        [
+            retrieval("gq-a", rank=1),
+            retrieval("gq-known", rank=None, known_miss="Shares no words with its Section."),
+            retrieval("gq-fixed", rank=2, known_miss="Was missed."),
+        ]
+    )
+
+    assert "Known retrieval misses, left out of the recall bars:" in lines
+    assert "gq-known (hybrid rank -): Shares no words with its Section." in lines
+    assert "gq-fixed (hybrid rank 2, now found: drop the mark?): Was missed." in lines
+    assert "gq-known curated single-article - - - 0.800 answered known miss" in lines
 
 
 def test_the_report_ends_with_the_verdict() -> None:

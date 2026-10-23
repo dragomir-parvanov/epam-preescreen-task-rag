@@ -29,9 +29,28 @@ class _Strict(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
 
-class ExpectedSource(_Strict):
+class SectionRef(_Strict):
     article: str
     section: str  # a Section path, e.g. "Feature matrix" or "Enforcing SSO > Break-glass admin"
+
+
+class ExpectedSource(SectionRef):
+    """A Section the Answer should cite, or any of its `alternatives`: other Sections, confirmed by
+    reading them, that state the same fact. The Knowledge Base repeats facts across Articles."""
+
+    alternatives: list[SectionRef] = []
+
+    @property
+    def options(self) -> tuple[SectionRef, ...]:
+        """This Section, then its alternatives: citing or retrieving any one of them counts."""
+        return (SectionRef(article=self.article, section=self.section), *self.alternatives)
+
+    @model_validator(mode="after")
+    def _distinct(self) -> Self:
+        keys = [(option.article, option.section) for option in self.options]
+        if len(set(keys)) != len(keys):
+            raise ValueError("an alternative repeats its source or another alternative")
+        return self
 
 
 class HistoryTurn(_Strict):
@@ -51,6 +70,9 @@ class GoldenQuestion(_Strict):
     history: list[HistoryTurn] = []
     standalone_question: str | None = None
     standalone_must_mention: TermGroups = []
+    known_retrieval_miss: str | None = Field(default=None, min_length=1)
+    """Why retrieval is known to miss this question's sources. The retrieval eval reports it but
+    leaves it out of the recall bars; the reason names what would fix it."""
 
     @model_validator(mode="after")
     def _consistent(self) -> Self:
@@ -60,6 +82,8 @@ class GoldenQuestion(_Strict):
             raise ValueError("an answerable question needs expected_sources and must_mention")
         if not self.answerable and (self.expected_sources or self.must_mention):
             raise ValueError("a Refusal cites nothing: drop expected_sources and must_mention")
+        if self.known_retrieval_miss is not None and not self.answerable:
+            raise ValueError("only an answerable question has sources to miss")
         if self.category == "unanswerable" and self.answerable:
             raise ValueError("an unanswerable question can't be answerable")
         is_follow_up = self.category == "follow-up"

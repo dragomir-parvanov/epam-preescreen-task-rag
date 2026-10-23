@@ -494,7 +494,7 @@ def _render(entry: dict[str, Any]) -> str:
 
     def flow(value: Any) -> str:
         return yaml.safe_dump(
-            value, default_flow_style=True, allow_unicode=True, width=1000
+            value, default_flow_style=True, allow_unicode=True, width=1000, sort_keys=False
         ).strip()
 
     def scalar(value: Any) -> str:

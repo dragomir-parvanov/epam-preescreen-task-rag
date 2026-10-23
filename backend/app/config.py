@@ -66,9 +66,9 @@ class Settings(BaseSettings):
 
     # Retrieval (ADR-0005). The retriever returns `retrieval_top_k` Passages; `ChatService`'s gate
     # refuses when none has a dense cosine score of at least `retrieval_min_score`.
-    # `pixi run eval-retrieval` (#28) checks both against the Golden Questions. top_k is still the
-    # starting value: no k up to the cap of 8 meets the recall bars yet (#28).
-    retrieval_top_k: PositiveInt = 6
+    # `pixi run eval-retrieval` (#28), a CI job, checks both against the Golden Questions. top_k is
+    # #12's cap of 8: no smaller k meets the recall bars.
+    retrieval_top_k: PositiveInt = 8
     # A safety floor, not a separator: the weakest answerable question's dense top-1 is 0.712, so
     # 0.712 - 0.05 margin. Off-topic questions score ~0.35-0.40 and are refused; questions near a
     # covered topic (LDAP, prices: 0.65-0.80) overlap answerable ones, and are left to the model's

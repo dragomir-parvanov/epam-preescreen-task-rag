@@ -41,8 +41,32 @@ Development tasks:
 | `pixi run typecheck` | pyright (strict) + TypeScript 7 via `vp check` |
 | `pixi run test` | pytest + Vitest (via Vite+). Needs Docker for the `pgvector` tests; `pytest -m "not pgvector"` in `backend/` leaves them out |
 | `pixi run smoke` | What CI's smoke job runs: the whole stack on the keyless `fake` LLM provider (a canned reply, smoke tests only), as its own Compose project on ports 18080/18000/15432, checked through nginx (`/ready`, the Articles, a streamed cited Answer, a Follow-up, a Refusal); then removed with its volume |
-| `pixi run eval-retrieval` | The keyless retrieval eval: indexes the Knowledge Base with the real embedder in a throwaway pgvector (needs Docker; ~1.5 min on 12 CPUs) and prints, per Golden Question, where its expected Sections rank (hybrid, dense-only, and without bge's query prefix) and what the threshold gate does at the configured `BACKEND_RETRIEVAL_TOP_K` / `BACKEND_RETRIEVAL_MIN_SCORE`. Exits non-zero below the recall bars or on a gate Refusal of an answerable question |
+| `pixi run eval-retrieval` | The keyless retrieval eval: indexes the Knowledge Base with the real embedder in a throwaway pgvector (needs Docker; ~1.5 min on 12 CPUs) and prints, per Golden Question, where its expected Sections rank (hybrid, dense-only, and without bge's query prefix) and what the threshold gate does at the configured `BACKEND_RETRIEVAL_TOP_K` / `BACKEND_RETRIEVAL_MIN_SCORE`. Exits non-zero below the recall bars or on a gate Refusal of an answerable question. CI's `eval-retrieval` job runs it |
 | `pixi run gen-types` | Regenerate the frontend's API types from the backend's OpenAPI schema; commit the result |
+
+## Retrieval quality
+
+`pixi run eval-retrieval` (CI's `eval-retrieval` job) measures retrieval against the Golden Questions in `eval/golden-questions.yaml`. A question counts as found when, for each of its expected sources, its Section or one of its listed `alternatives` (other Sections that state the same fact, each confirmed by reading it) is among the top `BACKEND_RETRIEVAL_TOP_K` Passages. The bars are 100% of curated and 95% of generated answerable questions, with no answerable question refused by the threshold gate.
+
+At the defaults (`top_k` 8, `min_score` 0.66), on 150 Articles (1,150 Passages) and 317 Golden Questions:
+
+| recall@8 | hybrid (served) | dense-only | hybrid, no query prefix |
+| --- | --- | --- | --- |
+| curated (12, plus 2 known misses) | 100% | 83.3% | 100% |
+| generated (290) | 94.5% | 81.0% | 93.8% |
+
+- **Hybrid retrieval pays for itself.** BM25 adds 13–17 points over dense-only (ADR-0005).
+- **The bge query prefix is neutral** (within a point either way), so it stays on, as the model recommends.
+- **The threshold gate is a floor, not a separator.** The weakest answerable question's dense top-1 is 0.712, so `min_score` is 0.712 − 0.05 = 0.66, and no answerable question is refused.
+  - Off-topic questions score about 0.35–0.40 and are refused.
+  - Unanswerable questions close to a covered topic (LDAP, prices, SAML single logout) score 0.65–0.80, like answerable ones. The gate catches 1 of 13; the model's `NOT_IN_KNOWLEDGE_BASE` sentinel handles the rest.
+
+**Known misses.** Two curated questions are marked `known_retrieval_miss`: the eval reports them but leaves them out of the bars.
+
+- `gq-entra-auto-deprovision`: "leavers removed automatically" shares no words with SCIM or deprovisioning, so neither SCIM Section reaches the top 20.
+- `gq-google-sso`: "set up SSO with Google Workspace" pulls in workspace-setup Sections, and Attribute mapping ranks 20th.
+
+Neither a larger k, the query prefix nor a reranker over these candidates fixes them. When a question's wording shares nothing with the Section that answers it, the answer may wrongly say the Knowledge Base doesn't cover it. **Future work:** query expansion, meaning the Follow-up rewrite also expands or splits the question, or multi-query retrieval.
 
 ## Chat recording
 

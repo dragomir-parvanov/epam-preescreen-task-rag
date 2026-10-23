@@ -49,7 +49,55 @@ def test_parses_a_follow_up_with_history_and_its_ideal_rewrite() -> None:
     assert question.standalone_must_mention == [["Enterprise"]]
 
 
+def test_an_expected_source_may_name_alternative_sections_that_state_the_same_fact() -> None:
+    [question] = parse_golden_questions(
+        [
+            entry(
+                expected_sources=[
+                    {
+                        "article": "nimbus-plan-tiers",
+                        "section": "Feature matrix",
+                        "alternatives": [
+                            {"article": "nimbus-plan-tiers", "section": "Audit-log retention"}
+                        ],
+                    }
+                ]
+            )
+        ]
+    )
+
+    [source] = question.expected_sources
+    assert [(s.article, s.section) for s in source.options] == [
+        ("nimbus-plan-tiers", "Feature matrix"),
+        ("nimbus-plan-tiers", "Audit-log retention"),
+    ]
+
+
+def test_an_answerable_question_may_be_marked_a_known_retrieval_miss() -> None:
+    [question] = parse_golden_questions(
+        [entry(known_retrieval_miss="No word in common with the Section that answers it.")]
+    )
+
+    assert question.known_retrieval_miss == "No word in common with the Section that answers it."
+
+
 INCONSISTENT: dict[str, dict[str, Any]] = {
+    "known-miss-on-a-refusal": {
+        "answerable": False,
+        "expected_sources": [],
+        "must_mention": [],
+        "known_retrieval_miss": "Nothing to retrieve.",
+    },
+    "empty-known-miss-reason": {"known_retrieval_miss": ""},
+    "alternative-repeating-its-source": {
+        "expected_sources": [
+            {
+                "article": "nimbus-plan-tiers",
+                "section": "Feature matrix",
+                "alternatives": [{"article": "nimbus-plan-tiers", "section": "Feature matrix"}],
+            }
+        ]
+    },
     "answerable-without-sources": {"expected_sources": []},
     "answerable-without-must-mention": {"must_mention": []},
     "empty-term-group": {"must_mention": [["90 days"], []]},
