@@ -38,6 +38,11 @@ slug=$(jq -rs '
   | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9' '-' | cut -c1-50 | sed 's/^-*//; s/-*$//')
 out="chats/${start}_${slug:-session}.md"
 marker="<!-- session: $session -->"
+# Parallel sessions started in the same minute with the same prompt would share that name,
+# and the later render would overwrite the other session, so the second one gets an id suffix
+if [[ -e "$out" ]] && [[ "$(head -1 "$out")" != "$marker" ]]; then
+  out="chats/${start}_${slug:-session}_${session:0:8}.md"
+fi
 
 # Drop earlier renders of this session saved under another name (e.g. the old <uuid>.md)
 rm -f "chats/$session.md"
