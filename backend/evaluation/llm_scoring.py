@@ -208,6 +208,8 @@ class Totals:
     """`standalone_must_mention` groups hit, over the Follow-ups' groups."""
     refusals: tuple[int, int]
     """(unanswerable questions refused, unanswerable questions)."""
+    gap_instead_of_refusal: int
+    """Unanswerable questions given a gap Answer: a soft refusal, still the wrong outcome."""
     false_refusals: int
     """Answerable questions refused."""
     errors: int
@@ -236,6 +238,7 @@ def totals(scores: Sequence[QuestionScore]) -> Totals:
             sum(s.standalone_hit for s in scores), sum(s.standalone_total for s in scores)
         ),
         refusals=(sum(1 for s in unanswerable if s.outcome == "refusal"), len(unanswerable)),
+        gap_instead_of_refusal=sum(1 for s in unanswerable if s.outcome == "partial"),
         false_refusals=sum(1 for s in answerable if s.outcome == "refusal"),
         errors=sum(1 for s in scores if s.outcome == "error"),
         latency_p50_ms=percentile(latencies, 50),

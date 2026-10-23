@@ -260,21 +260,25 @@ def test_totals_summarise_the_scores() -> None:
         ),
         score_turn(golden("gq-d", category="unanswerable"), (), run(refusal(), latency_ms=400)),
         score_turn(golden("gq-e", category="unanswerable"), (), run(answer("Yes.", PRICING))),
+        score_turn(
+            golden("gq-f", category="unanswerable"), (), run(answer("I couldn't find X.", OKTA))
+        ),
     ]
 
     summary = totals(scores)
 
-    assert summary.questions == 5
-    assert summary.outcome_accuracy == 3 / 5
+    assert summary.questions == 6
+    assert summary.outcome_accuracy == 3 / 6
     assert summary.citation_precision == 1.0  # only gq-a cites a Section
     assert summary.citation_recall == 1 / 3  # over the three answerable questions
     assert summary.retrieval_recall == 2 / 3
-    assert summary.uncited_rate == 1 / 3  # of the three Answers
+    assert summary.uncited_rate == 1 / 4  # of the four Answers
     assert summary.must_mention_rate == 2 / 3
-    assert summary.refusals == (1, 2)  # unanswerable questions refused
+    assert summary.refusals == (1, 3)  # unanswerable questions refused
+    assert summary.gap_instead_of_refusal == 1  # gq-f: a soft refusal
     assert summary.false_refusals == 1
     assert summary.errors == 0
-    assert summary.usage == TokenUsage(input_tokens=5000, output_tokens=500)
+    assert summary.usage == TokenUsage(input_tokens=6000, output_tokens=600)
 
 
 def test_percentiles_are_nearest_rank() -> None:

@@ -60,7 +60,10 @@ def test_the_headline_leaves_known_retrieval_misses_out_and_lists_them_apart() -
 
     headline = report.split("## Known retrieval misses")[0]
     assert "| Outcome accuracy | 66.7% (2/3) |" in headline
-    assert "| Refusal correctness | 1/1 unanswerable refused; 1 answerable refused |" in headline
+    assert (
+        "| Refusal correctness | 1/1 unanswerable refused (0 got a gap Answer instead); "
+        "1 answerable refused |"
+    ) in headline
     known = report.split("## Known retrieval misses")[1].split("##")[0]
     assert "gq-google-sso" in known
 

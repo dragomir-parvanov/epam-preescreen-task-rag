@@ -92,7 +92,7 @@ def render_markdown(info: RunInfo, scores: Sequence[QuestionScore]) -> str:
             *_table(("Metric", "Value"), _headline(summary, info.model)),
             "",
             f"Whole run, known misses included: {_tokens(totals(scores).usage)}"
-            + (f", ${run_cost:.2f}." if run_cost is not None else "."),
+            + (f", {_usd(run_cost)}." if run_cost is not None else "."),
         ],
         ["## By category", "", *_by_category(scored)],
         ["## Wrong outcomes", "", *_wrong_outcomes(scored)],
@@ -110,12 +110,15 @@ _DEFINITIONS: Final = """\
 - **Outcome**: an unanswerable question expects a Refusal, a `partial` one an Answer stating \
 the gap phrase (`GAP_PHRASE`, anywhere, any case, either apostrophe), any other an Answer \
 without it. An Uncited Answer counts as an Answer. A failed Turn (`rewrite_failed`, \
-`llm_unavailable`, ...) is an `error`.
+`llm_unavailable`, ...) is an `error`. A gap Answer to an unanswerable question is a soft \
+refusal: it says what it couldn't find, but answers neighbouring facts instead of refusing.
 - **Blame** for a wrong outcome: `retrieval` when it is a Refusal or a gap and an expected \
 Section wasn't retrieved, so the model never saw it; `model` otherwise; `error` for a failed Turn.
 - **Citation precision and recall** are at Section level, over distinct Sections; citing any \
 alternative of an expected source counts for it. Precision averages over the Answers that cite \
-something; recall over the answerable questions, where a Refusal or an Uncited Answer scores 0.
+something; recall over the answerable questions, where a Refusal or an Uncited Answer scores 0. \
+Precision is against the Golden Question's expected Sections only, so a correctly cited extra \
+fact (a v2 caveat, a related error code) lowers it: read it as focus, not as wrong Citations.
 - **Retrieval recall**: the share of expected sources with any option among the retrieved \
 Passages.
 - **must_mention**: whole-word, case-insensitive term groups (any term in a group counts), \
@@ -132,13 +135,14 @@ def _headline(summary: Totals, model: str) -> list[tuple[str, str]]:
     cost = cost_usd(model, summary.usage)
     per_question = ""
     if cost is not None and summary.questions:
-        per_question = f" (${cost / summary.questions:.4f} a question)"
+        per_question = f" ({_usd(cost / summary.questions)} a question)"
     correct = round((summary.outcome_accuracy or 0) * summary.questions)
     return [
         ("Outcome accuracy", f"{_pct(summary.outcome_accuracy)} ({correct}/{summary.questions})"),
         (
             "Refusal correctness",
-            f"{refused}/{unanswerable} unanswerable refused; "
+            f"{refused}/{unanswerable} unanswerable refused "
+            f"({summary.gap_instead_of_refusal} got a gap Answer instead); "
             f"{summary.false_refusals} answerable refused",
         ),
         ("Citation precision", _pct(summary.citation_precision)),
@@ -151,7 +155,7 @@ def _headline(summary: Totals, model: str) -> list[tuple[str, str]]:
         ("Latency p50 / p95", f"{_s(summary.latency_p50_ms)} / {_s(summary.latency_p95_ms)}"),
         ("TTFT p50", _s(summary.ttft_p50_ms)),
         ("Tokens", _tokens(summary.usage)),
-        ("Cost", "n/a" if cost is None else f"${cost:.2f}{per_question}"),
+        ("Cost", "n/a" if cost is None else f"{_usd(cost)}{per_question}"),
     ]
 
 
@@ -270,6 +274,11 @@ def _pct(value: float | None) -> str:
 
 def _s(ms: float | None) -> str:
     return "-" if ms is None else f"{ms / 1000:.1f} s"
+
+
+def _usd(amount: float) -> str:
+    """Cents above a dollar; a cheap model's run needs the fractions."""
+    return f"${amount:.2f}" if amount >= 1 else f"${amount:.4f}"
 
 
 def _tokens(usage: TokenUsage) -> str:
