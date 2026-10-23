@@ -96,6 +96,11 @@ test = { depends-on = ["test-backend", "test-frontend"] }
 # Question. k and min_score come from Settings (BACKEND_RETRIEVAL_TOP_K, BACKEND_RETRIEVAL_MIN_SCORE).
 eval-retrieval = { cmd = "python -m evaluation.eval_retrieval", cwd = "backend" }
 
+# The full LLM eval (#29): opt-in, and never in CI. The 27 curated Golden Questions (`--all` for
+# every one) through the real ChatService and the configured LLM (.env), over a throwaway
+# pgvector (needs Docker). Writes eval/results/<provider>-<model>-<prompt version>-<set>.md/.json.
+eval = { cmd = "python -m evaluation.eval_llm", cwd = "backend" }
+
 # OpenAPI -> TypeScript. The schema is committed so API changes show up in review.
 gen-openapi = { cmd = "python -m app.export_openapi ../frontend/src/api/openapi.json", cwd = "backend" }
 gen-types = { cmd = "npm run gen-types", cwd = "frontend", depends-on = ["gen-openapi", "npm-install"] }

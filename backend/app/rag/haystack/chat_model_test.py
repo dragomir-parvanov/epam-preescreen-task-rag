@@ -5,7 +5,7 @@ from typing import Any
 
 import pytest
 
-from app.chat_model import ChatModel, Message
+from app.chat_model import ChatModel, Message, TokenUsage
 from app.config import Settings
 from app.errors import AppError
 from app.rag.haystack.chat_model import build_chat_model
@@ -119,6 +119,27 @@ async def test_claude_model_can_be_overridden(monkeypatch: pytest.MonkeyPatch) -
         await collect(build_chat_model(settings).stream(MESSAGES))
 
     assert server.requests[0].body["model"] == "claude-haiku-5-5"
+
+
+async def test_claude_reports_each_calls_token_usage(monkeypatch: pytest.MonkeyPatch) -> None:
+    usage: list[TokenUsage] = []
+    async with fake_llm_server(anthropic_stream("ok"), anthropic_message("ok")) as server:
+        model = build_chat_model(anthropic_settings(server, monkeypatch), on_usage=usage.append)
+        await collect(model.stream(MESSAGES))
+        await model.complete(MESSAGES)
+
+    # The fake server reports 10 input tokens and 5 output tokens for every reply.
+    assert usage == [TokenUsage(input_tokens=10, output_tokens=5)] * 2
+
+
+async def test_ollama_reports_each_calls_token_usage() -> None:
+    usage: list[TokenUsage] = []
+    async with fake_llm_server(ollama_stream("ok"), ollama_message("ok")) as server:
+        model = build_chat_model(ollama_settings(server.url), on_usage=usage.append)
+        await collect(model.stream(MESSAGES))
+        await model.complete(MESSAGES)
+
+    assert usage == [TokenUsage(input_tokens=10, output_tokens=5)] * 2
 
 
 async def test_ollama_streams_the_reply_from_the_default_model_without_thinking() -> None:

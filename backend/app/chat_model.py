@@ -4,7 +4,7 @@ The Haystack adapter in `app.rag.haystack` implements it for each provider; test
 hand-written fakes.
 """
 
-from collections.abc import AsyncIterator, Sequence
+from collections.abc import AsyncIterator, Callable, Sequence
 from dataclasses import dataclass
 from typing import Literal, Protocol
 
@@ -15,6 +15,18 @@ type Role = Literal["system", "user", "assistant"]
 class Message:
     role: Role
     text: str
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class TokenUsage:
+    """What one model call used, as the provider reports it. Output includes any thinking."""
+
+    input_tokens: int
+    output_tokens: int
+
+
+type UsageListener = Callable[[TokenUsage], None]
+"""Told the usage of each model call that runs to its end; the LLM eval meters cost with it."""
 
 
 class ChatModel(Protocol):

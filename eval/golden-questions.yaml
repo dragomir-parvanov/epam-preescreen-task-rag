@@ -485,7 +485,7 @@
     - Roles come from identity-provider groups, so the console change is overwritten at the next sign-in or sync.
     - Change the user's group in the identity provider instead.
   must_mention:
-    - [overwritten]
+    - [overwritten, overwrite, overwrites, overridden, overrides, replaced, replaces]
     - [group]
 
 - id: gq-admin-creating-a-workspace-1
@@ -775,7 +775,7 @@
   expected_facts:
     - No; secrets are resolved when the step runs, so the next step that resolves the name gets the new value without republishing.
   must_mention:
-    - [republishing]
+    - [republishing, republish, republished, re-publish, re-publishing, re-published]
     - [resolves, resolved]
 
 - id: gq-admin-secrets-vault-2
@@ -832,7 +832,7 @@
     - Reactivation needs a free seat because the user takes a seat again.
   must_mention:
     - [seat]
-    - [Reactivation]
+    - [Reactivation, reactivate, reactivates, reactivated, reactivating]
 
 - id: gq-admin-suspending-users-2
   question: Why is the Delete user option disabled for someone on the Nimbus Settings > Users page?
@@ -2523,7 +2523,7 @@
     - Reset links are single-use and expire after 1 hour (NIM-2858).
   must_mention:
     - [1 hour]
-    - [single-use]
+    - [single-use, single use, one-time, used once, only once]
 
 - id: gq-release-2-16-3-1
   question: What should a CSM do to plan a client's move off the legacy platform, as recommended in the Nimbus 2.16.3 release notes?
@@ -3331,7 +3331,7 @@
     - Restoring access to the same key brings the workspace back within minutes with no data loss
   must_mention:
     - [Encryption key unavailable]
-    - [unreadable]
+    - [unreadable, can't be read, cannot be read, not readable, inaccessible]
 
 - id: gq-tier-environments-1
   question: Does promoting a Nimbus workflow from Development to Production copy its connections and environment variables?
@@ -3572,7 +3572,7 @@
     - A run counts when it starts, even if it later fails or is cancelled
   must_mention:
     - [Test run]
-    - [doesn't count]
+    - [doesn't count, don't count, does not count, do not count, isn't counted, aren't counted, not counted, never counts, never count]
 
 - id: gq-tier-workflow-run-quotas-2
   question: What happens to scheduled and webhook-triggered runs once a workspace has used 100% of its monthly workflow runs?
@@ -4107,7 +4107,7 @@
     - An Admin revokes a key by deleting it under Admin > API keys; it gets 401 from the next request
   must_mention:
     - [no expiry date, never expire]
-    - [Delete]
+    - [Delete, deletes, deleted, deleting]
 
 - id: gq-v2-admin-api-keys-2
   question: A client lost the text of an API key on the legacy Nimbus admin console; can it be shown again?
@@ -4336,7 +4336,7 @@
   expected_facts:
     - No. Two-factor is optional per user and can't be required by an Admin; an Admin can only see who has it and reset it.
   must_mention:
-    - [can't require, Not available]
+    - [can't require, cannot require, can't be required, cannot be required, can't enforce, cannot enforce, can't force, cannot force, Not available]
     - [optional]
 
 - id: gq-v2-troubleshooting-workflow-runs-1

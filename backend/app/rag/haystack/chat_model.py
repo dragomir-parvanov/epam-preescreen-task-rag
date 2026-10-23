@@ -11,7 +11,7 @@ both timeouts from `Settings`: connect, and read (the longest gap between two st
 
 import asyncio
 from collections.abc import AsyncIterator, Callable, Sequence
-from typing import Final, Protocol
+from typing import Any, Final, Protocol, cast
 
 import anthropic
 import httpx
@@ -27,7 +27,7 @@ from haystack_integrations.components.generators.ollama.chat.chat_generator impo
     OllamaChatGenerator,
 )
 
-from app.chat_model import ChatModel, Message
+from app.chat_model import ChatModel, Message, TokenUsage, UsageListener
 from app.config import Settings
 from app.errors import AppError
 from app.fake_chat_model import FakeChatModel
@@ -35,6 +35,9 @@ from app.fake_chat_model import FakeChatModel
 LLM_AUTH_FAILED: Final = "The language model provider rejected the configured credentials."
 LLM_UNAVAILABLE: Final = "The language model is unavailable right now. Please try again."
 LLM_TIMEOUT: Final = "The language model took too long to respond. Please try again."
+
+CLAUDE_EFFORT: Final = "low"
+"""Claude's `output_config.effort`, its latency control; the LLM eval stamps it on reports."""
 
 
 class _Generator(Protocol):
@@ -50,9 +53,15 @@ _END: Final = object()
 
 
 class HaystackChatModel:
-    def __init__(self, generator: _Generator, translate_error: ErrorTranslator) -> None:
+    def __init__(
+        self,
+        generator: _Generator,
+        translate_error: ErrorTranslator,
+        on_usage: UsageListener | None = None,
+    ) -> None:
         self._generator = generator
         self._translate_error = translate_error
+        self._on_usage = on_usage
 
     async def stream(self, messages: Sequence[Message]) -> AsyncIterator[str]:
         deltas: asyncio.Queue[str | object] = asyncio.Queue()
@@ -86,13 +95,29 @@ class HaystackChatModel:
         self, messages: Sequence[Message], streaming_callback: StreamingCallbackT | None = None
     ) -> dict[str, list[ChatMessage]]:
         try:
-            return await self._generator.run_async(
+            result = await self._generator.run_async(
                 _to_haystack(messages), streaming_callback=streaming_callback
             )
         except Exception as error:
             if (app_error := self._translate_error(error)) is None:
                 raise
             raise app_error from error
+        if self._on_usage is not None and (usage := _usage(result["replies"])) is not None:
+            self._on_usage(usage)
+        return result
+
+
+def _usage(replies: list[ChatMessage]) -> TokenUsage | None:
+    """Both generators report usage in OpenAI's shape; Claude's `prompt_tokens` includes any
+    cached input."""
+    usage = replies[0].meta.get("usage") if replies else None
+    if not isinstance(usage, dict):
+        return None
+    counts = cast(dict[str, Any], usage)
+    return TokenUsage(
+        input_tokens=int(counts.get("prompt_tokens") or 0),
+        output_tokens=int(counts.get("completion_tokens") or 0),
+    )
 
 
 def _to_haystack(messages: Sequence[Message]) -> list[ChatMessage]:
@@ -104,13 +129,16 @@ def _to_haystack(messages: Sequence[Message]) -> list[ChatMessage]:
     return [build[message.role](message.text) for message in messages]
 
 
-def build_chat_model(settings: Settings) -> ChatModel:
-    """The configured provider's model. `Settings` has already checked the config's shape."""
+def build_chat_model(settings: Settings, *, on_usage: UsageListener | None = None) -> ChatModel:
+    """The configured provider's model. `Settings` has already checked the config's shape.
+
+    `on_usage` hears the token usage of each call that runs to its end; `fake` reports none.
+    """
     match settings.llm_provider:
         case "anthropic":
-            return HaystackChatModel(_claude(settings), _claude_error)
+            return HaystackChatModel(_claude(settings), _claude_error, on_usage)
         case "ollama":
-            return HaystackChatModel(_ollama(settings), _ollama_error)
+            return HaystackChatModel(_ollama(settings), _ollama_error, on_usage)
         case "fake":
             return FakeChatModel()
 
@@ -132,7 +160,7 @@ def _claude(settings: Settings) -> AnthropicChatGenerator:
     # Thinking can't be turned off on the default model (Opus 5.5), so effort is the latency
     # control. No temperature, top_p or top_k: API version 2026-10-21 rejects them.
     generator = AnthropicChatGenerator(
-        model=settings.llm_model, generation_kwargs={"output_config": {"effort": "low"}}
+        model=settings.llm_model, generation_kwargs={"output_config": {"effort": CLAUDE_EFFORT}}
     )
     generator.async_client = anthropic_client(settings)
     return generator
