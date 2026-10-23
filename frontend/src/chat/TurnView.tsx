@@ -194,7 +194,7 @@ function CitedAnswer({
             {answer.retrieved_passages.map((passage) => (
               <li key={passage.id} className="flex flex-wrap items-center gap-1.5">
                 <span>{passageLocation(passage)}</span>
-                <VersionBadges passage={passage} />
+                <VersionBadges of={passage} />
                 {citedIds.has(passage.id) ? (
                   <span className="rounded bg-blue-50 px-1.5 text-blue-800">cited</span>
                 ) : (

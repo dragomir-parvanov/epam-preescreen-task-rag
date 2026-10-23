@@ -53,7 +53,7 @@ export function MarkerChip({
         >
           <span className="mb-1 flex flex-wrap items-center gap-1">
             <span className="font-semibold text-slate-900">{passage.article.title}</span>
-            <VersionBadges passage={passage} />
+            <VersionBadges of={passage} />
           </span>
           <span className="mb-1 block text-slate-500">{passageLocation(passage)}</span>
           <span className="block text-slate-700">{preview}</span>

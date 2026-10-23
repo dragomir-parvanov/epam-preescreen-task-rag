@@ -15,3 +15,8 @@ export function passageLocation(passage: Passage): string {
     passage.section.path[0] === title ? passage.section.path.slice(1) : passage.section.path;
   return [title, ...path].join(" › ");
 }
+
+/** Content that applies to Nimbus v2 (legacy) and not to v3: a Passage or a whole Article. */
+export function isV2Only({ applies_to }: Pick<Passage, "applies_to">): boolean {
+  return applies_to.includes("v2") && !applies_to.includes("v3");
+}

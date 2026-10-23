@@ -1,20 +1,43 @@
-// A deliberately tiny Markdown renderer for Answer text: paragraphs, bulleted and numbered
-// lists, headings (as bold lines), fenced code, inline code and **bold**. It builds React
-// elements, never HTML strings, so model text can't inject markup. Citation markers are handed
-// to `renderMarker`, which is why this isn't a library: markers become components mid-text.
-import type { ReactNode } from "react";
+// A deliberately small Markdown renderer for Answer text and Knowledge Base Sections:
+// paragraphs, bulleted and numbered lists, headings, fenced code, pipe tables, inline code,
+// **bold** and links (shown as their text). It builds React elements, never HTML strings, so
+// model text can't inject markup. Citation markers are handed to `renderMarker`, which is why
+// this isn't a library: markers become components mid-text.
+import { createElement, type ReactNode } from "react";
 import { splitMarkers } from "./markers";
+
+type Align = "left" | "center" | "right" | undefined;
 
 type Block =
   | { kind: "paragraph"; lines: string[] }
-  | { kind: "heading"; text: string }
+  | { kind: "heading"; level: number; text: string }
   | { kind: "list"; ordered: boolean; items: string[] }
-  | { kind: "code"; text: string };
+  | { kind: "code"; text: string }
+  | { kind: "table"; align: Align[]; header: string[]; rows: string[][] };
 
 const BULLET = /^\s*[-*+]\s+(.*)$/;
 const NUMBERED = /^\s*\d+[.)]\s+(.*)$/;
-const HEADING = /^#{1,6}\s+(.*)$/;
+const HEADING = /^(#{1,6})\s+(.*)$/;
 const FENCE = /^\s*```/;
+const TABLE_ROW = /^\s*\|/;
+const TABLE_SEPARATOR = /^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?\s*$/;
+
+/** The cells of a `| a | b |` row. `\|` is a pipe inside a cell, as in GitHub Markdown. */
+function tableCells(line: string): string[] {
+  const row = line
+    .trim()
+    .replace(/^\|/, "")
+    .replace(/(?<!\\)\|$/, "");
+  return row.split(/(?<!\\)\|/).map((cell) => cell.trim().replaceAll("\\|", "|"));
+}
+
+function cellAlign(separator: string): Align {
+  const left = separator.startsWith(":");
+  const right = separator.endsWith(":");
+  if (left && right) return "center";
+  if (right) return "right";
+  return left ? "left" : undefined;
+}
 
 function parseBlocks(text: string): Block[] {
   const blocks: Block[] = [];
@@ -40,10 +63,22 @@ function parseBlocks(text: string): Block[] {
       close();
       continue;
     }
+    if (TABLE_ROW.test(line) && TABLE_SEPARATOR.test(lines[i + 1] ?? "")) {
+      close();
+      const header = tableCells(line);
+      const align = tableCells(lines[++i] ?? "").map(cellAlign);
+      const rows: string[][] = [];
+      while (i + 1 < lines.length && TABLE_ROW.test(lines[i + 1] ?? "")) {
+        const cells = tableCells(lines[++i] ?? "");
+        rows.push(header.map((_, c) => cells[c] ?? ""));
+      }
+      blocks.push({ kind: "table", align, header, rows });
+      continue;
+    }
     const heading = HEADING.exec(line);
     if (heading) {
       close();
-      blocks.push({ kind: "heading", text: heading[1] ?? "" });
+      blocks.push({ kind: "heading", level: heading[1]?.length ?? 1, text: heading[2] ?? "" });
       continue;
     }
     const bullet = BULLET.exec(line);
@@ -78,7 +113,8 @@ function parseBlocks(text: string): Block[] {
 
 type MarkerRenderer = (n: number, key: string) => ReactNode;
 
-const INLINE = /(`[^`]+`|\*\*[^*]+\*\*)/;
+const INLINE = /(`[^`]+`|\*\*[^*]+\*\*|\[[^\]]+\]\([^)\s]+\))/;
+const LINK = /^\[([^\]]+)\]\([^)\s]+\)$/;
 
 function renderInline(text: string, renderMarker: MarkerRenderer | undefined, key: string) {
   const parts = renderMarker ? splitMarkers(text) : [text];
@@ -96,7 +132,8 @@ function renderInline(text: string, renderMarker: MarkerRenderer | undefined, ke
       if (run.length > 4 && run.startsWith("**") && run.endsWith("**")) {
         return <strong key={runKey}>{run.slice(2, -2)}</strong>;
       }
-      return run;
+      // Links point at files and pages this app doesn't serve, so only their text is shown.
+      return LINK.exec(run)?.[1] ?? run;
     });
   });
 }
@@ -104,10 +141,16 @@ function renderInline(text: string, renderMarker: MarkerRenderer | undefined, ke
 export function Markdown({
   text,
   renderMarker,
+  headingOffset,
 }: {
   text: string;
   /** Renders Citation marker `n` in place. Without it, markers stay as written. */
   renderMarker?: MarkerRenderer;
+  /**
+   * Renders `#`…`######` as real headings, this many levels down (`##` with 1 is an `<h3>`).
+   * Without it, headings are bold lines, as an Answer's should be.
+   */
+  headingOffset?: number;
 }) {
   return (
     <div className="space-y-3 leading-relaxed">
@@ -116,12 +159,22 @@ export function Markdown({
         switch (block.kind) {
           case "paragraph":
             return <p key={key}>{renderInline(block.lines.join(" "), renderMarker, key)}</p>;
-          case "heading":
-            return (
-              <p key={key} className="font-semibold">
-                {renderInline(block.text, renderMarker, key)}
-              </p>
+          case "heading": {
+            const content = renderInline(block.text, renderMarker, key);
+            if (headingOffset === undefined) {
+              return (
+                <p key={key} className="font-semibold">
+                  {content}
+                </p>
+              );
+            }
+            const level = Math.min(block.level + headingOffset, 6);
+            return createElement(
+              `h${level}`,
+              { key, className: level <= 3 ? "pt-2 text-lg font-semibold" : "pt-1 font-semibold" },
+              content,
             );
+          }
           case "list": {
             const items = block.items.map((item, i) => (
               <li key={i}>{renderInline(item, renderMarker, `${key}.${i}`)}</li>
@@ -144,6 +197,41 @@ export function Markdown({
               >
                 {block.text}
               </pre>
+            );
+          case "table":
+            return (
+              <div key={key} className="overflow-x-auto">
+                <table className="min-w-full border-collapse text-left text-sm">
+                  <thead>
+                    <tr>
+                      {block.header.map((cell, c) => (
+                        <th
+                          key={c}
+                          style={{ textAlign: block.align[c] }}
+                          className="border border-slate-300 bg-slate-100 px-2 py-1 font-semibold"
+                        >
+                          {renderInline(cell, renderMarker, `${key}.h${c}`)}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {block.rows.map((row, r) => (
+                      <tr key={r}>
+                        {row.map((cell, c) => (
+                          <td
+                            key={c}
+                            style={{ textAlign: block.align[c] }}
+                            className="border border-slate-300 px-2 py-1 align-top"
+                          >
+                            {renderInline(cell, renderMarker, `${key}.${r}.${c}`)}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             );
           default:
             return null;

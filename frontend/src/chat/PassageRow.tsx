@@ -1,19 +1,18 @@
 import type { components } from "../api/schema";
-import { passageLocation, type OpenSection } from "./passages";
+import { isV2Only, passageLocation, type OpenSection } from "./passages";
 
 type Passage = components["schemas"]["Passage"];
 
 /** An orange `v2` badge for v2-only content and `Deprecated` for deprecated content. */
-export function VersionBadges({ passage }: { passage: Passage }) {
-  const legacy = passage.applies_to.includes("v2") && !passage.applies_to.includes("v3");
+export function VersionBadges({ of }: { of: Pick<Passage, "applies_to" | "status"> }) {
   return (
     <>
-      {legacy && (
+      {isV2Only(of) && (
         <span className="rounded bg-orange-100 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-orange-800">
           v2
         </span>
       )}
-      {passage.status === "deprecated" && (
+      {of.status === "deprecated" && (
         <span className="rounded bg-orange-600 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-white uppercase">
           Deprecated
         </span>
@@ -57,7 +56,7 @@ export function PassageRow({
         )}
         <span className="flex-1 text-slate-700">{passageLocation(passage)}</span>
         <span className="flex shrink-0 items-center gap-1">
-          <VersionBadges passage={passage} />
+          <VersionBadges of={passage} />
         </span>
         <span aria-hidden className="text-slate-400">
           {expanded ? "▾" : "▸"}
