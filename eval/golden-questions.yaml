@@ -915,6 +915,508 @@
     - [GET /workspace]
     - [console]
 
+- id: gq-api-api-keys-1
+  question: How do I tell which Nimbus API key a client's integration is using if the secret is never shown again?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-api-keys, section: Object fields}
+  expected_facts:
+    - Each key has last_four, the last four characters of the secret
+    - The key_ id is not the secret and can be logged
+  must_mention:
+    - [last_four]
+
+- id: gq-api-api-keys-2
+  question: What is the zero-downtime way to rotate a Nimbus API key through the API Keys API?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-api-keys, section: Endpoints > Rotating a key}
+  expected_facts:
+    - Create the replacement with POST /api-keys, deploy it, watch the old key's last_used_at
+    - Revoke the old key with DELETE /api-keys/{id} once it is unused
+  must_mention:
+    - [last_used_at]
+    - [DELETE /api-keys]
+
+- id: gq-api-approvals-1
+  question: How can a client approve a Nimbus approval step from their own portal through the API, and is a comment required?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-approvals, section: Endpoints > Approving and rejecting}
+  expected_facts:
+    - POST /approvals/{id}/approve with an optional comment
+    - a comment is required when rejecting, optional when approving
+  must_mention:
+    - [comment]
+    - [required]
+
+- id: gq-api-approvals-2
+  question: What happens to a Nimbus run if nobody decides its approval before expires_at?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-approvals, section: Object fields}
+  expected_facts:
+    - The approval becomes expired after 7 days
+    - the run fails with WF-410
+  must_mention:
+    - [WF-410]
+    - [7 days]
+
+- id: gq-api-audit-log-1
+  question: How do I find out which API key changed a user's role using the Nimbus Audit Log API?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-audit-log, section: Endpoints > Action names}
+    - {article: nimbus-api-audit-log, section: Object fields}
+  expected_facts:
+    - Filter GET /audit-log/events on action=user.role_changed
+    - The actor object has type api_key with the key_ id, and changes.role holds the old and new role
+  must_mention:
+    - [user.role_changed]
+    - [api_key]
+
+- id: gq-api-audit-log-2
+  question: Can I filter Nimbus audit log events by a prefix like api_key.* in the action parameter?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-audit-log, section: Filtering and pagination}
+  expected_facts:
+    - Yes, action accepts an exact action, a comma-separated list, or a prefix ending in .*
+    - Filters combine with AND
+  must_mention:
+    - [api_key.*]
+    - [comma-separated]
+
+- id: gq-api-connections-1
+  question: Why can't I delete a Nimbus connection with DELETE /connections/{id}?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-connections, section: Endpoints > Deleting a connection}
+  expected_facts:
+    - It is refused while an active workflow has a step using the connection
+    - Deactivate those workflows or point them at another connection first
+  must_mention:
+    - [active workflow]
+    - [Deactivate]
+
+- id: gq-api-connections-2
+  question: What happens to a Nimbus connection when POST /connections/{id}/test fails with CONN-401?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-connections, section: Endpoints > Testing a connection}
+  expected_facts:
+    - The connection shows needs_attention and the connector.disconnected webhook event is sent
+    - A Builder or Admin must click Reconnect
+  must_mention:
+    - [needs_attention]
+    - [Reconnect]
+
+- id: gq-api-environments-1
+  question: What does POST /workflows/{id}/promote return when the workflow uses Salesforce but the Production environment has no Salesforce connection?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-environments, section: Errors}
+  expected_facts:
+    - 409 conflict
+    - the message names the connector and step key, e.g. No Production connection for connector salesforce
+  must_mention:
+    - ['409']
+    - [No Production connection]
+
+- id: gq-api-environments-2
+  question: When promoting a Nimbus workflow to Production through the API, how do I choose which Production connection it uses if there are several for the same connector?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-environments, section: Endpoints > Promoting a workflow}
+  expected_facts:
+    - Send connection_map mapping each Development connection id to a Production connection id
+    - With exactly one Production connection for the connector, Nimbus uses it automatically
+  must_mention:
+    - [connection_map]
+
+- id: gq-api-error-format-1
+  question: How long does the Nimbus API remember an Idempotency-Key, and what happens if a client reuses one with a different request body?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-error-format, section: Endpoints > Idempotency-Key}
+  expected_facts:
+    - Keys are remembered for 24 hours per workspace
+    - the same key with a different body is rejected with 409 conflict
+  must_mention:
+    - [24 hours]
+    - ['409']
+
+- id: gq-api-error-format-2
+  question: What should I ask a client for when escalating a failed Nimbus API call to OmniCorp support?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-error-format, section: Endpoints > Request ids}
+  expected_facts:
+    - The X-Request-Id from the response, plus the method, path and UTC time
+  must_mention:
+    - [X-Request-Id]
+
+- id: gq-api-folders-1
+  question: Can a client create a sub-folder inside another folder with the Nimbus Folders API?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-folders, section: Endpoints}
+  expected_facts:
+    - No; folders are one level deep and can't contain folders
+    - a body with parent_id is rejected with 400 invalid_request
+  must_mention:
+    - [one level deep]
+    - [parent_id]
+
+- id: gq-api-folders-2
+  question: How do I move a Nimbus workflow into a different folder through the API?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-folders, section: Endpoints > Moving workflows between folders}
+  expected_facts:
+    - PATCH /workflows/{id} with folder_id set to the folder's fld_ id
+    - folder_id null takes it out of every folder
+  must_mention:
+    - [folder_id]
+    - ['PATCH /workflows/{id}']
+
+- id: gq-api-inbound-webhook-triggers-1
+  question: What does a Nimbus inbound webhook trigger URL return when the posted JSON payload is bigger than 1 MB?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-inbound-webhook-triggers, section: Errors}
+  expected_facts:
+    - 400 invalid_request
+    - no run is created
+  must_mention:
+    - ['400']
+    - [1 MB]
+
+- id: gq-api-inbound-webhook-triggers-2
+  question: A client leaked the URL of their Nimbus inbound webhook trigger. How do they replace it, and what happens to the old URL?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-inbound-webhook-triggers, section: Endpoints > Regenerating the trigger token}
+  expected_facts:
+    - Select the trigger in the builder and click Regenerate URL
+    - the old token stops working immediately and gets 404
+  must_mention:
+    - [Regenerate URL]
+    - ['404']
+
+- id: gq-api-invitations-1
+  question: Does a pending Nimbus invitation created with POST /invitations use up a seat?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-invitations, section: Endpoints > Seat checks}
+  expected_facts:
+    - No, an invited person takes a seat only when they accept
+    - Seats are checked on creation and again on acceptance; if full, the invitation stays pending
+  must_mention:
+    - [accept]
+    - [pending]
+
+- id: gq-api-invitations-2
+  question: How do I resend a Nimbus invitation through the Invitations API?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-invitations, section: Endpoints}
+  expected_facts:
+    - There is no resend endpoint; revoke the old invitation with DELETE and create a new one
+    - The new invitation has a fresh link and a fresh expiry
+  must_mention:
+    - [DELETE]
+    - [expiry]
+
+- id: gq-api-run-steps-1
+  question: How do I get the log lines for just the failed step of a Nimbus run through GET /runs/{id}/steps?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-run-steps, section: Endpoints > Reading step logs}
+  expected_facts:
+    - Add include=logs and filter with step_key
+    - Secret values appear as [redacted] in logs
+  must_mention:
+    - [include=logs]
+    - [step_key]
+
+- id: gq-api-run-steps-2
+  question: At what size does the Nimbus run steps API cut off a step's input and output?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-run-steps, section: Object fields}
+  expected_facts:
+    - Input and output are cut at 64 KB each
+    - input_truncated or output_truncated is true when cut
+  must_mention:
+    - [64 KB]
+    - [input_truncated, output_truncated]
+
+- id: gq-api-runs-1
+  question: Which runs can be retried with POST /runs/{id}/retry in the Nimbus Runs API, and what input does the new run get?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-runs, section: Endpoints > Cancelling and retrying}
+  expected_facts:
+    - Runs that ended as failed, timed_out or cancelled can be retried
+    - The new run starts from the first step with the original input on the currently published version, with retry_of set
+  must_mention:
+    - [timed_out]
+    - [retry_of]
+
+- id: gq-api-runs-2
+  question: If a client sends the same Idempotency-Key twice when starting a Nimbus workflow run, does it start two runs?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-runs, section: Endpoints > Starting a run}
+  expected_facts:
+    - Within 24 hours Nimbus returns the first run instead of starting a second one
+    - Reusing the key with a different body returns 409 conflict
+  must_mention:
+    - [24 hours]
+    - ['409']
+
+- id: gq-api-schedules-1
+  question: How do I make a Nimbus workflow schedule follow a specific office's time zone instead of the workspace time zone via the Schedules API?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-schedules, section: Object fields}
+  expected_facts:
+    - Set time_zone to an IANA time zone name such as Europe/London
+    - null time_zone means the workspace time zone; effective_time_zone shows which one is used
+  must_mention:
+    - [time_zone]
+    - [IANA]
+
+- id: gq-api-schedules-2
+  question: What does PUT /workflows/{id}/schedule return when the cron expression is invalid?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-schedules, section: Errors}
+  expected_facts:
+    - 400 invalid_request with a message starting WF-100
+    - the previous schedule stays in place
+  must_mention:
+    - [WF-100]
+    - ['400']
+
+- id: gq-api-secrets-1
+  question: Can a client read back a secret's value through the Nimbus Secrets API, or only its name?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-secrets, section: Endpoints}
+    - {article: nimbus-api-secrets, section: Object fields}
+  expected_facts:
+    - No endpoint ever returns a value; GET /secrets lists names and metadata only
+    - value is write-only, accepted on PUT and never in any response
+  must_mention:
+    - [never]
+    - [Write-only, write-only]
+
+- id: gq-api-secrets-2
+  question: What error does PUT /secrets/{name} return when a Business workspace already has 250 secrets?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-secrets, section: Errors > Limits per tier}
+  expected_facts:
+    - 409 conflict for a new name once the Plan Tier's secrets limit is reached
+    - Business allows 250 secrets; replacing an existing secret doesn't count
+  must_mention:
+    - ['409']
+    - ['250']
+
+- id: gq-api-users-1
+  question: Why does POST /users/{id}/reactivate return 409 conflict in the Nimbus Users API?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-users, section: Errors}
+  expected_facts:
+    - Every seat is taken, so the user can't be reactivated until a seat is freed or the Plan Tier changed
+    - Also returned when the user is already active
+  must_mention:
+    - [seat]
+    - ['409']
+
+- id: gq-api-users-2
+  question: Can I use the Nimbus Users API to change a workflow owner's role to Viewer?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-users, section: Endpoints > Changing a role}
+  expected_facts:
+    - 'No: a user who still owns workflows can''t become a Viewer, because owners must be Builders or Admins'
+    - Transfer the workflows first
+  must_mention:
+    - [Viewer]
+    - [transfer]
+
+- id: gq-api-webhook-deliveries-1
+  question: When I redeliver a Nimbus webhook with POST /webhooks/deliveries/{id}/redeliver, does the X-Nimbus-Delivery id change?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-webhook-deliveries, section: Endpoints > Redelivering}
+  expected_facts:
+    - No, the redelivery uses the same delivery id in X-Nimbus-Delivery with a fresh signature
+    - A receiver that dedupes on the id will ignore a redelivery of a delivery it already processed
+  must_mention:
+    - [same]
+    - [X-Nimbus-Delivery]
+
+- id: gq-api-webhook-deliveries-2
+  question: How can I list only the failed webhook deliveries for one Nimbus endpoint, leaving out test events?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-webhook-deliveries, section: Filtering and pagination}
+  expected_facts:
+    - Use GET /webhooks/endpoints/{id}/deliveries with status=failed
+    - Add test=false to leave out test events
+  must_mention:
+    - [status=failed]
+    - [test=false]
+
+- id: gq-api-webhook-endpoints-1
+  question: Can I get a Nimbus webhook endpoint's signing secret again after registering it through the API?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-webhook-endpoints, section: Endpoints > Registering an endpoint}
+  expected_facts:
+    - No, signing_secret is only in the POST response
+    - If lost, the secret has to be rolled under Settings > Developers > Webhooks
+  must_mention:
+    - [signing_secret]
+    - [rolled]
+
+- id: gq-api-webhook-endpoints-2
+  question: How do I re-enable a Nimbus webhook endpoint that has disabled_reason failing using the Webhook Endpoints API?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-webhook-endpoints, section: Filtering and pagination}
+  expected_facts:
+    - Fix the receiver and send a test event
+    - Then PATCH the endpoint with status enabled
+  must_mention:
+    - [test event]
+    - [PATCH]
+
+- id: gq-api-workflows-1
+  question: Why does DELETE /workflows/{id} return a 409 conflict through the Nimbus Workflows API?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-workflows, section: Errors}
+  expected_facts:
+    - DELETE on an active workflow returns 409 conflict
+    - The workflow has to be deactivated first
+  must_mention:
+    - ['409']
+    - [deactivate]
+
+- id: gq-api-workflows-2
+  question: Does changing a workflow's name with PATCH /workflows/{id} create a new workflow version in Nimbus?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-workflows, section: Endpoints > Versions}
+  expected_facts:
+    - Only changes to trigger or steps publish a new version; name, description, folder_id or owner_id don't
+    - The last 50 versions are kept
+  must_mention:
+    - [trigger, steps]
+    - ['50']
+
+- id: gq-api-workspace-1
+  question: Do suspended users and pending invitations count in the seats figure from GET /workspace/usage in Nimbus?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-workspace, section: Endpoints > Reading usage}
+  expected_facts:
+    - No, seats counts active users of any role
+    - Suspended users and pending invitations don't count
+  must_mention:
+    - [Suspended users]
+    - [pending invitations]
+
+- id: gq-api-workspace-2
+  question: How can a client see through the Nimbus Workspace API that a Plan Tier downgrade is scheduled?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-api-workspace, section: Object fields}
+  expected_facts:
+    - GET /workspace returns pending_plan_change with plan_tier and effective_at
+    - A downgrade shows there until the end of the current billing period; upgrades take effect immediately
+  must_mention:
+    - [pending_plan_change]
+    - [end of the current billing period, end of the billing period]
+
 - id: gq-connector-amazon-s3-1
   question: How does Nimbus assume an IAM role for the Amazon S3 connector, and what goes in the role's trust policy?
   category: single-article
@@ -1657,6 +2159,431 @@
     - [API token]
     - [Token access]
 
+- id: gq-tier-active-connector-limits-1
+  question: If a client has two Salesforce connections (sandbox and production) used by active workflows, how many active connectors does that count as in Nimbus?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-active-connector-limits, section: How it works}
+  expected_facts:
+    - Several connections to the same connector count once
+    - A connector is active when at least one of its connections is used by an active workflow
+  must_mention:
+    - [count once]
+    - [active workflow]
+
+- id: gq-tier-active-connector-limits-2
+  question: What happens when a Starter workspace tries to activate a workflow that would take it over 5 active connectors?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-active-connector-limits, section: How it works > What happens at the limit}
+  expected_facts:
+    - Nimbus refuses the activation and the workflow stays inactive
+    - POST /workflows/{id}/activate returns 409 Conflict with the same message
+  must_mention:
+    - [inactive]
+    - ['409']
+
+- id: gq-tier-approval-steps-1
+  question: Does a Nimbus run waiting at an approval step count towards the 60-minute run timeout?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-approval-steps, section: How it works > Timing and the run quota}
+  expected_facts:
+    - No; the timeout clock stops while the run is waiting_for_approval and resumes when approved
+    - An undecided approval expires after 7 days and the run fails with WF-410
+  must_mention:
+    - [60-minute]
+    - [waiting_for_approval]
+
+- id: gq-tier-approval-steps-2
+  question: What happens to runs waiting for approval when a Business workspace downgrades to Starter?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-approval-steps, section: When the Plan Tier changes}
+  expected_facts:
+    - Waiting runs are left alone and can still be decided until they expire
+    - Workflows containing an approval step are deactivated and can't be reactivated until the step is removed
+  must_mention:
+    - [waiting_for_approval]
+    - [deactivated]
+
+- id: gq-tier-audit-log-streaming-1
+  question: How do I set up audit log streaming to Splunk for an Enterprise client in Nimbus?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-audit-log-streaming, section: Turning it on}
+  expected_facts:
+    - An Admin goes to Settings > Audit log > Streaming, adds a Splunk destination with the HEC URL and HEC token, sends a test event and enables the stream.
+    - Past events aren't replayed.
+  must_mention:
+    - [HEC token]
+    - [Send test event]
+    - [Enable stream]
+
+- id: gq-tier-audit-log-streaming-2
+  question: What happens when the client's Splunk or HTTPS destination is down and Nimbus can't deliver streamed audit log events?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-audit-log-streaming, section: How it works > Delivery failures}
+  expected_facts:
+    - Nimbus retries the batch with exponential backoff for up to 24 hours, status Retrying then Failing.
+    - Dropped events stay in the workspace audit log and can be filled in with a CSV export.
+  must_mention:
+    - [24 hours]
+    - [Retrying, Failing]
+    - [CSV export]
+
+- id: gq-tier-concurrent-runs-1
+  question: Does a Nimbus run waiting for approval hold one of the workspace's concurrent run slots?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-concurrent-runs, section: How it works}
+  expected_facts:
+    - No; only runs with status running hold a slot
+    - A run in waiting_for_approval releases its slot while an approver decides
+  must_mention:
+    - [waiting_for_approval]
+    - [slot is released, released]
+
+- id: gq-tier-concurrent-runs-2
+  question: Does time a run spends queued with WF-310 count towards the 60-minute run timeout?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-concurrent-runs, section: How it works}
+  expected_facts:
+    - No; the 60-minute run timeout starts when the run moves to running
+    - WF-310 is a notice, not a failure; the run will start
+  must_mention:
+    - [running]
+    - [WF-310]
+
+- id: gq-tier-customer-managed-keys-1
+  question: Which Azure role does the OmniCorp Nimbus Key Access application need on the key for customer-managed encryption keys?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-customer-managed-keys, section: Turning it on}
+  expected_facts:
+    - Grant admin consent for the OmniCorp Nimbus Key Access enterprise application in Microsoft Entra ID
+    - Assign it the Key Vault Crypto Service Encryption User role on the key
+  must_mention:
+    - [Key Vault Crypto Service Encryption User]
+
+- id: gq-tier-customer-managed-keys-2
+  question: What happens to a Nimbus Enterprise workspace if the client disables their customer-managed key in AWS KMS?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-customer-managed-keys, section: How it works > Rotation and revocation}
+  expected_facts:
+    - 'The workspace becomes unreadable: the console shows Encryption key unavailable and no new runs start'
+    - Restoring access to the same key brings the workspace back within minutes with no data loss
+  must_mention:
+    - [Encryption key unavailable]
+    - [unreadable]
+
+- id: gq-tier-environments-1
+  question: Does promoting a Nimbus workflow from Development to Production copy its connections and environment variables?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-environments, section: How it works}
+  expected_facts:
+    - Promotion copies the steps, trigger, expressions and schedule as a new Production version
+    - Promotion never copies connections or variable values, which belong to each environment
+  must_mention:
+    - [connections]
+    - [Production version]
+
+- id: gq-tier-environments-2
+  question: What happens to unpromoted Development workflows when a Business workspace downgrades to Starter?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-environments, section: When the Plan Tier changes}
+  expected_facts:
+    - The Development environment is switched off at the end of the billing period
+    - Unpromoted Development versions are kept read-only under Workflows > Archived (Development)
+  must_mention:
+    - [Archived (Development)]
+    - [read-only]
+
+- id: gq-tier-private-connector-agent-1
+  question: When does Nimbus show a private connector agent as Offline, and what happens to workflow steps if all agents in the group are offline?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-private-connector-agent, section: How it works}
+  expected_facts:
+    - An agent is shown Offline after 2 minutes without a heartbeat.
+    - When every agent in the group is offline, steps through that group fail with CONN-503.
+  must_mention:
+    - [2 minutes]
+    - [Offline]
+    - [CONN-503]
+
+- id: gq-tier-private-connector-agent-2
+  question: How do I register the omnicorp/nimbus-agent Docker container for a client's on-premises database?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-private-connector-agent, section: Turning it on}
+  expected_facts:
+    - An Admin creates an agent group under Settings > Agents and adds an agent to get a one-time registration token.
+    - The container is started with NIMBUS_AGENT_REGISTRATION_TOKEN and needs only outbound HTTPS on port 443; then the connection's Connect through is set to the group.
+  must_mention:
+    - [registration token]
+    - [Settings > Agents]
+    - [Connect through]
+
+- id: gq-tier-sandbox-workspace-1
+  question: Do workflow runs in an Enterprise client's Nimbus sandbox workspace count against their production limits, and are connections copied over?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-sandbox-workspace, section: How it works}
+  expected_facts:
+    - Sandbox runs, seats, active connectors and secrets are counted separately and never against production.
+    - Connections and secrets aren't copied; copied workflows arrive with connection steps unbound.
+  must_mention:
+    - [production]
+    - [Not copied, unbound]
+
+- id: gq-tier-sandbox-workspace-2
+  question: What happens to the sandbox workspace when a client downgrades from Enterprise to Business?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-sandbox-workspace, section: When the Plan Tier changes}
+  expected_facts:
+    - At the end of the billing period the sandbox is removed with its workflows, connections, secrets, run history and users.
+    - OmniCorp support can restore it for 14 days, which only helps if the client returns to Enterprise.
+  must_mention:
+    - [removed]
+    - [14 days]
+
+- id: gq-tier-schedule-intervals-1
+  question: Why does a Starter workspace reject the Nimbus schedule cron expression 0,10,30,45 * * * * with WF-100?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-schedule-intervals, section: How it works}
+  expected_facts:
+    - Nimbus checks the shortest gap between two consecutive firings, not the average
+    - The shortest gap is 10 minutes, below Starter's 15-minute minimum
+  must_mention:
+    - [shortest gap]
+    - [WF-100]
+
+- id: gq-tier-schedule-intervals-2
+  question: What happens to a 5-minute workflow schedule when a Business workspace downgrades to Starter?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-schedule-intervals, section: When the Plan Tier changes}
+  expected_facts:
+    - The schedule is paused when the downgrade takes effect, while the workflow stays active
+    - Admins are emailed a list of paused schedules and a Builder must edit the expression to resume it
+  must_mention:
+    - [paused]
+    - [WF-100]
+
+- id: gq-tier-seat-limits-1
+  question: Does a pending invitation or a suspended user take up a seat in a Nimbus workspace?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-seat-limits, section: How it works}
+  expected_facts:
+    - Pending invitations don't take a seat; the seat is taken when the invitation is accepted
+    - Suspended users don't take a seat
+  must_mention:
+    - [Accepting an invitation, accepted]
+    - [Suspended]
+
+- id: gq-tier-seat-limits-2
+  question: Why can't an Admin reactivate a suspended user in Nimbus when the workspace is at its seat limit?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-seat-limits, section: How it works > When the workspace is full}
+  expected_facts:
+    - Reactivate is disabled when active users equal the seat limit
+    - POST /users/{id}/reactivate returns 409 Conflict with Seat limit reached
+  must_mention:
+    - [Seat limit reached]
+    - [409 Conflict, '409']
+
+- id: gq-tier-secrets-vault-1
+  question: What happens to a client's existing secrets in the Nimbus secrets vault if they downgrade to a tier with a lower secret limit?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-secrets-vault, section: When the Plan Tier changes}
+  expected_facts:
+    - None are deleted and existing secrets keep working and can be updated.
+    - No new secret can be added until the count is below the new limit.
+  must_mention:
+    - [working]
+    - [new secret]
+
+- id: gq-tier-secrets-vault-2
+  question: How many secrets can a Business workspace store in the Nimbus secrets vault, and what does the API return when the limit is reached?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-secrets-vault, section: Limits}
+  expected_facts:
+    - Business allows 250 secrets per workspace.
+    - Creating a new name returns a conflict error; existing secrets can still be updated.
+  must_mention:
+    - ['250']
+    - [conflict]
+
+- id: gq-tier-usage-dashboard-1
+  question: Who receives the Nimbus quota alert emails from the usage dashboard, and at what thresholds are they sent?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-usage-dashboard, section: How it works > Quota alerts}
+  expected_facts:
+    - Every Admin is emailed at 80% and again at 100% of the quota.
+    - Each threshold is emailed once per month and alerts can't be switched off.
+  must_mention:
+    - [80%]
+    - [100%]
+    - [every Admin]
+
+- id: gq-tier-usage-dashboard-2
+  question: What does GET /workspace/usage return for a resource that is Unlimited on the client's tier?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-usage-dashboard, section: Turning it on}
+  expected_facts:
+    - For an Unlimited resource, limit is null.
+    - The figures are refreshed every 5 minutes, the same as the dashboard.
+  must_mention:
+    - ['null']
+    - [5-minute refresh]
+
+- id: gq-tier-version-history-1
+  question: How many workflow versions does Nimbus keep, and what happens to the oldest one when a workflow is published again?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-version-history, section: Limits}
+  expected_facts:
+    - The last 50 versions are kept per workflow, on every tier.
+    - On the 51st publish the oldest version is dropped and can't be recovered.
+  must_mention:
+    - ['50']
+    - [oldest]
+
+- id: gq-tier-version-history-2
+  question: If a Builder restores an old workflow version in Nimbus, are the newer versions deleted?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-version-history, section: How it works > Restoring and environments}
+  expected_facts:
+    - No; restoring copies the old definition into a new version, noted 'Restored from version N'.
+    - The newer versions stay in the list, so the restore can be undone.
+  must_mention:
+    - [new version]
+    - [Restored from version]
+
+- id: gq-tier-workflow-run-quotas-1
+  question: Does a test run in the Nimbus workflow builder count against the monthly workflow run quota?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-workflow-run-quotas, section: How it works}
+  expected_facts:
+    - Test run in the builder doesn't count against the quota
+    - A run counts when it starts, even if it later fails or is cancelled
+  must_mention:
+    - [Test run]
+    - [doesn't count]
+
+- id: gq-tier-workflow-run-quotas-2
+  question: What happens to scheduled and webhook-triggered runs once a workspace has used 100% of its monthly workflow runs?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-workflow-run-quotas, section: How it works > Quota alerts and WF-300}
+  expected_facts:
+    - Scheduled, event-triggered and manual runs are rejected with WF-300 until the quota resets on the 1st (UTC) or the tier is upgraded
+    - Inbound webhook triggers answer 403 Forbidden instead of 202 Accepted
+  must_mention:
+    - [WF-300]
+    - [403 Forbidden, '403']
+
+- id: gq-tier-workflow-templates-1
+  question: Why is the Use template button greyed out for some templates in the Nimbus template gallery on a Starter workspace?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-workflow-templates, section: Availability by Plan Tier}
+  expected_facts:
+    - Templates that use approval steps or environments are marked with a Requires Business or Enterprise badge on Starter.
+    - Their Use template button is disabled.
+  must_mention:
+    - [Requires Business or Enterprise]
+    - [approval steps, environments]
+
+- id: gq-tier-workflow-templates-2
+  question: How do I save one of the client's existing workflows as a workspace template in Nimbus, and are connections included?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-tier-workflow-templates, section: How it works > Saving a workflow as a template}
+    - {article: nimbus-tier-workflow-templates, section: Turning it on}
+  expected_facts:
+    - Open the workflow and choose ⋯ > Save as template.
+    - Connections are unbound and secret values are never included; only secret references remain.
+  must_mention:
+    - [Save as template]
+    - [unbound]
+
 - id: gq-v2-admin-api-keys-1
   question: Do API keys expire on the legacy Nimbus console, and how does an Admin revoke one?
   category: single-article
@@ -1712,6 +2639,89 @@
     - Invitations expire after 7 days and must be sent again
   must_mention:
     - [7 days]
+
+- id: gq-v2-api-runs-1
+  question: The legacy v2 Runs API has no retry endpoint, so how does a client re-run a failed run?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-v2-api-runs, section: Endpoints > Re-running a failed run}
+  expected_facts:
+    - Read the failed run's input with GET /runs/{id} and send it to POST /workflows/{workflow_id}/runs
+    - the new run starts from the first step
+  must_mention:
+    - ['POST /workflows/{workflow_id}/runs']
+    - [input]
+
+- id: gq-v2-api-runs-2
+  question: How far back can the v2 Runs API return run history, and what happens when you request an older run?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-v2-api-runs, section: Filtering and pagination}
+  expected_facts:
+    - Run history is kept for 30 days
+    - GET /runs/{id} for an older run answers 404
+  must_mention:
+    - [30 days]
+    - ['404']
+
+- id: gq-v2-api-users-1
+  question: How do I change a user's role through the v2 Users API, and does single sign-on overwrite it later?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-v2-api-users, section: Endpoints > Changing a role}
+  expected_facts:
+    - PATCH /users/{id} with a role such as builder
+    - group attributes are ignored, so a role set through the API isn't overwritten by later sign-ins
+  must_mention:
+    - ['PATCH /users/{id}']
+    - [isn't overwritten, ignored]
+
+- id: gq-v2-api-users-2
+  question: What does the v2 Users API return when you invite an email address that already belongs to a suspended user?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-v2-api-users, section: Errors}
+  expected_facts:
+    - 409 with the message a user with this email already exists
+    - reactivate the user with POST /users/{id}/reactivate instead
+  must_mention:
+    - ['409']
+    - [already exists]
+
+- id: gq-v2-api-workflows-1
+  question: How does pagination work on the legacy Nimbus v2 Workflows API?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-v2-api-workflows, section: Filtering and pagination}
+  expected_facts:
+    - 'Page-based: page from 1 and per_page default 50, maximum 100'
+    - list responses carry total, the number of matching workflows
+  must_mention:
+    - [per_page]
+    - [total]
+
+- id: gq-v2-api-workflows-2
+  question: After a client changes a workflow with PATCH on the v2 Workflows API, can they roll back to the previous definition?
+  category: single-article
+  answerable: true
+  origin: generated
+  expected_sources:
+    - {article: nimbus-v2-api-workflows, section: Endpoints > Updating a workflow}
+  expected_facts:
+    - No; there is no version history
+    - save GET /workflows/{id} output first and PATCH it back to restore
+  must_mention:
+    - [version history]
 
 - id: gq-v2-connector-salesforce-1
   question: Where does an Admin update the password and security token for the legacy Salesforce connector after they change?
