@@ -4,7 +4,7 @@ Framework-free domain types, shared by retrieval, the prompts and answer assembl
 """
 
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, Protocol
 
 type PlatformVersion = Literal["v2", "v3"]
 type ArticleStatus = Literal["current", "deprecated"]
@@ -35,3 +35,13 @@ class Passage:
     status: ArticleStatus
     score: float
     """Dense cosine similarity to the Standalone Question; drives the retrieval gate."""
+
+
+class PassageRetriever(Protocol):
+    async def retrieve(self, question: str) -> tuple[Passage, ...]:
+        """The Passages most relevant to a Standalone Question, best first, at most `top_k`.
+
+        Each carries its dense cosine score, whatever ranked it. Raises
+        `AppError("retrieval_unavailable")` when the Passage store can't be reached.
+        """
+        ...

@@ -141,3 +141,22 @@ def test_database_url_comes_from_the_environment_and_is_never_printed(
 
     assert settings.database_url.get_secret_value() == DATABASE_URL
     assert "hunter2" not in repr(settings)
+
+
+def test_retrieval_returns_6_passages_unless_configured(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("BACKEND_LLM_PROVIDER", "ollama")
+    assert load().retrieval_top_k == 6
+
+    monkeypatch.setenv("BACKEND_RETRIEVAL_TOP_K", "8")
+    monkeypatch.setenv("BACKEND_RETRIEVAL_MIN_SCORE", "0.62")
+    settings = load()
+
+    assert (settings.retrieval_top_k, settings.retrieval_min_score) == (8, 0.62)
+
+
+def test_retrieval_top_k_must_be_positive(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("BACKEND_LLM_PROVIDER", "ollama")
+    monkeypatch.setenv("BACKEND_RETRIEVAL_TOP_K", "0")
+
+    with pytest.raises(ValidationError, match="retrieval_top_k"):
+        load()

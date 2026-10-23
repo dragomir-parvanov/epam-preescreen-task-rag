@@ -45,8 +45,9 @@ class Embedder:
     model: str
     """Part of every Passage's fingerprint, so a new model re-embeds everything on the next sync."""
     dimension: int
-    passages: DocumentEmbedder
-    """Embeds `HEADER_FIELD` + the Passage text. CPU-bound: run it off the event loop."""
+    passages: Callable[[], DocumentEmbedder]
+    """Makes a component embedding `HEADER_FIELD` + the Passage text. A factory, because a
+    component instance can only join one Pipeline. CPU-bound: run it off the event loop."""
     queries: TextEmbedder
     """CPU-bound: run it off the event loop."""
 
@@ -56,7 +57,8 @@ def fastembed_embedder(*, query_prefix: bool = True) -> Embedder:
     return Embedder(
         model=EMBEDDING_MODEL,
         dimension=EMBEDDING_DIMENSION,
-        passages=FastembedDocumentEmbedder(
+        # fastembed caches the loaded model, so each new component reuses it.
+        passages=lambda: FastembedDocumentEmbedder(
             model=EMBEDDING_MODEL,
             progress_bar=False,
             meta_fields_to_embed=[HEADER_FIELD],
@@ -76,7 +78,7 @@ def fake_embedder(
     return Embedder(
         model=model,
         dimension=dimension,
-        passages=MockDocumentEmbedder(
+        passages=lambda: MockDocumentEmbedder(
             embedding_fn=embedding_fn,
             model=model,
             meta_fields_to_embed=[HEADER_FIELD],

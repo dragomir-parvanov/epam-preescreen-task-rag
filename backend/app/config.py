@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 from typing import Literal, NamedTuple, Self
 
-from pydantic import Field, PositiveFloat, SecretStr, ValidationError, model_validator
+from pydantic import Field, PositiveFloat, PositiveInt, SecretStr, ValidationError, model_validator
 from pydantic_core import ErrorDetails, PydanticCustomError
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -61,6 +61,12 @@ class Settings(BaseSettings):
         default_factory=lambda d: PROVIDER_DEFAULTS[d["llm_provider"]].turn_deadline_s
     )
     rewrite_deadline_s: PositiveFloat = 30
+
+    # Retrieval (ADR-0005). The retriever returns `retrieval_top_k` Passages; `ChatService`'s gate
+    # refuses when none has a dense cosine score of at least `retrieval_min_score`. Both are
+    # placeholders until the retrieval eval (#28) sets them from the Golden Questions.
+    retrieval_top_k: PositiveInt = 6
+    retrieval_min_score: float = 0.5
 
     # JSON lines in the image; `pixi run dev-backend` switches to a readable console format.
     log_format: LogFormat = "json"

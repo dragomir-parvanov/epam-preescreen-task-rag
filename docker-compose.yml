@@ -28,6 +28,8 @@ services:
     environment:
       # Overrides .env's host-side URL: inside Compose, Postgres is the `postgres` service.
       BACKEND_DATABASE_URL: postgresql://rag:rag@postgres:5432/rag
+      # Haystack's anonymous usage telemetry stays off (the backend defaults it off too).
+      HAYSTACK_TELEMETRY_ENABLED: "False"
       # No value: passed through from the shell (which wins over .env; unset stays unset), so the
       # container sees what `pixi run check-config` validated on the host.
       ANTHROPIC_API_KEY:

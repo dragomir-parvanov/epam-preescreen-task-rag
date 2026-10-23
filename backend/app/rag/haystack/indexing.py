@@ -29,9 +29,9 @@ class SyncReport:
 
 
 def indexing_pipeline(store: PgvectorDocumentStore, embedder: Embedder) -> Pipeline:
-    """embed -> write. Build it once: a component instance can only be in one Pipeline."""
+    """embed -> write."""
     pipeline = Pipeline()
-    pipeline.add_component("embedder", embedder.passages)
+    pipeline.add_component("embedder", embedder.passages())
     pipeline.add_component(
         "writer", DocumentWriter(document_store=store, policy=DuplicatePolicy.OVERWRITE)
     )
