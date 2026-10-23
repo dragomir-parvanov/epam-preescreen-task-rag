@@ -1,4 +1,6 @@
-![demo](demo.png "Demo")
+<p align="center">
+  <img src="demo.png" alt="demo" title="Demo">
+</p>
 
 
 # OmniCorp Knowledge Base Assistant
