@@ -255,6 +255,65 @@ describe("an Answer", () => {
     expect(onOpenSection).toHaveBeenCalledWith(signing);
   });
 
+  test("a Citation's quote shows its Markdown formatted: a table, bold text and a heading", async () => {
+    const errorCodes: Passage = {
+      ...signing,
+      id: "nimbus-sso-saml#troubleshooting-1",
+      article: { id: "nimbus-sso-saml", title: "Configuring SSO with SAML 2.0" },
+      section: {
+        id: "troubleshooting",
+        path: ["Configuring SSO with SAML 2.0", "Troubleshooting"],
+      },
+      text: [
+        "## Error codes",
+        "",
+        "Nimbus shows the code on the login page [2].",
+        "",
+        "| Code | Fix |",
+        "|---|---|",
+        "| AUTH-401 | Sync the IdP clock with NTP. |",
+        "| AUTH-409 | Rename the account in **Settings > Users**. |",
+      ].join("\n"),
+    };
+    serveTurns(() =>
+      sseEvents([
+        {
+          type: "done",
+          result: {
+            type: "answer",
+            text: "Sync the IdP clock [1].",
+            citations: [{ n: 1, passage: errorCodes }],
+            retrieved_passages: [errorCodes],
+            standalone_question: null,
+          },
+        },
+      ]),
+    );
+    await renderPage();
+    const t = await askAndFinish(QUESTION);
+    const citations = within(t.getByRole("list", { name: "Citations" }));
+
+    fireEvent.click(citations.getByRole("button", { name: /Configuring SSO with SAML 2.0/ }));
+
+    expect(citations.getByRole("heading", { name: "Error codes" })).toBeInTheDocument();
+    const [, auth401, auth409] = within(citations.getByRole("table")).getAllByRole("row");
+    expect(
+      within(auth401 ?? document.body)
+        .getAllByRole("cell")
+        .map((cell) => cell.textContent),
+    ).toEqual(["AUTH-401", "Sync the IdP clock with NTP."]);
+    expect(
+      within(auth409 ?? document.body).getByText("Settings > Users", { selector: "strong" }),
+    ).toBeInTheDocument();
+    // Verbatim, so a marker inside the quote stays as written rather than becoming a chip.
+    expect(citations.getByText("Nimbus shows the code on the login page [2].")).toBeInTheDocument();
+    expect(t.queryByRole("button", { name: "Citation 2" })).not.toBeInTheDocument();
+    const quote = citations.getByRole("blockquote");
+    expect(quote).not.toHaveTextContent("|");
+    expect(quote).not.toHaveTextContent("**");
+    expect(quote).not.toHaveTextContent("##");
+  });
+
   test("lists every retrieved Passage behind a toggle, marked cited or not cited", async () => {
     serveTurns(() => sseEvents([answerDone()]));
     await renderPage();
@@ -301,6 +360,37 @@ test("an Uncited Answer warns and lists the retrieved Passages, not cited", asyn
   fireEvent.click(retrieved.getByRole("button", { name: /Nimbus Plan Tiers/ }));
   fireEvent.click(retrieved.getByRole("button", { name: "Open Section" }));
   expect(onOpenSection).toHaveBeenCalledWith(rateLimits);
+});
+
+test("a Retrieved, not cited row shows its quote's Markdown formatted", async () => {
+  const limits: Passage = {
+    ...rateLimits,
+    text: "**Business** clients get 600 requests a minute.",
+  };
+  serveTurns(() =>
+    sseEvents([
+      {
+        type: "done",
+        result: {
+          type: "uncited_answer",
+          text: "Business clients get 600.",
+          retrieved_passages: [limits],
+          standalone_question: null,
+        },
+      },
+    ]),
+  );
+  await renderPage();
+  const t = await askAndFinish(QUESTION);
+  const retrieved = within(t.getByRole("list", { name: "Retrieved, not cited" }));
+
+  fireEvent.click(retrieved.getByRole("button", { name: /Nimbus Plan Tiers/ }));
+
+  expect(retrieved.getByText("Business", { selector: "strong" })).toBeInTheDocument();
+  expect(retrieved.getByRole("blockquote")).toHaveTextContent(
+    "Business clients get 600 requests a minute.",
+  );
+  expect(retrieved.getByRole("blockquote")).not.toHaveTextContent("**");
 });
 
 test("a Refusal shows the server's message and no reason or Citations", async () => {

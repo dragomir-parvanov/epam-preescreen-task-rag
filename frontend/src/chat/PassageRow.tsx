@@ -1,4 +1,5 @@
 import type { components } from "../api/schema";
+import { Markdown } from "./Markdown";
 import { isV2Only, passageLocation, type OpenSection } from "./passages";
 
 type Passage = components["schemas"]["Passage"];
@@ -23,7 +24,7 @@ export function VersionBadges({ of }: { of: Pick<Passage, "applies_to" | "status
 
 /**
  * One Passage in a Citations or "Retrieved, not cited" list: its location and badges, which
- * expand to the verbatim quote and an "Open Section" link.
+ * expand to the verbatim quote, its Markdown formatted, and an "Open Section" link.
  */
 export function PassageRow({
   id,
@@ -64,8 +65,10 @@ export function PassageRow({
       </button>
       {expanded && (
         <div id={quoteId} className="space-y-2 border-t border-slate-100 px-3 py-2 text-sm">
-          <blockquote className="border-l-2 border-slate-300 pl-3 whitespace-pre-wrap text-slate-700">
-            {passage.text}
+          {/* Rendered, not rewritten. No renderMarker: a marker in the Article text isn't a
+              Citation of this Answer. Headings sit below this list's <h3>. */}
+          <blockquote className="border-l-2 border-slate-300 pl-3 text-slate-700">
+            <Markdown text={passage.text} headingOffset={2} />
           </blockquote>
           <button
             type="button"
