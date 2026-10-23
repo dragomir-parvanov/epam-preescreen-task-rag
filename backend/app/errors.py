@@ -1,4 +1,4 @@
-"""The one error envelope, `{error: {code, message, details?}}`, and the code -> status table.
+"""The one error envelope, `{error: {code, message, details?, request_id?}}`, and its status table.
 
 Code anywhere in the backend fails a request by raising `AppError` with a code. The HTTP layer
 turns it into a real status plus the envelope, or into an SSE `error` event once a stream has
@@ -10,7 +10,9 @@ from typing import Any, Literal
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+from app.request_id import REQUEST_ID_HEADER, current_request_id
 
 type ErrorCode = Literal[
     "validation_error",
@@ -50,6 +52,8 @@ class ErrorBody(BaseModel):
     """Human-readable; safe to show the CSM."""
     details: list[FieldError] | None = None
     """Field errors, for `validation_error` only."""
+    request_id: str | None = Field(default_factory=current_request_id)
+    """The request's `X-Request-ID`, which finds its log lines; the error card shows it."""
 
 
 class ErrorEnvelope(BaseModel):
@@ -89,9 +93,11 @@ def error_responses(*codes: ErrorCode) -> dict[int | str, dict[str, Any]]:
     }
 
 
-def _envelope(body: ErrorBody) -> JSONResponse:
+def _envelope(body: ErrorBody, headers: dict[str, str] | None = None) -> JSONResponse:
     return JSONResponse(
-        ErrorEnvelope(error=body).model_dump(mode="json"), status_code=HTTP_STATUS[body.code]
+        ErrorEnvelope(error=body).model_dump(mode="json"),
+        status_code=HTTP_STATUS[body.code],
+        headers=headers,
     )
 
 
@@ -119,7 +125,11 @@ async def _on_app_error(_: Request, exc: Exception) -> JSONResponse:
 
 async def _on_unexpected_error(_: Request, exc: Exception) -> JSONResponse:
     # Starlette re-raises the exception after this response is sent, so the server logs it.
-    return _envelope(internal_error())
+    # This handler runs outside the request-id middleware, so it echoes the id itself.
+    body = internal_error()
+    return _envelope(
+        body, headers={REQUEST_ID_HEADER: body.request_id} if body.request_id else None
+    )
 
 
 def install_error_handlers(app: FastAPI) -> None:

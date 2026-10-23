@@ -11,6 +11,8 @@ python = "3.13.*"
 [feature.backend.pypi-dependencies]
 fastapi = ">=0.115"
 pydantic-settings = ">=2.6"
+# JSON logs in the image, a console renderer in dev-backend (BACKEND_LOG_FORMAT).
+structlog = "==26.1.0"
 uvicorn = { version = ">=0.32", extras = ["standard"] }
 # Haystack 3.x and its integrations, exact-pinned (ADR-0003): only app/rag/haystack imports them.
 haystack-ai = "==3.4.1"
@@ -56,7 +58,7 @@ down = "docker compose down"
 check-config = { cmd = "python -m app.check_config", cwd = "backend" }
 
 # Local dev servers (the Vite dev server proxies /api to the backend)
-dev-backend = { cmd = "uvicorn --factory app.main:create_app_from_env --reload --port 8000", cwd = "backend" }
+dev-backend = { cmd = "uvicorn --factory app.main:create_app_from_env --reload --port 8000", cwd = "backend", env = { BACKEND_LOG_FORMAT = "console" } }
 dev-frontend = { cmd = "npm run dev", cwd = "frontend", depends-on = ["npm-install"] }
 
 # Lint

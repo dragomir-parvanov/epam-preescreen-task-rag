@@ -1,7 +1,7 @@
-import logging
 from collections.abc import AsyncIterable, AsyncIterator
 from typing import Annotated, Any
 
+import structlog
 from fastapi import APIRouter, Depends
 from fastapi.sse import EventSourceResponse, ServerSentEvent
 
@@ -9,7 +9,7 @@ from app.chat.answering import AnsweringService, TurnEvent
 from app.chat.schemas import ChatRequest, ChatStreamEvent, ErrorEvent
 from app.errors import AppError, error_responses, internal_error
 
-logger = logging.getLogger(__name__)
+logger = structlog.stdlib.get_logger(__name__)
 
 
 def _frame(event: TurnEvent | ErrorEvent) -> Any:
@@ -56,7 +56,7 @@ def chat_router(answering: AnsweringService) -> APIRouter:
             yield _frame(ErrorEvent(error=error.body()))
         except Exception:
             # Cancellation (a client disconnect) is a BaseException and passes through.
-            logger.exception("chat stream failed")
+            logger.exception("chat_stream_failed")
             yield _frame(ErrorEvent(error=internal_error()))
 
     return router

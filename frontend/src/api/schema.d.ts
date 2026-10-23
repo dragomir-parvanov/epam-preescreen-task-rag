@@ -111,6 +111,8 @@ export interface components {
             message: string;
             /** Details */
             details?: components["schemas"]["FieldError"][] | null;
+            /** Request Id */
+            request_id?: string | null;
         };
         /** @enum {string} */
         ErrorCode: "validation_error" | "not_found" | "llm_not_configured" | "llm_auth_failed" | "llm_unavailable" | "llm_timeout" | "index_not_ready" | "retrieval_unavailable" | "internal_error";

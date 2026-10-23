@@ -7,6 +7,8 @@ from app.chat.answering import DEMO_SCRIPT, AnsweringService, StubAnsweringServi
 from app.chat.routes import chat_router
 from app.config import Settings, load_settings
 from app.errors import install_error_handlers
+from app.logs import configure_logging, log_config_loaded
+from app.request_id import RequestIdMiddleware
 
 
 class HealthResponse(BaseModel):
@@ -16,6 +18,7 @@ class HealthResponse(BaseModel):
 def create_app(settings: Settings, answering: AnsweringService | None = None) -> FastAPI:
     app = FastAPI(title=settings.app_name)
     install_error_handlers(app)
+    app.add_middleware(RequestIdMiddleware)
 
     @app.get("/health", operation_id="getHealth")
     def health() -> HealthResponse:
@@ -36,4 +39,7 @@ def create_app_from_env() -> FastAPI:
     A factory rather than a module-level `app`, so importing this module (tests, the OpenAPI
     export) never reads the environment, and an invalid config exits with its fix message.
     """
-    return create_app(load_settings())
+    settings = load_settings()
+    configure_logging(settings.log_format, settings.log_level)
+    log_config_loaded(settings)
+    return create_app(settings)

@@ -1,7 +1,11 @@
-from collections.abc import Iterator
+import io
+import json
+from collections.abc import Callable, Iterator
+from typing import Any
 
 import pytest
 
+from app.logs import configure_logging
 from app.pgvector_testing import fresh_database, running_pgvector
 
 
@@ -20,3 +24,11 @@ def pgvector_database_url(pgvector_server_url: str) -> Iterator[str]:
     """
     with fresh_database(pgvector_server_url) as url:
         yield url
+
+
+@pytest.fixture
+def captured_logs() -> Callable[[], list[dict[str, Any]]]:
+    """Route all logging, at INFO, as JSON into a buffer; call the result to read the lines."""
+    stream = io.StringIO()
+    configure_logging("json", "INFO", stream=stream)
+    return lambda: [json.loads(line) for line in stream.getvalue().splitlines()]

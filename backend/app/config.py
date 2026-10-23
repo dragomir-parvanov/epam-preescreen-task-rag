@@ -10,6 +10,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
 
 LlmProvider = Literal["anthropic", "ollama"]
+LogFormat = Literal["json", "console"]
+LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR"]
 
 
 class ProviderDefaults(NamedTuple):
@@ -59,6 +61,11 @@ class Settings(BaseSettings):
         default_factory=lambda d: PROVIDER_DEFAULTS[d["llm_provider"]].turn_deadline_s
     )
     rewrite_deadline_s: PositiveFloat = 30
+
+    # JSON lines in the image; `pixi run dev-backend` switches to a readable console format.
+    log_format: LogFormat = "json"
+    # DEBUG adds the question and Answer text of each Turn, which may contain client data.
+    log_level: LogLevel = "INFO"
 
     @model_validator(mode="after")
     def _require_key_for_anthropic(self) -> Self:

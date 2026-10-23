@@ -1,5 +1,5 @@
 import json
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from typing import Any
 
 import httpx2 as httpx
@@ -77,8 +77,11 @@ def frames(response: httpx.Response) -> list[tuple[str, dict[str, Any]]]:
     return parsed
 
 
+REQUEST_ID = "0f8b3c6a9d2e4f1a8b7c6d5e4f3a2b1c"
+
+
 def ask(client: TestClient, body: dict[str, Any]) -> httpx.Response:
-    return client.post("/chat", json=body)
+    return client.post("/chat", json=body, headers={"X-Request-ID": REQUEST_ID})
 
 
 def test_chat_streams_the_turn_events_in_order_as_named_sse_frames() -> None:
@@ -205,6 +208,7 @@ def test_a_failure_before_the_stream_starts_gets_a_real_status_instead_of_a_stre
             "code": "llm_not_configured",
             "message": "Set ANTHROPIC_API_KEY or use Ollama.",
             "details": None,
+            "request_id": REQUEST_ID,
         }
     }
 
@@ -230,6 +234,7 @@ def test_a_failure_after_the_stream_starts_ends_it_with_an_error_event() -> None
             "code": "llm_timeout",
             "message": "The language model took too long to answer.",
             "details": None,
+            "request_id": REQUEST_ID,
         },
     }
 
@@ -258,6 +263,30 @@ def test_an_unexpected_failure_mid_stream_is_a_generic_error_event() -> None:
     assert [name for name, _ in events] == ["passages", "error"]
     assert events[-1][1]["error"]["code"] == "internal_error"
     assert "hunter2" not in response.text
+
+
+def test_one_request_id_ties_the_header_the_error_and_the_log_lines_together(
+    captured_logs: Callable[[], list[dict[str, Any]]],
+) -> None:
+    client = client_over([PassagesEvent(passages=[PASSAGE]), RuntimeError(SECRET)])
+
+    response = ask(client, {"question": "How do I fix AUTH-403?"})
+
+    assert response.headers["x-request-id"] == REQUEST_ID
+    assert frames(response)[-1][1]["error"]["request_id"] == REQUEST_ID
+    # The test client's own httpx logging is not the server's.
+    lines = [line for line in captured_logs() if line["logger"].startswith("app.")]
+    assert {line["event"] for line in lines} == {"chat_stream_failed", "request_completed"}
+    assert all(line["request_id"] == REQUEST_ID for line in lines)
+    [failure] = [line for line in lines if line["event"] == "chat_stream_failed"]
+    assert "RuntimeError" in failure["exception"]
+
+
+def test_a_validation_error_envelope_carries_the_request_id() -> None:
+    response = ask(client_over([DoneEvent(result=ANSWER)]), {"question": ""})
+
+    assert response.headers["x-request-id"] == REQUEST_ID
+    assert response.json()["error"]["request_id"] == REQUEST_ID
 
 
 def test_openapi_documents_the_stream_as_the_event_union_and_errors_as_the_envelope() -> None:
