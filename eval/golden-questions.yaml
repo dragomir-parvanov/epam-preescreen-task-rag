@@ -1,0 +1,356 @@
+# Golden Questions: what the assistant should do with each question (#6, #12, #16).
+#
+# Schema (validated by backend/evaluation/golden.py):
+#   id                       gq-<slug>, unique
+#   question                 what the CSM types
+#   category                 cross-article | version-conflict | table-lookup | near-duplicate |
+#                            unanswerable | partial | follow-up
+#   answerable               false -> a Refusal is expected, with no expected_sources or must_mention
+#   origin                   curated (hand-designed, below) | generated (written with a generated Article)
+#   expected_sources         [{article, section}]: the Article id and Section path the Answer should cite
+#   expected_facts           human-readable notes on the expected Answer
+#   must_mention             term groups; every group must be hit by any one of its terms,
+#                            matched case-insensitively against the Answer
+#   history                  follow-up only: earlier Turns as {question, answer}, with fixed answers
+#   standalone_question      follow-up only: the ideal rewrite, used by the keyless retrieval eval
+#   standalone_must_mention  follow-up only: term groups checked against the model's actual rewrite
+#
+# For partial questions, must_mention covers the answerable part; the gap statement is detected
+# through the prompt module's canonical gap phrase.
+
+# --- Seed set (#6) ----------------------------------------------------------------------------
+
+- id: gq-scim-business-tier
+  question: Can a Business-tier client set up SCIM provisioning with Okta?
+  category: cross-article
+  answerable: true
+  origin: curated
+  expected_sources:
+    - { article: nimbus-plan-tiers, section: Feature matrix }
+    - { article: nimbus-scim-provisioning, section: Prerequisites }
+  expected_facts:
+    - "No: SCIM provisioning requires the Enterprise tier."
+    - SAML SSO must be configured first.
+  must_mention:
+    - [Enterprise]
+    - [SSO, single sign-on, SAML]
+
+- id: gq-entra-auto-deprovision
+  question: >-
+    An Enterprise client on Entra ID wants leavers removed automatically. What must be set up
+    and what happens to their data?
+  category: cross-article
+  answerable: true
+  origin: curated
+  expected_sources:
+    - { article: nimbus-sso-saml, section: Configuring Microsoft Entra ID }
+    - { article: nimbus-scim-provisioning, section: Prerequisites }
+    - { article: nimbus-scim-provisioning, section: Deprovisioning }
+  expected_facts:
+    - SAML SSO with Microsoft Entra ID first, then SCIM provisioning.
+    - A deprovisioned user is suspended; their data is deleted after 30 days.
+  must_mention:
+    - [SCIM]
+    - [SSO, single sign-on, SAML]
+    - [suspend]
+    - [30 days, 30-day, thirty days]
+
+- id: gq-webhook-signature
+  question: Which header carries the webhook signature and what algorithm is used?
+  category: version-conflict
+  answerable: true
+  origin: curated
+  expected_sources:
+    - { article: nimbus-api-webhooks, section: Verifying signatures }
+    - { article: nimbus-v2-legacy, section: Webhooks (v2) }
+  expected_facts:
+    - "v3: X-Nimbus-Signature-256, HMAC-SHA256."
+    - "v2 note: X-Nimbus-Signature, HMAC-SHA1."
+  must_mention:
+    - [X-Nimbus-Signature-256]
+    - [HMAC-SHA256]
+    - [HMAC-SHA1]
+
+- id: gq-rate-limit-business
+  question: What is the API rate limit for a Business client?
+  category: version-conflict
+  answerable: true
+  origin: curated
+  expected_sources:
+    - { article: nimbus-api-webhooks, section: Rate limits }
+    - { article: nimbus-v2-legacy, section: API limits (v2) }
+  expected_facts:
+    - 600 req/min on v3.
+    - "v2 note: 300 req/min, flat for every Plan Tier."
+  must_mention:
+    - ["600"]
+    - ["300"]
+
+- id: gq-v2-saml-email
+  question: A client still on v2 asks which SAML attribute carries the user's email.
+  category: version-conflict
+  answerable: true
+  origin: curated
+  expected_sources:
+    - { article: nimbus-v2-legacy, section: SAML attributes (v2) }
+  expected_facts:
+    - "`mail` (v3 uses `email`)."
+  must_mention:
+    - [mail]
+
+- id: gq-auth-401
+  question: What does error AUTH-401 mean and how is it fixed?
+  category: table-lookup
+  answerable: true
+  origin: curated
+  expected_sources:
+    - { article: nimbus-sso-saml, section: Troubleshooting }
+  expected_facts:
+    - Clock skew of more than 5 minutes between the IdP and Nimbus; sync the clocks (NTP).
+  must_mention:
+    - [clock]
+    - [5 minutes, 5 min, five minutes]
+
+- id: gq-audit-retention-business
+  question: How long are audit logs kept on the Business tier?
+  category: table-lookup
+  answerable: true
+  origin: curated
+  expected_sources:
+    - { article: nimbus-plan-tiers, section: Feature matrix }
+  expected_facts:
+    - 90 days.
+  must_mention:
+    - [90 days, 90-day, ninety days]
+
+- id: gq-enterprise-burst
+  question: How far can an Enterprise client burst above its rate limit?
+  category: table-lookup
+  answerable: true
+  origin: curated
+  expected_sources:
+    - { article: nimbus-api-webhooks, section: Rate limits }
+  expected_facts:
+    - ×2, i.e. 6,000 req/min, for 10 s.
+  must_mention:
+    - ["6,000", "6000", ×2, x2, 2x, double, twice]
+    - [10 s, 10 seconds, ten seconds, 10-second]
+
+- id: gq-jit-vs-scim
+  question: What's the difference between JIT provisioning and SCIM?
+  category: near-duplicate
+  answerable: true
+  origin: curated
+  expected_sources:
+    - { article: nimbus-sso-saml, section: Just-in-time provisioning }
+    - { article: nimbus-scim-provisioning, section: Overview }
+  expected_facts:
+    - "JIT: creates the user on first login and never deprovisions."
+    - "SCIM: synced every 40 minutes, including deprovisioning."
+  must_mention:
+    - [first login, first sign-in, first time]
+    - [deprovision]
+    - [40 minutes, 40 min, 40-minute]
+
+- id: gq-deprovisioned-data
+  question: Is a deprovisioned user's data deleted immediately?
+  category: near-duplicate
+  answerable: true
+  origin: curated
+  expected_sources:
+    - { article: nimbus-scim-provisioning, section: Deprovisioning }
+  expected_facts:
+    - "No: the user is suspended, and the data is deleted after 30 days."
+  must_mention:
+    - [suspend]
+    - [30 days, 30-day, thirty days]
+
+- id: gq-enterprise-price
+  question: How much does the Enterprise tier cost per seat?
+  category: unanswerable
+  answerable: false
+  origin: curated
+  expected_facts:
+    - Refusal; the Knowledge Base states no prices.
+
+- id: gq-ldap
+  question: Does Nimbus support LDAP directory sync?
+  category: unanswerable
+  answerable: false
+  origin: curated
+  expected_facts:
+    - Refusal, not a confident "no"; the Knowledge Base never mentions LDAP.
+
+- id: gq-google-sso
+  question: How do I set up SSO with Google Workspace, and which attributes are required?
+  category: partial
+  answerable: true
+  origin: curated
+  expected_sources:
+    - { article: nimbus-sso-saml, section: Attribute mapping }
+  expected_facts:
+    - "Answered: email, firstName and lastName are required; groups is optional."
+    - "Gap: Google Workspace setup steps aren't documented."
+  must_mention:
+    - [email]
+    - [firstName]
+    - [lastName]
+
+- id: gq-webhook-retries-ips
+  question: >-
+    How many times are failed webhooks retried, and which IP ranges should the client allowlist?
+  category: partial
+  answerable: true
+  origin: curated
+  expected_sources:
+    - { article: nimbus-api-webhooks, section: Retries and auto-disable }
+  expected_facts:
+    - "Answered: up to 8 retries with exponential backoff over 24 h."
+    - "Gap: the IP ranges aren't documented."
+  must_mention:
+    - ["8", eight]
+    - [24 h, 24 hours, 24-hour]
+
+# --- Follow-ups (#16) -------------------------------------------------------------------------
+
+- id: gq-followup-webhook-signature-v2
+  question: and on v2?
+  category: follow-up
+  answerable: true
+  origin: curated
+  history:
+    - question: Which header carries the webhook signature and what algorithm is used?
+      answer: >-
+        Nimbus signs every webhook delivery with an HMAC-SHA256 of the raw request body and sends
+        it in the X-Nimbus-Signature-256 header, as sha256= followed by the hex digest.
+  standalone_question: Which header carries the webhook signature and what algorithm is used on v2?
+  standalone_must_mention:
+    - [v2]
+  expected_sources:
+    - { article: nimbus-v2-legacy, section: Webhooks (v2) }
+  expected_facts:
+    - "The Platform Version carries over: X-Nimbus-Signature, HMAC-SHA1."
+  must_mention:
+    - [X-Nimbus-Signature]
+    - [HMAC-SHA1]
+
+- id: gq-followup-rate-limit-enterprise
+  question: what about Enterprise?
+  category: follow-up
+  answerable: true
+  origin: curated
+  history:
+    - question: What is the API rate limit for a Business client?
+      answer: >-
+        A Business workspace can make 600 requests per minute across all of its API keys, with a
+        burst allowance of 1,200 requests per minute for 10 seconds.
+  standalone_question: What is the API rate limit for an Enterprise client?
+  standalone_must_mention:
+    - [Enterprise]
+    - [rate limit]
+  expected_sources:
+    - { article: nimbus-api-webhooks, section: Rate limits }
+  expected_facts:
+    - "The Plan Tier switches: 3,000 req/min, bursting to 6,000 req/min for 10 s."
+  must_mention:
+    - ["3,000", "3000"]
+
+- id: gq-followup-topic-change-ldap
+  question: Does Nimbus support LDAP?
+  category: follow-up
+  answerable: false
+  origin: curated
+  history:
+    - question: Which identity providers can a client use for SSO?
+      answer: >-
+        The SSO setup guide covers SAML 2.0 single sign-on with Okta and with Microsoft Entra ID,
+        on the Business and Enterprise tiers.
+  standalone_question: Does Nimbus support LDAP?
+  standalone_must_mention:
+    - [LDAP]
+  expected_facts:
+    - A topic change; the rewrite leaves the question unchanged, and it is refused.
+
+# --- Unanswerable, worded close to real topics (#12) ------------------------------------------
+# Each topic is listed under forbidden_topics in eval/corpus/fact-sheet.yaml, so no Article
+# (planted or generated) may answer it.
+
+- id: gq-scim-onelogin
+  question: How do I set up SCIM provisioning with OneLogin?
+  category: unanswerable
+  answerable: false
+  origin: curated
+  expected_facts:
+    - Refusal; SCIM setup is documented for Okta and Microsoft Entra ID only.
+
+- id: gq-sso-ping-identity
+  question: How do I configure SAML SSO with Ping Identity?
+  category: unanswerable
+  answerable: false
+  origin: curated
+  expected_facts:
+    - Refusal; SSO setup is documented for Okta and Microsoft Entra ID only.
+
+- id: gq-webhook-source-ips
+  question: Which IP addresses do Nimbus webhook deliveries come from?
+  category: unanswerable
+  answerable: false
+  origin: curated
+  expected_facts:
+    - Refusal; webhook source IPs aren't documented.
+
+- id: gq-business-annual-discount
+  question: Is there a discount on the Business tier for annual billing?
+  category: unanswerable
+  answerable: false
+  origin: curated
+  expected_facts:
+    - Refusal; the Knowledge Base states no prices or discounts.
+
+- id: gq-upgrade-cost
+  question: What would it cost a Starter client to upgrade to Business?
+  category: unanswerable
+  answerable: false
+  origin: curated
+  expected_facts:
+    - Refusal; the Knowledge Base states no prices.
+
+- id: gq-active-directory-sync
+  question: Can Nimbus sync users from an on-premises Active Directory?
+  category: unanswerable
+  answerable: false
+  origin: curated
+  expected_facts:
+    - Refusal; Active Directory and LDAP sync are never mentioned.
+
+- id: gq-google-workspace-provisioning
+  question: Can users be provisioned automatically from Google Workspace?
+  category: unanswerable
+  answerable: false
+  origin: curated
+  expected_facts:
+    - Refusal; Google Workspace is never mentioned.
+
+- id: gq-v1-end-of-support
+  question: When did Nimbus v1 reach end of support?
+  category: unanswerable
+  answerable: false
+  origin: curated
+  expected_facts:
+    - Refusal; only v2 and v3 are documented (v2's end of support is a different fact).
+
+- id: gq-saml-single-logout
+  question: Does Nimbus support SAML single logout?
+  category: unanswerable
+  answerable: false
+  origin: curated
+  expected_facts:
+    - Refusal; single logout is never mentioned.
+
+- id: gq-enterprise-uptime-sla
+  question: What uptime SLA does the Enterprise tier guarantee?
+  category: unanswerable
+  answerable: false
+  origin: curated
+  expected_facts:
+    - Refusal; no uptime figures or SLAs are documented.

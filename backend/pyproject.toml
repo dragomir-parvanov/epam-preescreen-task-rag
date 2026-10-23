@@ -16,7 +16,7 @@ typeCheckingMode = "strict"
 pythonVersion = "3.13"
 
 [tool.pytest.ini_options]
-testpaths = ["app"]
+testpaths = ["app", "evaluation"]
 addopts = ["--strict-markers"]
 markers = [
     "pgvector: needs Docker for a real pgvector (ADR-0004); deselect with -m 'not pgvector'",

@@ -18,6 +18,7 @@ uvicorn = { version = ">=0.32", extras = ["standard"] }
 [feature.backend-dev.dependencies]
 pyright = "*"
 pytest = "*"
+pyyaml = "*"
 ruff = "*"
 
 [feature.backend-dev.pypi-dependencies]

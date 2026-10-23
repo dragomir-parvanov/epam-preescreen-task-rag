@@ -1,0 +1,308 @@
+# The Nimbus fact sheet: the canonical facts about OmniCorp Nimbus.
+#
+# Every Article in knowledge-base/ is written from this sheet. The 5 planted Articles were written by
+# hand (#6, #17); the generated ones are written from it by eval/corpus/generate.py (#34).
+#
+# Two sections are machine-checked by backend/evaluation/fact_sheet_test.py:
+#   planted_facts     each `verbatim` string must appear, character for character, in `article`.
+#   forbidden_topics  no Article may mention any `term` (case-insensitive, whole words). These are
+#                     the topics the Knowledge Base is deliberately silent on, so the unanswerable
+#                     and partial Golden Questions stay unanswerable as the Knowledge Base grows.
+# Everything else is canon for the generator: a generated Article may restate it, never contradict
+# it, and must not invent values for anything listed under forbidden_topics.
+
+product:
+  name: OmniCorp Nimbus
+  summary: >-
+    A B2B workflow and integration platform. Clients build automated workflows that connect their
+    SaaS applications through connectors, run them on a schedule or on events, and manage users,
+    security and integrations from the Nimbus admin console.
+  admin_console: https://app.nimbus.omnicorp.example
+  api_base_url: https://api.nimbus.omnicorp.example
+  sso_base_url: https://login.nimbus.omnicorp.example
+
+platform_versions:
+  v3:
+    status: current
+    general_availability: 2025-04-07
+    notes:
+      - Per-tier API rate limits with a burst allowance.
+      - Webhooks signed with HMAC-SHA256 in the X-Nimbus-Signature-256 header.
+      - The SAML email attribute is `email`.
+      - SCIM 2.0 provisioning (Enterprise tier).
+  v2:
+    status: deprecated
+    end_of_support: 2027-03-31
+    notes:
+      - One flat API rate limit of 300 req/min for every Plan Tier, with no burst allowance.
+      - Webhooks signed with HMAC-SHA1 in the X-Nimbus-Signature header.
+      - The SAML email attribute is `mail`.
+      - No SCIM provisioning; users are created by just-in-time provisioning only.
+      - No APAC data region, no rate-limit headers and no webhook auto-disable.
+      - SAML group attributes are ignored; an Admin assigns roles in the console.
+      - Security fixes only until end of support; no new features. Workspaces keep running after
+        end of support, but nothing is fixed.
+  rule: >-
+    Only v2 and v3 exist. A v2 Article is `applies_to: [v2]`, `status: deprecated`, and states its
+    facts plainly, with no "in v2" framing, so only its metadata tells it apart from a v3 Article.
+
+plan_tiers:
+  # Values per tier: [Starter, Business, Enterprise]. Prices are never stated (see forbidden_topics).
+  seats: [Up to 10, Up to 250, Unlimited]
+  workflow_runs_per_month: ["5,000", "100,000", Unlimited]
+  active_connectors: ["5", "50", Unlimited]
+  single_sign_on_saml: [No, Yes, Yes]
+  scim_provisioning: [No, No, Yes]
+  api_access: [No, Yes, Yes]
+  api_rate_limit_v3: [No API access, 600 req/min, "3,000 req/min"]
+  audit_log_retention: [30 days, 90 days, 365 days]
+  eu_and_us_data_regions: [Yes, Yes, Yes]
+  apac_data_region: [No, No, Yes]
+  tier_changes:
+    - Upgrades take effect immediately.
+    - Downgrades take effect at the end of the current billing period.
+    - Audit-log events older than the new tier's retention are deleted when a downgrade takes effect.
+    - A downgrade from Enterprise stops SCIM sync; provisioned users keep their accounts.
+    - A workspace in the APAC data region can't be downgraded below Enterprise.
+
+data_regions:
+  - EU, US and APAC. EU and US are available on every tier; APAC is Enterprise only.
+  - The region is chosen when the workspace is created and can't be changed afterwards. Moving
+    region means creating a new workspace and migrating the workflows.
+
+roles:
+  - "Admin: manages users, roles, SSO, SCIM, API keys, webhooks and the Plan Tier."
+  - "Builder: creates, edits and runs workflows and connectors."
+  - "Viewer: views workflows, runs and run history; can't edit."
+
+single_sign_on:
+  protocol: SAML 2.0, SP-initiated and IdP-initiated sign-in.
+  documented_identity_providers: [Okta, Microsoft Entra ID]
+  acs_url: https://login.nimbus.omnicorp.example/saml/acs/<workspace-id>
+  entity_id: https://login.nimbus.omnicorp.example/saml/metadata/<workspace-id>
+  name_id_format: EmailAddress
+  attributes:
+    email: required; the user's email address and Nimbus login.
+    firstName: required.
+    lastName: required.
+    groups: optional; used for role mapping.
+  jit_provisioning: >-
+    Creates the user on their first SSO login (role from `groups`, otherwise Viewer). It never
+    deprovisions: removing a user in the IdP blocks their sign-in but leaves the Nimbus account active.
+  enforce_sso: >-
+    Once enforced, password sign-in is off for everyone except one break-glass admin account,
+    which keeps a password plus an authenticator-app second factor.
+  errors:
+    AUTH-401: The SAML assertion is outside its validity window, because of a clock skew of more than 5 minutes between the IdP and Nimbus. Fix by syncing the IdP server clock (NTP).
+    AUTH-403: The user is not assigned to the Nimbus app in the IdP.
+    AUTH-409: Duplicate email; another Nimbus account in the workspace already uses that email address.
+
+scim_provisioning:
+  tier: Enterprise only.
+  prerequisite: SAML SSO with the same IdP must be configured first.
+  base_url: https://api.nimbus.omnicorp.example/scim/2.0
+  token: Created by an Admin, shown once, expires after 365 days. Admins are emailed 14 days before expiry.
+  sync_interval: Changes in the IdP are synced every 40 minutes.
+  group_role_mapping: >-
+    IdP groups map to Nimbus roles; a user in several mapped groups gets the highest role; a user in
+    no mapped group gets Viewer.
+  deprovisioning: >-
+    Unassigning or deactivating a user in the IdP suspends the user at the next sync. Their data is
+    kept for 30 days, then permanently deleted. Reactivating within 30 days restores the account.
+
+api:
+  authentication: "API keys created by an Admin, sent as `Authorization: Bearer <api-key>`."
+  rate_limits_v3:
+    Business: 600 req/min
+    Enterprise: "3,000 req/min"
+    burst: ×2 the sustained limit for 10 s
+  over_limit: HTTP 429 with a `Retry-After` header (seconds).
+  response_headers: [X-RateLimit-Limit, X-RateLimit-Remaining, Retry-After]
+
+webhooks:
+  events: [workflow.run.completed, workflow.run.failed, user.provisioned, user.suspended, connector.disconnected]
+  signature_v3: HMAC-SHA256 of the raw request body with the endpoint's signing secret, in `X-Nimbus-Signature-256` as `sha256=<hex digest>`.
+  signature_v2: HMAC-SHA1 of the raw request body, in `X-Nimbus-Signature` as `sha1=<hex digest>`.
+  delivery_id_header: X-Nimbus-Delivery
+  response_timeout: An endpoint must answer with a 2xx status within 15 seconds.
+  retries: 8 retries with exponential backoff over 24 h.
+  auto_disable: An endpoint is disabled automatically after 3 days of failed deliveries.
+
+# The planted facts from #6, as #6 states them, with the literal strings their Article must contain.
+planted_facts:
+  # nimbus-plan-tiers: Plan Tiers and Entitlements
+  - id: tier-sso
+    article: nimbus-plan-tiers
+    statement: SSO is available on Business and Enterprise (Business+).
+    verbatim:
+      - "| Single sign-on (SAML 2.0) | No | Yes | Yes |"
+      - Single sign-on (SAML 2.0) is available on the Business and Enterprise tiers
+  - id: tier-scim
+    article: nimbus-plan-tiers
+    statement: SCIM is Enterprise only.
+    verbatim:
+      - "| SCIM provisioning | No | No | Yes |"
+      - SCIM provisioning is available on the Enterprise tier only
+  - id: tier-api
+    article: nimbus-plan-tiers
+    statement: API access is available on Business and Enterprise (Business+).
+    verbatim:
+      - "| API access | No | Yes | Yes |"
+      - API access is available on the Business and Enterprise tiers
+  - id: tier-audit-retention
+    article: nimbus-plan-tiers
+    statement: Audit-log retention is 30 / 90 / 365 days (Starter / Business / Enterprise).
+    verbatim:
+      - "| Audit-log retention | 30 days | 90 days | 365 days |"
+  - id: tier-regions
+    article: nimbus-plan-tiers
+    statement: EU/US regions are on all tiers; APAC is Enterprise only.
+    verbatim:
+      - "| EU and US data regions | Yes | Yes | Yes |"
+      - "| APAC data region | No | No | Yes |"
+  - id: tier-seats
+    article: nimbus-plan-tiers
+    statement: Seat limits per tier.
+    verbatim:
+      - "| Seats | Up to 10 | Up to 250 | Unlimited |"
+
+  # nimbus-sso-saml: Configuring SSO with SAML 2.0
+  - id: sso-identity-providers
+    article: nimbus-sso-saml
+    statement: Setup is documented for Okta and Microsoft Entra ID only.
+    verbatim:
+      - Okta and Microsoft Entra ID
+      - "## Configuring Okta"
+      - "## Configuring Microsoft Entra ID"
+  - id: sso-attribute-mapping
+    article: nimbus-sso-saml
+    statement: The attribute-mapping table maps `email`, `firstName`, `lastName` and `groups`.
+    verbatim: ["| `email` |", "| `firstName` |", "| `lastName` |", "| `groups` |"]
+  - id: sso-jit
+    article: nimbus-sso-saml
+    statement: JIT provisioning creates users on first login and never deprovisions.
+    verbatim:
+      - creates the user on their first login
+      - never deprovisions
+  - id: sso-enforce-break-glass
+    article: nimbus-sso-saml
+    statement: Enforce SSO, with a break-glass admin.
+    verbatim:
+      - "## Enforcing SSO"
+      - break-glass admin account
+  - id: sso-auth-401
+    article: nimbus-sso-saml
+    statement: AUTH-401 is a clock skew of more than 5 min.
+    verbatim: ["| AUTH-401 |", "clock skew of more than 5 minutes"]
+  - id: sso-auth-403
+    article: nimbus-sso-saml
+    statement: AUTH-403 means the user is not assigned to the app.
+    verbatim: ["| AUTH-403 |", "not assigned to the Nimbus app"]
+  - id: sso-auth-409
+    article: nimbus-sso-saml
+    statement: AUTH-409 is a duplicate email.
+    verbatim: ["| AUTH-409 |", "Duplicate email"]
+
+  # nimbus-scim-provisioning: Automated User Provisioning with SCIM 2.0
+  - id: scim-requires-enterprise
+    article: nimbus-scim-provisioning
+    statement: Prerequisite, the Enterprise tier (links to the Plan Tiers Article).
+    verbatim: ["Enterprise tier", "(nimbus-plan-tiers.md)"]
+  - id: scim-requires-sso
+    article: nimbus-scim-provisioning
+    statement: Prerequisite, SSO configured first.
+    verbatim: ["SAML single sign-on must be configured first", "(nimbus-sso-saml.md)"]
+  - id: scim-token-expiry
+    article: nimbus-scim-provisioning
+    statement: The SCIM token expires after 365 days.
+    verbatim: ["expires after 365 days"]
+  - id: scim-group-role-mapping
+    article: nimbus-scim-provisioning
+    statement: IdP groups map to Nimbus roles.
+    verbatim: ["| IdP group | Nimbus role |"]
+  - id: scim-deprovisioning
+    article: nimbus-scim-provisioning
+    statement: Deprovisioning suspends the user; data is kept 30 days, then deleted.
+    verbatim: ["suspends the user", "kept for 30 days", "then permanently deleted"]
+  - id: scim-sync-interval
+    article: nimbus-scim-provisioning
+    statement: Sync runs every 40 min.
+    verbatim: ["every 40 minutes"]
+
+  # nimbus-api-webhooks: API Rate Limits and Webhooks
+  - id: api-rate-limits
+    article: nimbus-api-webhooks
+    statement: Business 600 req/min, Enterprise 3,000 req/min, burst ×2 for 10 s.
+    verbatim:
+      - "| Business | 600 req/min | 1,200 req/min for 10 s |"
+      - "| Enterprise | 3,000 req/min | 6,000 req/min for 10 s |"
+      - ×2 their sustained limit for 10 s
+  - id: api-over-limit
+    article: nimbus-api-webhooks
+    statement: Over the limit, 429 with `Retry-After`.
+    verbatim: ["429 Too Many Requests", "`Retry-After`"]
+  - id: webhook-signature
+    article: nimbus-api-webhooks
+    statement: Webhooks are signed with HMAC-SHA256 in `X-Nimbus-Signature-256`.
+    verbatim: ["HMAC-SHA256", "`X-Nimbus-Signature-256`"]
+  - id: webhook-retries
+    article: nimbus-api-webhooks
+    statement: 8 retries, exponential backoff over 24 h.
+    verbatim: ["retried up to 8 times with exponential backoff over 24 h"]
+  - id: webhook-auto-disable
+    article: nimbus-api-webhooks
+    statement: An endpoint is auto-disabled after 3 days of failures.
+    verbatim: ["disabled automatically after 3 days of failed deliveries"]
+  - id: webhook-example-payload
+    article: nimbus-api-webhooks
+    statement: The Article carries an example payload.
+    verbatim: ['"event": "workflow.run.completed"']
+
+  # nimbus-v2-legacy: Nimbus v2 Legacy Reference (applies_to [v2], deprecated)
+  - id: v2-webhook-signature
+    article: nimbus-v2-legacy
+    statement: Webhooks are signed with HMAC-SHA1 in `X-Nimbus-Signature`.
+    verbatim: ["HMAC-SHA1", "`X-Nimbus-Signature`"]
+  - id: v2-rate-limit
+    article: nimbus-v2-legacy
+    statement: 300 req/min flat for all tiers.
+    verbatim: ["300 req/min", "same for every Plan Tier"]
+  - id: v2-saml-email-attribute
+    article: nimbus-v2-legacy
+    statement: The SAML email attribute is `mail`.
+    verbatim: ["| `mail` |"]
+  - id: v2-end-of-support
+    article: nimbus-v2-legacy
+    statement: v2 end of support is 2027-03-31.
+    verbatim: ["2027-03-31"]
+  - id: v2-upgrading
+    article: nimbus-v2-legacy
+    statement: An "Upgrading to v3" Section points to the current Articles.
+    verbatim: ["## Upgrading to v3", "(nimbus-api-webhooks.md)", "(nimbus-sso-saml.md)"]
+
+# Topics the Knowledge Base never covers. Mentioning any term is a violation in every Article.
+forbidden_topics:
+  - id: prices
+    description: Prices, discounts, billing amounts or the cost of any Plan Tier or upgrade.
+    terms: [price, prices, pricing, priced, discount, discounts, USD, EUR, GBP, "$", "€", "£", per seat per month]
+  - id: ldap
+    description: LDAP or Active Directory directory sync.
+    terms: [LDAP, Active Directory, directory sync]
+  - id: google-workspace
+    description: Google Workspace as an identity provider, for SSO setup steps or provisioning.
+    terms: [Google Workspace, G Suite, Google Cloud Identity, Google SSO]
+  - id: webhook-ip-ranges
+    description: The IP addresses or ranges webhooks are sent from, or allowlisting them.
+    terms: [IP range, IP ranges, IP address, IP addresses, CIDR, allowlist, allowlisting, whitelist, source IP, egress IP]
+  - id: other-identity-providers
+    description: SSO or SCIM setup for any identity provider other than Okta and Microsoft Entra ID.
+    terms: [OneLogin, Ping Identity, PingFederate, PingOne, JumpCloud, ADFS, AD FS, Auth0, Keycloak]
+  - id: other-platform-versions
+    description: Any Platform Version other than v2 and v3.
+    terms: [v1, v4, Nimbus 1, Nimbus 4]
+  - id: saml-single-logout
+    description: SAML single logout (SLO).
+    terms: [single logout, single log-out, SLO]
+  - id: uptime-sla
+    description: Uptime guarantees, SLAs or service credits.
+    terms: [SLA, SLAs, uptime, service credit, service credits, "99.9"]
