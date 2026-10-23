@@ -32,3 +32,23 @@ export function sseEvents(
 ): HttpResponse<ReadableStream> {
   return sseResponse(events.map(frame), options);
 }
+
+/**
+ * A stream the test feeds one event at a time, to assert what the CSM sees between events.
+ * Serve it with `http.post("*\/api/chat", () => channel.response())`.
+ */
+export function sseChannel() {
+  const encoder = new TextEncoder();
+  let controller: ReadableStreamDefaultController<Uint8Array> | undefined;
+  const body = new ReadableStream<Uint8Array>({
+    start(c) {
+      controller = c;
+    },
+  });
+  return {
+    response: () => new HttpResponse(body, { headers: { "Content-Type": "text/event-stream" } }),
+    send(event: ChatStreamEvent) {
+      controller?.enqueue(encoder.encode(frame(event)));
+    },
+  };
+}

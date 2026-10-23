@@ -1,16 +1,8 @@
-import { api } from "./api/client";
+import { ChatPage } from "./chat/ChatPage";
 
 function App() {
-  const { data, isError } = api.useQuery("get", "/health");
-  const status = data?.status ?? (isError ? "unavailable" : "checking");
-
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-900">
-      <p className="text-lg">
-        Backend status: <span className="font-mono font-semibold">{status}</span>
-      </p>
-    </main>
-  );
+  // Citation click-through opens the Article panel here (#32). Until then "Open Section" does nothing.
+  return <ChatPage onOpenSection={() => undefined} />;
 }
 
 export default App;
