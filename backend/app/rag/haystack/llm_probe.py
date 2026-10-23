@@ -11,6 +11,7 @@ import ollama
 
 from app.chat_model import LlmHealth, LlmProbe
 from app.config import Settings
+from app.fake_chat_model import FakeLlmProbe
 from app.rag.haystack.chat_model import anthropic_client, ollama_client
 
 
@@ -20,6 +21,8 @@ def build_llm_probe(settings: Settings) -> LlmProbe:
             return _ClaudeProbe(settings)
         case "ollama":
             return _OllamaProbe(settings)
+        case "fake":
+            return FakeLlmProbe()
 
 
 class _ClaudeProbe:

@@ -30,6 +30,7 @@ from haystack_integrations.components.generators.ollama.chat.chat_generator impo
 from app.chat_model import ChatModel, Message
 from app.config import Settings
 from app.errors import AppError
+from app.fake_chat_model import FakeChatModel
 
 LLM_AUTH_FAILED: Final = "The language model provider rejected the configured credentials."
 LLM_UNAVAILABLE: Final = "The language model is unavailable right now. Please try again."
@@ -110,6 +111,8 @@ def build_chat_model(settings: Settings) -> ChatModel:
             return HaystackChatModel(_claude(settings), _claude_error)
         case "ollama":
             return HaystackChatModel(_ollama(settings), _ollama_error)
+        case "fake":
+            return FakeChatModel()
 
 
 def anthropic_client(settings: Settings) -> anthropic.AsyncAnthropic:

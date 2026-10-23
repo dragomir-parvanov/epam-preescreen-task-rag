@@ -9,7 +9,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 # The repo-root .env, for local runs; absent in the Docker image, where Compose injects it.
 ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
 
-LlmProvider = Literal["anthropic", "ollama"]
+# `fake` is a canned, keyless stand-in for the CI smoke job (app.fake_chat_model); never a default.
+LlmProvider = Literal["anthropic", "ollama", "fake"]
 LogFormat = Literal["json", "console"]
 LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR"]
 
@@ -25,6 +26,7 @@ class ProviderDefaults(NamedTuple):
 PROVIDER_DEFAULTS: dict[LlmProvider, ProviderDefaults] = {
     "anthropic": ProviderDefaults("claude-opus-5-5", read_timeout_s=60, turn_deadline_s=120),
     "ollama": ProviderDefaults("qwen3.5:2b", read_timeout_s=120, turn_deadline_s=240),
+    "fake": ProviderDefaults("fake-canned-reply", read_timeout_s=5, turn_deadline_s=30),
 }
 
 MISSING_ANTHROPIC_KEY = """\

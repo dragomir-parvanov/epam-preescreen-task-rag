@@ -136,6 +136,21 @@ def test_config_loaded_says_unset_for_a_missing_secret(captured_logs: LogLines) 
     assert line["database_host"] == "localhost:5432"
 
 
+def test_the_fake_provider_is_warned_about_at_startup(captured_logs: LogLines) -> None:
+    log_config_loaded(Settings.model_construct(anthropic_api_key=None, llm_provider="fake"))
+
+    config, warning = captured_logs()
+    assert config["event"] == "config_loaded"
+    assert warning["event"] == "fake_llm_provider_active"
+    assert warning["level"] == "warning"
+
+
+def test_a_real_provider_gets_no_warning(captured_logs: LogLines) -> None:
+    log_config_loaded(Settings.model_construct(anthropic_api_key=None, llm_provider="ollama"))
+
+    assert [line["event"] for line in captured_logs()] == ["config_loaded"]
+
+
 QUESTION = "Why can't ACME-CLIENT-42 log in?"
 STANDALONE = "Why can't ACME-CLIENT-42 log in with SSO on v3?"
 ANSWER_TEXT = "ACME-CLIENT-42's IdP certificate expired [1]."

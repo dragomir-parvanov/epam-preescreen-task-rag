@@ -52,6 +52,15 @@ def test_ollama_needs_no_key(monkeypatch: pytest.MonkeyPatch) -> None:
     assert settings.anthropic_api_key is None
 
 
+def test_the_fake_provider_for_the_smoke_job_needs_no_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("BACKEND_LLM_PROVIDER", "fake")
+
+    settings = load()
+
+    assert settings.llm_provider == "fake"
+    assert settings.anthropic_api_key is None
+
+
 def test_the_key_is_read_from_the_unprefixed_env_var(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
 
@@ -128,7 +137,9 @@ def test_an_unknown_provider_exits_naming_the_env_var(monkeypatch: pytest.Monkey
     with pytest.raises(SystemExit) as excinfo:
         load_settings(env_file=None)
 
-    assert excinfo.value.code == "BACKEND_LLM_PROVIDER: Input should be 'anthropic' or 'ollama'"
+    assert excinfo.value.code == (
+        "BACKEND_LLM_PROVIDER: Input should be 'anthropic', 'ollama' or 'fake'"
+    )
 
 
 def test_database_url_comes_from_the_environment_and_is_never_printed(

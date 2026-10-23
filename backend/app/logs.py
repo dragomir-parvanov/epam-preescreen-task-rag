@@ -87,7 +87,10 @@ def configure_logging(log_format: LogFormat, level: LogLevel, stream: TextIO | N
 
 
 def log_config_loaded(settings: Settings) -> None:
-    """One `config_loaded` line with every setting. Secrets print only as `set` or `unset`."""
+    """One `config_loaded` line with every setting. Secrets print only as `set` or `unset`.
+
+    The `fake` provider (smoke tests only) adds a warning line, so it never goes unnoticed.
+    """
     fields: dict[str, Any] = {}
     for name, field in type(settings).model_fields.items():
         value = getattr(settings, name)
@@ -99,6 +102,11 @@ def log_config_loaded(settings: Settings) -> None:
     database = urlsplit(settings.database_url.get_secret_value())
     fields["database_host"] = f"{database.hostname}:{database.port or 5432}"
     logger.info("config_loaded", **fields)
+    if settings.llm_provider == "fake":
+        logger.warning(
+            "fake_llm_provider_active",
+            detail="Every Answer is a canned reply, not a model's: for smoke tests only.",
+        )
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
