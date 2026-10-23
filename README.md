@@ -18,6 +18,8 @@ The app is at <http://localhost:8080>, the backend's API docs at <http://localho
 
 `pixi run up` returns only once the stack can answer: the backend's Compose healthcheck probes `GET /ready`, which passes when Postgres answers and the Knowledge Base has been synced into the index, and the frontend waits for a healthy backend. So <http://localhost:8080> answers only after `up` returns; the browser has no first-boot screen of its own. On a keyless first run, follow the Ollama model download with `docker compose logs -f ollama-pull`.
 
+The first boot embeds every Passage of the Knowledge Base (about 1,150) on the CPU, which takes about 40 s on a 12-CPU machine and a few minutes on a small laptop or CI runner; later boots re-embed only what changed. `docker compose logs -f backend` shows it as `index_sync_progress` lines (`done` of `total`), then `index_synced`. The healthcheck allows 5 minutes for it before marking the backend unhealthy.
+
 At startup the backend:
 
 1. validates every Article in `knowledge-base/` (bind-mounted read-only). A malformed Article stops it with a log line naming the file, so `up` fails;

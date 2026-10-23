@@ -4,8 +4,11 @@ What gets embedded for a Passage is its `"<Article title> > <Section path>"` hea
 verbatim text. With dozens of "Troubleshooting" Sections, the header is what tells them apart.
 """
 
+import math
+import os
 from collections.abc import Callable
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Final, Protocol
 
 from haystack import Document
@@ -52,20 +55,50 @@ class Embedder:
     """CPU-bound: run it off the event loop."""
 
 
+# One Passage per model call. A batch is padded to its longest text, and Passages run from a few
+# dozen to 512 tokens, so fastembed's default of 256 per batch spent most of its time on padding.
+# Measured on 4 CPUs: 8 Passages/s at 256 per batch, 18/s at 4, 32/s at 1 (1,150 Passages: 36 s).
+PASSAGE_BATCH_SIZE: Final = 1
+
+_CGROUP_CPU_MAX: Final = Path("/sys/fs/cgroup/cpu.max")
+
+
+def cpu_budget(cpus: int | None = None, cpu_max: Path = _CGROUP_CPU_MAX) -> int:
+    """How many CPUs this process may use: all of them, unless a cgroup v2 quota is lower.
+
+    onnxruntime sizes its thread pool from the host's CPU count, so under `docker run --cpus 4`
+    on a 12-CPU host it runs 12 threads on 4 CPUs' worth of time, which made embedding 3x slower.
+    """
+    cpus = cpus or os.process_cpu_count() or 1
+    try:
+        quota, period = cpu_max.read_text().split()
+    except (OSError, ValueError):
+        return cpus
+    if quota == "max":
+        return cpus
+    return max(1, min(cpus, math.ceil(int(quota) / int(period))))
+
+
 def fastembed_embedder(*, query_prefix: bool = True) -> Embedder:
     """The production model. `query_prefix=False` is for the eval's one-off with/without report."""
+    threads = cpu_budget()
     return Embedder(
         model=EMBEDDING_MODEL,
         dimension=EMBEDDING_DIMENSION,
         # fastembed caches the loaded model, so each new component reuses it.
         passages=lambda: FastembedDocumentEmbedder(
             model=EMBEDDING_MODEL,
+            threads=threads,
+            batch_size=PASSAGE_BATCH_SIZE,
             progress_bar=False,
             meta_fields_to_embed=[HEADER_FIELD],
             embedding_separator=_HEADER_SEPARATOR,
         ),
         queries=FastembedTextEmbedder(
-            model=EMBEDDING_MODEL, progress_bar=False, prefix=QUERY_PREFIX if query_prefix else ""
+            model=EMBEDDING_MODEL,
+            threads=threads,
+            progress_bar=False,
+            prefix=QUERY_PREFIX if query_prefix else "",
         ),
     )
 

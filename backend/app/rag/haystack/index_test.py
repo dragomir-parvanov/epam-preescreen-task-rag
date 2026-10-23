@@ -1,10 +1,13 @@
 import asyncio
 import time
+from collections.abc import Callable
+from typing import Any
 
 import psycopg
 import pytest
 from pydantic import SecretStr
 
+from app.rag.haystack import indexing
 from app.rag.haystack.conftest import KnowledgeBase, RecordingEmbedder, keyword_embedding
 from app.rag.haystack.embedding import fake_embedder
 from app.rag.haystack.index import EmbeddingDimensionMismatchError, PassageIndex, SyncReport
@@ -35,6 +38,28 @@ async def test_the_first_sync_embeds_and_writes_every_passage(
     )
     # The header that tells "Troubleshooting" Sections apart is embedded with the verbatim text.
     assert "Sso > Troubleshooting\nAUTH-401 is clock skew." in keyword_embedder.embedded
+
+
+async def test_the_sync_embeds_in_batches_and_logs_its_progress(
+    pgvector_database_url: str,
+    keyword_embedder: RecordingEmbedder,
+    knowledge_base: KnowledgeBase,
+    captured_logs: Callable[[], list[dict[str, Any]]],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(indexing, "SYNC_BATCH_PASSAGES", 2)
+    knowledge_base.write("sso", SSO)
+    knowledge_base.write("webhooks", WEBHOOKS)
+
+    async with await open_index(pgvector_database_url, keyword_embedder) as index:
+        await index.sync(knowledge_base.directory)
+
+    progress = [
+        (line["done"], line["total"])
+        for line in captured_logs()
+        if line["event"] == "index_sync_progress"
+    ]
+    assert progress == [(2, 3), (3, 3)]
 
 
 async def test_a_second_sync_of_an_unchanged_knowledge_base_writes_nothing(

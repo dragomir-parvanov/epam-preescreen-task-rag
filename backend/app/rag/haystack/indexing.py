@@ -2,7 +2,9 @@
 
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Final
 
+import structlog
 from haystack import Pipeline
 from haystack.components.writers import DocumentWriter
 from haystack.document_stores.types import DuplicatePolicy
@@ -17,6 +19,12 @@ from app.knowledge_base import load_articles
 from app.rag.haystack.documents import FINGERPRINT_FIELD, to_document
 from app.rag.haystack.embedding import Embedder
 from app.rag.haystack.splitting import split_article
+
+SYNC_BATCH_PASSAGES: Final = 100
+"""Passages embedded and written per pipeline run. Each run logs `index_sync_progress`, so a
+first boot's few-minute embedding isn't silent, and an interrupted sync keeps what it wrote."""
+
+logger = structlog.stdlib.get_logger(__name__)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -68,9 +76,11 @@ async def build_index(
     ]
     deleted = sorted(stored.keys() - wanted.keys())
 
-    if changed:
+    for start in range(0, len(changed), SYNC_BATCH_PASSAGES):
         # Pipeline.run_async runs the (sync, CPU-bound) embedder in a worker thread.
-        await pipeline.run_async({"embedder": {"documents": changed}})
+        batch = changed[start : start + SYNC_BATCH_PASSAGES]
+        await pipeline.run_async({"embedder": {"documents": batch}})
+        logger.info("index_sync_progress", done=start + len(batch), total=len(changed))
     await store.delete_documents_async(deleted)
 
     return SyncReport(
