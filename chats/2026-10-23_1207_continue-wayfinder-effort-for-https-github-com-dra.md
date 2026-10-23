@@ -178,3 +178,22 @@ No new glossary terms came out of this, and no "Not yet specified" items became 
 
 Closing this ticket unblocks five: **Choose the LLM & embedding providers and their configuration** (first in map order, and it blocks both new build tickets), **Choose the vector store**, **Chunking & retrieval strategy**, **Test & evaluation strategy** and **Prompt design**.
 
+## user · 2026-10-23 12:49:48 · context 9.6% (96k / 1000k)
+
+commit everything
+
+## assistant · 2026-10-23 12:49:59 · context 9.7% (96.8k / 1000k)
+
+You're on `main` and I'm not supposed to commit directly to it, so I'll put the commits on a new branch: one for the decision docs, one for the chat logs.
+
+## assistant · 2026-10-23 12:50:06 · context 9.8% (97.8k / 1000k)
+
+I committed everything to a new branch, `docs/wayfinder-decisions`, because I shouldn't commit straight to `main`. The working tree is now clean.
+
+- `e03dac7` **docs: record glossary and ADRs 0001-0003 from wayfinder decisions**: `GLOSSARY.md` and the three ADRs under `docs/adr/`.
+- `4b1b6f2` **docs: add wayfinder session conversations**: the new and updated logs under `chats/`.
+
+Nothing is pushed. If you'd rather have these on `main`, `git switch main && git merge --ff-only docs/wayfinder-decisions` will move them across. If you want a PR instead, I can push the branch and open one.
+
+The recording hook rewrites this session's log in `chats/` at the end of each turn, so that file will show as modified again after this reply.
+
