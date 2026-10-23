@@ -106,6 +106,22 @@ async def test_an_exact_identifier_that_only_bm25_ranks_highly_still_reaches_the
     assert all(error_table.score < p.score for p in passages if p is not error_table)
 
 
+async def test_dense_only_retrieval_is_the_dense_ranking_without_the_bm25_leg(
+    pgvector_database_url: str, knowledge_base: KnowledgeBase
+) -> None:
+    write_logon_decoys_and_an_error_table(knowledge_base)
+    embedder = fake_embedder(semantic_embedding, model="semantic")
+
+    async with await synced_index(
+        pgvector_database_url, embedder, knowledge_base.directory, top_k=3
+    ) as index:
+        passages = await index.retrieve(QUESTION, dense_only=True)
+
+    assert len(passages) == 3
+    assert "errors#codes-1" not in [passage.id for passage in passages]
+    assert [p.score for p in passages] == sorted((p.score for p in passages), reverse=True)
+
+
 async def test_every_passage_carries_its_dense_cosine_score_even_a_bm25_only_hit(
     pgvector_database_url: str, knowledge_base: KnowledgeBase
 ) -> None:

@@ -41,6 +41,7 @@ Development tasks:
 | `pixi run typecheck` | pyright (strict) + TypeScript 7 via `vp check` |
 | `pixi run test` | pytest + Vitest (via Vite+). Needs Docker for the `pgvector` tests; `pytest -m "not pgvector"` in `backend/` leaves them out |
 | `pixi run smoke` | What CI's smoke job runs: the whole stack on the keyless `fake` LLM provider (a canned reply, smoke tests only), as its own Compose project on ports 18080/18000/15432, checked through nginx (`/ready`, the Articles, a streamed cited Answer, a Follow-up, a Refusal); then removed with its volume |
+| `pixi run eval-retrieval` | The keyless retrieval eval: indexes the Knowledge Base with the real embedder in a throwaway pgvector (needs Docker; ~1.5 min on 12 CPUs) and prints, per Golden Question, where its expected Sections rank (hybrid, dense-only, and without bge's query prefix) and what the threshold gate does at the configured `BACKEND_RETRIEVAL_TOP_K` / `BACKEND_RETRIEVAL_MIN_SCORE`. Exits non-zero below the recall bars or on a gate Refusal of an answerable question |
 | `pixi run gen-types` | Regenerate the frontend's API types from the backend's OpenAPI schema; commit the result |
 
 ## Chat recording

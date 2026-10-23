@@ -1,4 +1,10 @@
-"""Reads Knowledge Base Articles: their front-matter and the Section paths their headings form."""
+"""The Knowledge Base *format*: the full front-matter schema (#6) and the headings, which the shape
+tests, the corpus lint and the generator hold every Article to.
+
+Stricter than `app.knowledge_base`, the server's reader, which ignores the author-only fields.
+Golden `expected_sources` resolve through that one instead (`evaluation.retrieval_scoring`), so
+they name Sections exactly as Passages do.
+"""
 
 import re
 from dataclasses import dataclass
@@ -85,14 +91,3 @@ def _headings(body: str) -> tuple[Heading, ...]:
         elif not in_fence and (match := _HEADING.match(line)):
             headings.append(Heading(level=len(match.group(1)), text=match.group(2)))
     return tuple(headings)
-
-
-def load_knowledge_base(directory: Path = KNOWLEDGE_BASE_DIR) -> dict[str, Article]:
-    """Every Article in the Knowledge Base, keyed by file name without `.md`."""
-    articles: dict[str, Article] = {}
-    for path in sorted(directory.glob("*.md")):
-        try:
-            articles[path.stem] = parse_article(path.read_text(encoding="utf-8"))
-        except ArticleFormatError as error:
-            raise ArticleFormatError(f"{path.name}: {error}") from error
-    return articles

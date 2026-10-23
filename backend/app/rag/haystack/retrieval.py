@@ -56,16 +56,17 @@ class HybridRetriever:
         self._dense = PgvectorEmbeddingRetriever(document_store=store, top_k=CANDIDATES)
         self._fuse = DocumentJoiner(join_mode="reciprocal_rank_fusion")
 
-    async def retrieve(self, question: str, mirror: Bm25Mirror) -> tuple[Passage, ...]:
+    async def retrieve(
+        self, question: str, mirror: Bm25Mirror, *, dense_only: bool = False
+    ) -> tuple[Passage, ...]:
+        """`dense_only` drops the BM25 leg: the eval's ablation, never the server's retrieval."""
         # fastembed is CPU-bound and sync-only: keep it off the event loop.
         embedded = await asyncio.to_thread(self._embedder.queries.run, text=question)
         query: list[float] = embedded["embedding"]
         dense: list[Document] = (await self._dense.run_async(query_embedding=query))["documents"]
-        keyword = await mirror.search(question)
+        legs = [dense] if dense_only else [dense, await mirror.search(question)]
 
-        fused: list[Document] = self._fuse.run(documents=[dense, keyword], top_k=self._top_k)[
-            "documents"
-        ]
+        fused: list[Document] = self._fuse.run(documents=legs, top_k=self._top_k)["documents"]
         cosine = {document.id: document.score for document in dense}
         stored = mirror.stored | {document.id: document for document in dense}
         passages: list[Passage] = []

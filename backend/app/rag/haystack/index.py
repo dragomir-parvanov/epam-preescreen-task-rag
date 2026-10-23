@@ -127,11 +127,14 @@ class PassageIndex:
         )
         return report
 
-    async def retrieve(self, question: str) -> tuple[Passage, ...]:
-        """The `PassageRetriever` interface: see `app.passages.PassageRetriever`."""
+    async def retrieve(self, question: str, *, dense_only: bool = False) -> tuple[Passage, ...]:
+        """The `PassageRetriever` interface: see `app.passages.PassageRetriever`.
+
+        `dense_only` skips the BM25 leg, for the retrieval eval's ablation (ADR-0005).
+        """
         try:
             async with self._store_lock:
-                return await self._retriever.retrieve(question, self._mirror)
+                return await self._retriever.retrieve(question, self._mirror, dense_only=dense_only)
         except (DocumentStoreError, psycopg.Error) as error:
             raise AppError("retrieval_unavailable", RETRIEVAL_UNAVAILABLE) from error
 

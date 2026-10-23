@@ -46,7 +46,9 @@ delivers them all at once. The client asks for gzip, as browsers do, so compress
 (which buffers it) fails this too."""
 
 QUESTION: Final = "How do I configure SAML single sign-on for a client?"
-FOLLOW_UP: Final = "and on v2?"
+# The fake's rewrite returns the Follow-up unchanged, so the Follow-up is worded the way a real
+# rewrite would leave it: a bare "and on v2?" retrieves nothing above the threshold gate.
+FOLLOW_UP: Final = "And how do I configure SAML single sign-on on v2?"
 
 
 class SmokeFailure(Exception):

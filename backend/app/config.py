@@ -65,10 +65,15 @@ class Settings(BaseSettings):
     rewrite_deadline_s: PositiveFloat = 30
 
     # Retrieval (ADR-0005). The retriever returns `retrieval_top_k` Passages; `ChatService`'s gate
-    # refuses when none has a dense cosine score of at least `retrieval_min_score`. Both are
-    # placeholders until the retrieval eval (#28) sets them from the Golden Questions.
+    # refuses when none has a dense cosine score of at least `retrieval_min_score`.
+    # `pixi run eval-retrieval` (#28) checks both against the Golden Questions. top_k is still the
+    # starting value: no k up to the cap of 8 meets the recall bars yet (#28).
     retrieval_top_k: PositiveInt = 6
-    retrieval_min_score: float = 0.5
+    # A safety floor, not a separator: the weakest answerable question's dense top-1 is 0.712, so
+    # 0.712 - 0.05 margin. Off-topic questions score ~0.35-0.40 and are refused; questions near a
+    # covered topic (LDAP, prices: 0.65-0.80) overlap answerable ones, and are left to the model's
+    # NOT_IN_KNOWLEDGE_BASE sentinel.
+    retrieval_min_score: float = 0.66
 
     # JSON lines in the image; `pixi run dev-backend` switches to a readable console format.
     log_format: LogFormat = "json"

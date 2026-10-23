@@ -3,8 +3,9 @@ from typing import Any
 import pytest
 from pydantic import ValidationError
 
+from app.knowledge_base import KNOWLEDGE_BASE_DIR, load_articles
 from evaluation.golden import GoldenQuestion, load_golden_questions, parse_golden_questions
-from evaluation.knowledge_base import load_knowledge_base
+from evaluation.retrieval_scoring import resolve_expected_sources
 
 
 def entry(**overrides: Any) -> dict[str, Any]:
@@ -75,14 +76,7 @@ def test_rejects_duplicate_ids() -> None:
 # --- The committed Golden Questions -----------------------------------------------------------
 
 
-def test_every_expected_source_names_an_existing_article_section() -> None:
-    articles = load_knowledge_base()
-    unresolved = [
-        f"{question.id}: {source.article} > {source.section}"
-        for question in load_golden_questions()
-        for source in question.expected_sources
-        if source.article not in articles
-        or source.section not in articles[source.article].section_paths
-    ]
-
-    assert unresolved == []
+def test_every_expected_source_names_a_section_that_passages_cite() -> None:
+    # Resolved the way the retrieval eval does, through the Sections ingestion splits into
+    # Passages; raises, naming each source, if one names a missing Article or heading.
+    resolve_expected_sources(load_golden_questions(), load_articles(KNOWLEDGE_BASE_DIR))
