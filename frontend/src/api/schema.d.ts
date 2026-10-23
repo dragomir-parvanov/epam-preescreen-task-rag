@@ -24,10 +24,117 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Chat
+         * @description Answer one Turn, streamed as Server-Sent Events.
+         *
+         *     `rewritten` (Follow-ups only) -> `passages` -> `token`s -> `done`, or `error` once the
+         *     stream has started.
+         */
+        post: operations["postChat"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** Answer */
+        Answer: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "answer";
+            /** Text */
+            text: string;
+            /** Citations */
+            citations: components["schemas"]["Citation"][];
+            /** Retrieved Passages */
+            retrieved_passages: components["schemas"]["Passage"][];
+            /** Standalone Question */
+            standalone_question: string | null;
+        };
+        /** ArticleRef */
+        ArticleRef: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+        };
+        /** ChatRequest */
+        ChatRequest: {
+            /** Question */
+            question: string;
+            /**
+             * History
+             * @default []
+             */
+            history: components["schemas"]["HistoryTurn"][];
+        };
+        ChatResult: components["schemas"]["Answer"] | components["schemas"]["UncitedAnswer"] | components["schemas"]["Refusal"];
+        ChatStreamEvent: components["schemas"]["RewrittenEvent"] | components["schemas"]["PassagesEvent"] | components["schemas"]["TokenEvent"] | components["schemas"]["DoneEvent"] | components["schemas"]["ErrorEvent"];
+        /** Citation */
+        Citation: {
+            /** N */
+            n: number;
+            passage: components["schemas"]["Passage"];
+        };
+        /**
+         * DoneEvent
+         * @description The authoritative result. It replaces all provisional text streamed before it.
+         */
+        DoneEvent: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "done";
+            result: components["schemas"]["ChatResult"];
+        };
+        /** ErrorBody */
+        ErrorBody: {
+            code: components["schemas"]["ErrorCode"];
+            /** Message */
+            message: string;
+            /** Details */
+            details?: components["schemas"]["FieldError"][] | null;
+        };
+        /** @enum {string} */
+        ErrorCode: "validation_error" | "not_found" | "llm_not_configured" | "llm_auth_failed" | "llm_unavailable" | "llm_timeout" | "index_not_ready" | "retrieval_unavailable" | "internal_error";
+        /**
+         * ErrorEvent
+         * @description A failure after the stream has started, when the HTTP status has already gone out.
+         */
+        ErrorEvent: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "error";
+            error: components["schemas"]["ErrorBody"];
+        };
+        /** FieldError */
+        FieldError: {
+            /** Loc */
+            loc: (string | number)[];
+            /** Msg */
+            msg: string;
+            /** Type */
+            type: string;
+        };
         /** HealthResponse */
         HealthResponse: {
             /**
@@ -35,6 +142,116 @@ export interface components {
              * @constant
              */
             status: "ok";
+        };
+        /**
+         * HistoryTurn
+         * @description An earlier Turn of the Conversation, as the client remembers it.
+         */
+        HistoryTurn: {
+            /** Question */
+            question: string;
+            /** Answer */
+            answer: string;
+        };
+        /** Passage */
+        Passage: {
+            /** Id */
+            id: string;
+            article: components["schemas"]["ArticleRef"];
+            section: components["schemas"]["SectionRef"];
+            /** Text */
+            text: string;
+            /** Applies To */
+            applies_to: ("v2" | "v3")[];
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "current" | "deprecated";
+            /** Score */
+            score: number;
+        };
+        /**
+         * PassagesEvent
+         * @description The retrieved Passages, numbered in prompt order. Sent before any token.
+         */
+        PassagesEvent: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "passages";
+            /** Passages */
+            passages: components["schemas"]["Passage"][];
+        };
+        /** Refusal */
+        Refusal: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "refusal";
+            /** Message */
+            message: string;
+            /**
+             * Reason
+             * @enum {string}
+             */
+            reason: "no_relevant_passages" | "not_in_context";
+            /** Retrieved Passages */
+            retrieved_passages: components["schemas"]["Passage"][];
+            /** Standalone Question */
+            standalone_question: string | null;
+        };
+        /**
+         * RewrittenEvent
+         * @description The Standalone Question a Follow-up Question was rewritten into. Follow-ups only.
+         */
+        RewrittenEvent: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "rewritten";
+            /** Standalone Question */
+            standalone_question: string;
+        };
+        /** SectionRef */
+        SectionRef: {
+            /** Id */
+            id: string;
+            /** Path */
+            path: string[];
+        };
+        /**
+         * TokenEvent
+         * @description Raw model text. Its markers keep the prompt numbers from `passages`.
+         */
+        TokenEvent: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "token";
+            /** Text */
+            text: string;
+        };
+        /**
+         * UncitedAnswer
+         * @description An Answer with no valid Citations, shown with a warning (ADR-0001).
+         */
+        UncitedAnswer: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "uncited_answer";
+            /** Text */
+            text: string;
+            /** Retrieved Passages */
+            retrieved_passages: components["schemas"]["Passage"][];
+            /** Standalone Question */
+            standalone_question: string | null;
         };
     };
     responses: never;
@@ -61,6 +278,63 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HealthResponse"];
+                };
+            };
+        };
+    };
+    postChat: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": unknown;
+                };
+            };
+            /** @description Error codes: validation_error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: components["schemas"]["ErrorBody"];
+                    };
+                };
+            };
+            /** @description Error codes: internal_error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: components["schemas"]["ErrorBody"];
+                    };
+                };
+            };
+            /** @description Error codes: llm_not_configured, index_not_ready, retrieval_unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: components["schemas"]["ErrorBody"];
+                    };
                 };
             };
         };

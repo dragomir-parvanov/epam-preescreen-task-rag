@@ -23,10 +23,390 @@
           }
         }
       }
+    },
+    "/chat": {
+      "post": {
+        "summary": "Chat",
+        "description": "Answer one Turn, streamed as Server-Sent Events.\n\n`rewritten` (Follow-ups only) -> `passages` -> `token`s -> `done`, or `error` once the\nstream has started.",
+        "operationId": "postChat",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/event-stream": {
+                "itemSchema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "#/components/schemas/ChatStreamEvent"
+                      }
+                    },
+                    "event": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "retry": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error codes: validation_error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "$ref": "#/components/schemas/ErrorBody"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "title": "ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error codes: llm_not_configured, index_not_ready, retrieval_unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "$ref": "#/components/schemas/ErrorBody"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "title": "ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error codes: internal_error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "$ref": "#/components/schemas/ErrorBody"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "title": "ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "Answer": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "answer",
+            "title": "Type",
+            "default": "answer"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/Citation"
+            },
+            "type": "array",
+            "title": "Citations"
+          },
+          "retrieved_passages": {
+            "items": {
+              "$ref": "#/components/schemas/Passage"
+            },
+            "type": "array",
+            "title": "Retrieved Passages"
+          },
+          "standalone_question": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Standalone Question"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text",
+          "citations",
+          "retrieved_passages",
+          "standalone_question"
+        ],
+        "title": "Answer"
+      },
+      "ArticleRef": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "ArticleRef"
+      },
+      "ChatRequest": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Question"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/HistoryTurn"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "History",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "question"
+        ],
+        "title": "ChatRequest"
+      },
+      "ChatResult": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Answer"
+          },
+          {
+            "$ref": "#/components/schemas/UncitedAnswer"
+          },
+          {
+            "$ref": "#/components/schemas/Refusal"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "answer": "#/components/schemas/Answer",
+            "refusal": "#/components/schemas/Refusal",
+            "uncited_answer": "#/components/schemas/UncitedAnswer"
+          }
+        }
+      },
+      "ChatStreamEvent": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/RewrittenEvent"
+          },
+          {
+            "$ref": "#/components/schemas/PassagesEvent"
+          },
+          {
+            "$ref": "#/components/schemas/TokenEvent"
+          },
+          {
+            "$ref": "#/components/schemas/DoneEvent"
+          },
+          {
+            "$ref": "#/components/schemas/ErrorEvent"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "done": "#/components/schemas/DoneEvent",
+            "error": "#/components/schemas/ErrorEvent",
+            "passages": "#/components/schemas/PassagesEvent",
+            "rewritten": "#/components/schemas/RewrittenEvent",
+            "token": "#/components/schemas/TokenEvent"
+          }
+        }
+      },
+      "Citation": {
+        "properties": {
+          "n": {
+            "type": "integer",
+            "title": "N"
+          },
+          "passage": {
+            "$ref": "#/components/schemas/Passage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "n",
+          "passage"
+        ],
+        "title": "Citation"
+      },
+      "DoneEvent": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "done",
+            "title": "Type",
+            "default": "done"
+          },
+          "result": {
+            "$ref": "#/components/schemas/ChatResult"
+          }
+        },
+        "type": "object",
+        "required": [
+          "result"
+        ],
+        "title": "DoneEvent",
+        "description": "The authoritative result. It replaces all provisional text streamed before it."
+      },
+      "ErrorBody": {
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/ErrorCode"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "details": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FieldError"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Details"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ErrorBody"
+      },
+      "ErrorCode": {
+        "type": "string",
+        "enum": [
+          "validation_error",
+          "not_found",
+          "llm_not_configured",
+          "llm_auth_failed",
+          "llm_unavailable",
+          "llm_timeout",
+          "index_not_ready",
+          "retrieval_unavailable",
+          "internal_error"
+        ]
+      },
+      "ErrorEvent": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "error",
+            "title": "Type",
+            "default": "error"
+          },
+          "error": {
+            "$ref": "#/components/schemas/ErrorBody"
+          }
+        },
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "title": "ErrorEvent",
+        "description": "A failure after the stream has started, when the HTTP status has already gone out."
+      },
+      "FieldError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Loc"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Msg"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "FieldError"
+      },
       "HealthResponse": {
         "properties": {
           "status": {
@@ -40,6 +420,251 @@
           "status"
         ],
         "title": "HealthResponse"
+      },
+      "HistoryTurn": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Question"
+          },
+          "answer": {
+            "type": "string",
+            "maxLength": 20000,
+            "title": "Answer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question",
+          "answer"
+        ],
+        "title": "HistoryTurn",
+        "description": "An earlier Turn of the Conversation, as the client remembers it."
+      },
+      "Passage": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "article": {
+            "$ref": "#/components/schemas/ArticleRef"
+          },
+          "section": {
+            "$ref": "#/components/schemas/SectionRef"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "applies_to": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "v2",
+                "v3"
+              ]
+            },
+            "type": "array",
+            "title": "Applies To"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "current",
+              "deprecated"
+            ],
+            "title": "Status"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "article",
+          "section",
+          "text",
+          "applies_to",
+          "status",
+          "score"
+        ],
+        "title": "Passage"
+      },
+      "PassagesEvent": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "passages",
+            "title": "Type",
+            "default": "passages"
+          },
+          "passages": {
+            "items": {
+              "$ref": "#/components/schemas/Passage"
+            },
+            "type": "array",
+            "title": "Passages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "passages"
+        ],
+        "title": "PassagesEvent",
+        "description": "The retrieved Passages, numbered in prompt order. Sent before any token."
+      },
+      "Refusal": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "refusal",
+            "title": "Type",
+            "default": "refusal"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "no_relevant_passages",
+              "not_in_context"
+            ],
+            "title": "Reason"
+          },
+          "retrieved_passages": {
+            "items": {
+              "$ref": "#/components/schemas/Passage"
+            },
+            "type": "array",
+            "title": "Retrieved Passages"
+          },
+          "standalone_question": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Standalone Question"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message",
+          "reason",
+          "retrieved_passages",
+          "standalone_question"
+        ],
+        "title": "Refusal"
+      },
+      "RewrittenEvent": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "rewritten",
+            "title": "Type",
+            "default": "rewritten"
+          },
+          "standalone_question": {
+            "type": "string",
+            "title": "Standalone Question"
+          }
+        },
+        "type": "object",
+        "required": [
+          "standalone_question"
+        ],
+        "title": "RewrittenEvent",
+        "description": "The Standalone Question a Follow-up Question was rewritten into. Follow-ups only."
+      },
+      "SectionRef": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "path": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Path"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "path"
+        ],
+        "title": "SectionRef"
+      },
+      "TokenEvent": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "token",
+            "title": "Type",
+            "default": "token"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "TokenEvent",
+        "description": "Raw model text. Its markers keep the prompt numbers from `passages`."
+      },
+      "UncitedAnswer": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "uncited_answer",
+            "title": "Type",
+            "default": "uncited_answer"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "retrieved_passages": {
+            "items": {
+              "$ref": "#/components/schemas/Passage"
+            },
+            "type": "array",
+            "title": "Retrieved Passages"
+          },
+          "standalone_question": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Standalone Question"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text",
+          "retrieved_passages",
+          "standalone_question"
+        ],
+        "title": "UncitedAnswer",
+        "description": "An Answer with no valid Citations, shown with a warning (ADR-0001)."
       }
     }
   }
