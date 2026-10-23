@@ -28,3 +28,25 @@ jobs:
 
       - name: Generated API types are fresh
         run: pixi run check-types-fresh
+
+  # The real Compose stack (image builds, Knowledge Base mount, ingestion, /ready, nginx streaming)
+  # on the keyless `fake` LLM provider. No secrets, so it runs on PRs from forks too.
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: prefix-dev/setup-pixi@v0.11.2
+        with:
+          pixi-version: v0.81.0
+          locked: true
+          cache: true
+
+      # The backend healthcheck's start_interval needs Docker Engine 25 or later.
+      - name: Docker version
+        run: docker version --format 'Engine {{.Server.Version}}' && docker compose version
+
+      # Dumps the Compose logs on failure, and always removes the stack and its volume.
+      - name: Compose smoke
+        run: pixi run smoke

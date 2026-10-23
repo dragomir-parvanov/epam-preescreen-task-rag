@@ -38,6 +38,7 @@ Development tasks:
 | `pixi run lint` | ruff + `vp check` (oxfmt, type-aware oxlint) |
 | `pixi run typecheck` | pyright (strict) + TypeScript 7 via `vp check` |
 | `pixi run test` | pytest + Vitest (via Vite+). Needs Docker for the `pgvector` tests; `pytest -m "not pgvector"` in `backend/` leaves them out |
+| `pixi run smoke` | What CI's smoke job runs: the whole stack on the keyless `fake` LLM provider (a canned reply, smoke tests only), as its own Compose project on ports 18080/18000/15432, checked through nginx (`/ready`, the Articles, a streamed cited Answer, a Follow-up, a Refusal); then removed with its volume |
 | `pixi run gen-types` | Regenerate the frontend's API types from the backend's OpenAPI schema; commit the result |
 
 ## Chat recording

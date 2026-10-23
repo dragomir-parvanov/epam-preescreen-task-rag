@@ -66,6 +66,9 @@ down = "docker compose down"
 ingest = { cmd = "docker compose run --rm backend python -m app.ingest", depends-on = ["check-config"] }
 # Drop and rebuild the index, with the backend stopped so nothing reads a half-built table.
 reindex = { cmd = "docker compose stop backend && docker compose run --rm backend python -m app.ingest --rebuild && docker compose up --detach --wait --wait-timeout 600 backend", depends-on = ["check-config"] }
+# The CI smoke job, also runnable locally: the real stack on the keyless `fake` LLM provider, as
+# its own Compose project on its own ports, checked through nginx, then removed with its volume.
+smoke = { cmd = "python -m smoke.compose_smoke", cwd = "backend" }
 # Validates .env with the backend's own Settings, so a missing key fails before any Docker build.
 check-config = { cmd = "python -m app.check_config", cwd = "backend" }
 
