@@ -9,6 +9,8 @@ A RAG chatbot for OmniCorp's Customer Success Managers (CSMs). A CSM asks a ques
 
 Domain terms (Article, Section, Passage, Citation, Turn, Follow-up Question, Standalone Question, Uncited Answer, Refusal, Golden Question) are defined in [`GLOSSARY.md`](GLOSSARY.md). Every decision below links to its ADR in [`docs/adr/`](docs/adr/) or to its ticket on the planning map, [Map: Enterprise Knowledge Base RAG Chatbot](https://github.com/dragomir-parvanov/epam-preescreen-task-rag/issues/1).
 
+**AI conversation logs:** every Claude Code session that built this repo is in [`chats/`](chats/), one Markdown file per session, named `<start-time>_<first-prompt>.md`. [How AI was used](#how-ai-was-used) explains the process and how the chats were recorded.
+
 **Contents:** [Quick start for reviewers](#quick-start-for-reviewers) · [How to run](#how-to-run) · [What the CSM sees](#what-the-csm-sees) · [Architecture](#architecture) · [API design](#api-design) · [Trade-offs](#trade-offs) · [How to test](#how-to-test) · [Quality](#quality) · [Known limitations](#known-limitations) · [What I'd do next](#what-id-do-next) · [How AI was used](#how-ai-was-used)
 
 ## Quick start for reviewers

@@ -15,3 +15,43 @@ What I took out of "How to run":
 
 "How to run" now opens with a line pointing back to the Quick start, followed by the API docs URL. The rest of it is unchanged: picking an LLM, first boot, stopping and re-indexing, and the task table. The section's name and link stay the same, and nothing outside the README linked to it. I haven't committed anything.
 
+## user · 2026-10-23 19:38:09 · context 5.3% (52.7k / 1000k)
+
+commit everything, including the chats
+
+## assistant · 2026-10-23 19:38:15 · context 5.4% (54k / 1000k)
+
+Before committing the recorded chats, I'll scan them for anything that looks like a secret.
+
+## assistant · 2026-10-23 19:38:28 · context 5.5% (55.1k / 1000k)
+
+I committed everything on `main` as `d70dbc0`. It's local only; I didn't push.
+
+- **`README.md`:** the new "Quick start for reviewers" section and the trimmed "How to run".
+- **`.vscode/settings.json`:** turns on pytest as the test runner and turns off unittest.
+- **`chats/`:** two updated recordings and 13 new ones, including this session's. Before committing, I checked them for common API-key, token and private-key formats and found nothing.
+
+The working tree was clean right after the commit. The recorder will probably keep adding to this session's chat file as we talk, so it will likely show as modified again.
+
+## user · 2026-10-23 19:38:32 · context 5.5% (55.3k / 1000k)
+
+push it
+
+## assistant · 2026-10-23 19:38:38 · context 5.6% (55.5k / 1000k)
+
+I pushed `d70dbc0` to `origin/main` on GitHub.
+
+The recorder has already added to this session's chat file, `chats/2026-10-23_1935_the-docs-for-running-seems-duplicated-in-the-readm.md`, since the commit. That newer part isn't committed or pushed yet.
+
+## user · 2026-10-23 19:39:24 · context 5.6% (55.7k / 1000k)
+
+somewhere on top of the readme, put where the chats are for the reviewer
+
+## assistant · 2026-10-23 19:39:33 · context 5.8% (58.4k / 1000k)
+
+I added a line near the top of `README.md`, just above the Contents line, so a reviewer sees it before anything else:
+
+> **AI conversation logs:** every Claude Code session that built this repo is in [`chats/`](chats/), one Markdown file per session, named `<start-time>_<first-prompt>.md`. [How AI was used](#how-ai-was-used) explains the process and how the chats were recorded.
+
+It's not committed yet. Say the word and I'll commit and push it, along with the latest version of this session's chat file.
+
