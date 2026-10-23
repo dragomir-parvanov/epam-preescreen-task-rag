@@ -8,3 +8,6 @@
 __pycache__/
 .pytest_cache/
 .ruff_cache/
+
+# Claude Code agent worktrees (live git checkouts of other branches)
+.claude/worktrees/
