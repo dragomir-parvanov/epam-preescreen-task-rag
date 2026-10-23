@@ -75,3 +75,9 @@ A question that only makes sense in light of earlier Turns in the same Conversat
 **Standalone Question**:
 The self-contained rewrite of a Follow-up Question; it is what the Knowledge Base is actually searched with.
 _Avoid_: Condensed query, rephrased query
+
+### Evaluation
+
+**Golden Question**:
+A question, optionally with earlier Turns, paired with what the assistant should do with it: answer or refuse, which Sections to cite, and which terms the Answer must mention. The assistant's quality is measured against the whole set. A Golden Question is either **curated** (hand-designed to probe a planted hard case) or **generated** (written alongside a generated Article).
+_Avoid_: Test case, benchmark question, eval sample
