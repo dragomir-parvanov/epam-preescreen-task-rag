@@ -1,3 +1,6 @@
+![demo](demo.png "Demo")
+
+
 # OmniCorp Knowledge Base Assistant
 
 A RAG chatbot for OmniCorp's Customer Success Managers (CSMs). A CSM asks a question about the OmniCorp Nimbus product in plain English and gets an Answer drawn only from internal Articles, with every claim tied to a numbered Citation that opens the cited Section. When the Knowledge Base doesn't cover a question, the assistant refuses instead of guessing.
