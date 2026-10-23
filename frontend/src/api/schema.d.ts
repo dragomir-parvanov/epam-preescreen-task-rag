@@ -225,7 +225,7 @@ export interface components {
             request_id?: string | null;
         };
         /** @enum {string} */
-        ErrorCode: "validation_error" | "not_found" | "method_not_allowed" | "llm_not_configured" | "llm_auth_failed" | "llm_unavailable" | "llm_timeout" | "index_not_ready" | "retrieval_unavailable" | "internal_error";
+        ErrorCode: "validation_error" | "not_found" | "method_not_allowed" | "llm_not_configured" | "llm_auth_failed" | "llm_unavailable" | "llm_timeout" | "rewrite_failed" | "index_not_ready" | "retrieval_unavailable" | "internal_error";
         /**
          * ErrorEvent
          * @description A failure after the stream has started, when the HTTP status has already gone out.

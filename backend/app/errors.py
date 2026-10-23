@@ -25,6 +25,7 @@ type ErrorCode = Literal[
     "llm_auth_failed",
     "llm_unavailable",
     "llm_timeout",
+    "rewrite_failed",
     "index_not_ready",
     "retrieval_unavailable",
     "internal_error",
@@ -38,6 +39,8 @@ HTTP_STATUS: dict[ErrorCode, int] = {
     "llm_auth_failed": 502,
     "llm_unavailable": 503,
     "llm_timeout": 504,
+    # The model answered, but its rewrite of a Follow-up held no usable Standalone Question.
+    "rewrite_failed": 502,
     "index_not_ready": 503,
     "retrieval_unavailable": 503,
     "internal_error": 500,

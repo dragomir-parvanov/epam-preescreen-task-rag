@@ -1,7 +1,7 @@
 """The answering seam: what `POST /chat` runs a Turn through.
 
-`ChatService` (retrieval, prompt, LLM, answer assembly) fills this seam. Until then the app
-runs over `StubAnsweringService`, which also lets the route tests drive every path.
+`ChatService` (`app.chat.service`) fills this seam in the running app. `StubAnsweringService`
+lets the route tests drive every path, and answers when no service is passed in.
 """
 
 import asyncio
@@ -113,4 +113,4 @@ DEMO_SCRIPT: Sequence[TurnEvent] = [
         )
     ),
 ]
-"""What the app answers every Turn with until `ChatService` replaces the stub."""
+"""What `create_app` answers every Turn with when it isn't given an answering service."""

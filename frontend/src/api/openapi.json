@@ -622,6 +622,7 @@
           "llm_auth_failed",
           "llm_unavailable",
           "llm_timeout",
+          "rewrite_failed",
           "index_not_ready",
           "retrieval_unavailable",
           "internal_error"

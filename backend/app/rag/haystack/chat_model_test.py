@@ -167,6 +167,16 @@ async def test_ollama_completes_the_whole_reply_in_one_unstreamed_call() -> None
     assert server.requests[0].body["stream"] is False
 
 
+async def test_ollama_runs_both_calls_at_temperature_zero() -> None:
+    async with fake_llm_server(ollama_stream("AUTH-403."), ollama_message("Q?")) as server:
+        model = build_chat_model(ollama_settings(server.url))
+        await collect(model.stream(MESSAGES))
+        await model.complete(MESSAGES)
+
+    # Prompt design (#19): the same Passages should give the same Answer, and evals repeatable.
+    assert [request.body["options"]["temperature"] for request in server.requests] == [0, 0]
+
+
 # --- Failures map to the contract's error codes ---------------------------------------------
 
 

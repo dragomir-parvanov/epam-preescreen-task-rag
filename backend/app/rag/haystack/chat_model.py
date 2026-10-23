@@ -160,8 +160,13 @@ def ollama_client(settings: Settings) -> ollama.AsyncClient:
 
 def _ollama(settings: Settings) -> OllamaChatGenerator:
     # qwen3.5 would otherwise write <think> blocks into the reply text. No retries for Ollama.
+    # Temperature 0, as Prompt design (#19) asks; only Claude's API rejects sampling parameters.
     generator = OllamaChatGenerator(
-        model=settings.llm_model, url=settings.ollama_base_url, think=False, max_retries=0
+        model=settings.llm_model,
+        url=settings.ollama_base_url,
+        think=False,
+        max_retries=0,
+        generation_kwargs={"temperature": 0},
     )
     # The generator's own `timeout` is one number for connect and read alike, so swap in ours.
     generator._async_client = ollama_client(settings)  # pyright: ignore[reportPrivateUsage]

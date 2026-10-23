@@ -11,6 +11,7 @@ const GENERIC = "Something went wrong";
 const TITLES: Record<ErrorCode, string> = {
   llm_unavailable: COULDNT_FINISH,
   llm_timeout: COULDNT_FINISH,
+  rewrite_failed: "This follow-up couldn't be understood",
   llm_auth_failed: NOT_SET_UP,
   llm_not_configured: NOT_SET_UP,
   index_not_ready: "The Knowledge Base is still loading",

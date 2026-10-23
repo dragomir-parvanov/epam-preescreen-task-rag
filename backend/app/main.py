@@ -7,16 +7,25 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 
 from app.articles import articles_router
-from app.chat.answering import DEMO_SCRIPT, AnsweringService, RequireIndex, StubAnsweringService
+from app.chat.answering import (
+    DEMO_SCRIPT,
+    INDEX_NOT_READY,
+    AnsweringService,
+    RequireIndex,
+    StubAnsweringService,
+)
 from app.chat.routes import chat_router
+from app.chat.service import ChatService
 from app.config import Settings, load_settings
 from app.database import PostgresPing
-from app.errors import install_error_handlers
+from app.errors import AppError, install_error_handlers
 from app.ingestion import IndexStatus, Ingestion, validate_knowledge_base
 from app.knowledge_base import KNOWLEDGE_BASE_DIR, Article, load_articles
 from app.logs import configure_logging, log_config_loaded
+from app.passages import Passage
 
 # Imports Haystack, which must happen before `configure_logging` takes its logger over.
+from app.rag.haystack.chat_model import build_chat_model
 from app.rag.haystack.index import PassageIndex
 from app.rag.haystack.llm_probe import build_llm_probe
 from app.readiness import CachedLlmCheck, DatabaseProbe, readiness_router
@@ -82,7 +91,7 @@ def create_app(
         )
     )
 
-    # Until ChatService exists, every Turn plays back the demo script.
+    # Without an `answering` (tests, the OpenAPI export), every Turn plays back the demo script.
     answering = answering or StubAnsweringService(script=DEMO_SCRIPT, delay=0.2)
     if runtime is not None:
         answering = RequireIndex(answering, lambda: index_status().ok)
@@ -111,9 +120,29 @@ def create_app_from_env() -> FastAPI:
     async def open_index() -> PassageIndex:
         return await PassageIndex.open(settings.database_url, top_k=settings.retrieval_top_k)
 
+    ingestion = Ingestion(open_index, KNOWLEDGE_BASE_DIR)
     runtime = Runtime(
-        ingestion=Ingestion(open_index, KNOWLEDGE_BASE_DIR),
+        ingestion=ingestion,
         database=PostgresPing(settings.database_url),
         llm=CachedLlmCheck(build_llm_probe(settings)),
     )
-    return create_app(settings, articles=articles, runtime=runtime)
+    answering = ChatService(
+        retriever=SyncedIndex(ingestion),
+        chat_model=build_chat_model(settings),
+        settings=settings,
+    )
+    return create_app(settings, answering=answering, articles=articles, runtime=runtime)
+
+
+@dataclass(frozen=True)
+class SyncedIndex:
+    """The index as a `PassageRetriever`, once the first sync has opened it. `RequireIndex`
+    already turns Turns away before then."""
+
+    ingestion: Ingestion[PassageIndex]
+
+    async def retrieve(self, question: str) -> tuple[Passage, ...]:
+        index = self.ingestion.index
+        if index is None:
+            raise AppError("index_not_ready", INDEX_NOT_READY)
+        return await index.retrieve(question)
