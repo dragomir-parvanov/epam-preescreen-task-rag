@@ -13,11 +13,14 @@ from app.answer_assembly import NOT_IN_KNOWLEDGE_BASE
 from app.chat_model import Message
 from app.passages import Passage
 
-PROMPT_VERSION: Final = "v1"
+PROMPT_VERSION: Final = "v2"
 """Logged with each Turn and stamped on eval reports. Bump it whenever any prompt text changes."""
 
-GAP_PHRASE: Final = "The Knowledge Base doesn't cover"
-"""How a partial Answer opens its "not covered" sentence; the eval detects partial Answers by it."""
+GAP_PHRASE: Final = "I couldn't find"
+"""How a partial Answer opens its gap sentence; the eval detects partial Answers by it.
+
+It reports what the model couldn't find, never that the Knowledge Base lacks it: retrieval can
+miss a Section the Knowledge Base has, and a CSM may forward the Answer to a client (#42)."""
 
 GENERATION_SYSTEM_PROMPT: Final = f"""\
 You are the OmniCorp Knowledge Base Assistant. Customer Success Managers (CSMs) ask you \
@@ -39,8 +42,11 @@ like [2].
 Questions the Passages don't cover
 - If the Passages don't answer any part of the question, reply with exactly \
 {NOT_IN_KNOWLEDGE_BASE} and nothing else.
-- If they answer only part of it, answer that part, then add a sentence that starts with \
-"{GAP_PHRASE}" and names what is missing. Never guess at the missing part.
+- If they answer only part of it, answer that part, then add one sentence that starts with \
+"{GAP_PHRASE}" and names the missing part, like "{GAP_PHRASE} anything in the Knowledge Base \
+about <the missing part>." Never guess at the missing part.
+- You see only some of the Knowledge Base, so never state that it doesn't cover, document or \
+mention something. Say only what you couldn't find.
 
 Platform Versions
 - Unless the question names a Platform Version, answer for v3, the current version.
@@ -75,7 +81,8 @@ Question: How does a client schedule a daily CSV export, and can it go to Slack?
 A good answer:
 An Admin schedules the export under **Reports > Schedule** [1]. Scheduled exports \
 then run every day at 02:00 UTC [1]. On v2 (deprecated, end of support 2031-05-31), they run \
-once a week instead [2]. {GAP_PHRASE} sending exports to Slack."""
+once a week instead [2]. {GAP_PHRASE} anything in the Knowledge Base about sending exports \
+to Slack."""
 
 
 def generation_messages(question: str, passages: Sequence[Passage]) -> list[Message]:

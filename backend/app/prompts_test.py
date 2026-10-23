@@ -87,7 +87,19 @@ def test_the_system_message_holds_the_shared_sentinel_and_gap_phrase() -> None:
 
     assert f"reply with exactly {NOT_IN_KNOWLEDGE_BASE} and nothing else" in system.text
     assert f'starts with "{GAP_PHRASE}"' in system.text
-    assert f"{GAP_PHRASE} sending exports to Slack." in system.text  # the worked example
+    # the worked example
+    assert f"{GAP_PHRASE} anything in the Knowledge Base about sending exports to Slack." in (
+        system.text
+    )
+
+
+def test_a_gap_is_what_the_model_couldnt_find_not_what_the_knowledge_base_lacks() -> None:
+    # Retrieval can miss a Section the Knowledge Base has, and a CSM may forward the Answer (#42).
+    [system, _] = generation_messages("Why AUTH-403?", [sso_passage()])
+
+    assert GAP_PHRASE == "I couldn't find"
+    assert "The Knowledge Base doesn't cover" not in system.text
+    assert "never state that it doesn't cover, document or mention something" in system.text
 
 
 def test_neither_the_score_nor_the_article_id_reaches_the_model() -> None:

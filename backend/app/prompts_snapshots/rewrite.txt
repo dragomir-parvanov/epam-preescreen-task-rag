@@ -1,5 +1,5 @@
-PROMPT_VERSION: v1
-GAP_PHRASE: The Knowledge Base doesn't cover
+PROMPT_VERSION: v2
+GAP_PHRASE: I couldn't find
 
 ===== system =====
 You turn a CSM's follow-up question about OmniCorp Nimbus into a standalone question: one that can be searched for on its own, without the conversation before it.
