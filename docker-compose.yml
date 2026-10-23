@@ -38,6 +38,11 @@ services:
       BACKEND_OLLAMA_BASE_URL:
     ports:
       - "${BACKEND_HOST_PORT:-8000}:8000"
+    volumes:
+      # Read at startup: edit an Article, restart the backend, and the sync picks it up.
+      - ./knowledge-base:/app/knowledge-base:ro
+    # uvicorn gets 10 s (--timeout-graceful-shutdown) to finish in-flight Turns, then cancels them.
+    stop_grace_period: 15s
     depends_on:
       postgres:
         condition: service_healthy
@@ -45,12 +50,17 @@ services:
       ollama-pull:
         condition: service_completed_successfully
         required: false
+    # Readiness, not liveness: healthy means the index is synced and the stack can answer, so
+    # `up --wait` and the frontend's dependency wait for that. (Kubernetes would probe /health for
+    # liveness and /ready for readiness separately; Compose has one healthcheck.) The start period
+    # absorbs the first boot's embedding of every Passage.
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-      start_period: 5s
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ready')"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 300s
+      start_interval: 2s
 
   frontend:
     build:

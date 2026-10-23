@@ -14,11 +14,26 @@ The LLM is Claude (`claude-opus-5-5`) by default, which needs `ANTHROPIC_API_KEY
 
 The app is at <http://localhost:8080>, the backend's API docs at <http://localhost:8000/docs>.
 
+### First boot and readiness
+
+`pixi run up` returns only once the stack can answer: the backend's Compose healthcheck probes `GET /ready`, which passes when Postgres answers and the Knowledge Base has been synced into the index, and the frontend waits for a healthy backend. So <http://localhost:8080> answers only after `up` returns; the browser has no first-boot screen of its own. On a keyless first run, follow the Ollama model download with `docker compose logs -f ollama-pull`.
+
+At startup the backend:
+
+1. validates every Article in `knowledge-base/` (bind-mounted read-only). A malformed Article stops it with a log line naming the file, so `up` fails;
+2. syncs the index in the background, re-embedding only Passages that changed, under a Postgres advisory lock. A failed sync is retried with backoff (up to 30 s apart); `/ready`'s `index` check shows the last error meanwhile.
+
+To pick up an edited Article, restart the backend (`docker compose restart backend`). `GET /ready` also reports an `llm` check (is the key valid, is the Ollama model pulled?), but a provider outage doesn't make the stack unready: the UI shows it instead. Kubernetes would get two probes, `/health` for liveness and `/ready` for readiness; Compose has a single healthcheck, so it uses readiness.
+
+`pixi run down` keeps the index and the downloaded Ollama models. `docker compose down -v` deletes both.
+
 Development tasks:
 
 | Task | What it does |
 | --- | --- |
 | `pixi run check-config` | Validate `.env` and the shell's backend settings; exits non-zero with the fix |
+| `pixi run ingest` | Sync the index with `knowledge-base/` once, in the backend image (what startup does) |
+| `pixi run reindex` | Stop the backend, drop and rebuild the index, start the backend again; leaves the Ollama models alone |
 | `pixi run dev-backend` / `pixi run dev-frontend` | Run the backend (reload) and the Vite+ dev server locally |
 | `pixi run lint` | ruff + `vp check` (oxfmt, type-aware oxlint) |
 | `pixi run typecheck` | pyright (strict) + TypeScript 7 via `vp check` |

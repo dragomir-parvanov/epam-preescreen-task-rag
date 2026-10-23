@@ -57,8 +57,15 @@ frontend = { features = ["frontend"], no-default-feature = true }
 
 [tasks]
 # Stack
-up = { cmd = "docker compose up --build --detach --wait", depends-on = ["check-config"] }
+# --wait returns once the backend's /ready passes: the index is synced and the stack can answer.
+# The timeout leaves room for the first Ollama model download.
+up = { cmd = "echo 'First keyless run (COMPOSE_PROFILES=ollama)? It downloads ~8 GB; follow the model with: docker compose logs -f ollama-pull' && docker compose up --build --detach --wait --wait-timeout 1800", depends-on = ["check-config"] }
+# Never -v: that would also delete the downloaded Ollama models.
 down = "docker compose down"
+# Sync the Passage index with knowledge-base/ once, in the backend image (safe while it runs).
+ingest = { cmd = "docker compose run --rm backend python -m app.ingest", depends-on = ["check-config"] }
+# Drop and rebuild the index, with the backend stopped so nothing reads a half-built table.
+reindex = { cmd = "docker compose stop backend && docker compose run --rm backend python -m app.ingest --rebuild && docker compose up --detach --wait --wait-timeout 600 backend", depends-on = ["check-config"] }
 # Validates .env with the backend's own Settings, so a missing key fails before any Docker build.
 check-config = { cmd = "python -m app.check_config", cwd = "backend" }
 

@@ -17,7 +17,9 @@ ENV HAYSTACK_TELEMETRY_ENABLED=False
 ENV FASTEMBED_CACHE_PATH=/app/models/fastembed
 COPY --from=build /app/models/fastembed /app/models/fastembed
 COPY backend/app ./app
-# Read at startup by the Article endpoints, at the path app.knowledge_base expects (/app/...).
+# Read at startup, at the path app.knowledge_base expects (/app/...). Compose bind-mounts the
+# repo's copy over it read-only, so an edited Article needs only a restart.
 COPY knowledge-base /app/knowledge-base
 EXPOSE 8000
-CMD ["uvicorn", "--factory", "app.main:create_app_from_env", "--host", "0.0.0.0", "--port", "8000"]
+# Exec form, so uvicorn is PID 1 and gets SIGTERM; Compose's stop_grace_period is 15 s.
+CMD ["uvicorn", "--factory", "app.main:create_app_from_env", "--host", "0.0.0.0", "--port", "8000", "--timeout-graceful-shutdown", "10"]
