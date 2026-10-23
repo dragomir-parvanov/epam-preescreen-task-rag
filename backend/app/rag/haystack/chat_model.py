@@ -6,6 +6,7 @@ Cancelling the caller cancels that task, and with it the provider's HTTP call.
 
 Each provider gets its own HTTP client, built here rather than by the generator, so it carries
 both timeouts from `Settings`: connect, and read (the longest gap between two stream chunks).
+`anthropic_client` and `ollama_client` are public so the `llm` readiness probe can reuse them.
 """
 
 import asyncio
@@ -26,7 +27,7 @@ from haystack_integrations.components.generators.ollama.chat.chat_generator impo
     OllamaChatGenerator,
 )
 
-from app.chat_model import Message
+from app.chat_model import ChatModel, Message
 from app.config import Settings
 from app.errors import AppError
 
@@ -102,7 +103,7 @@ def _to_haystack(messages: Sequence[Message]) -> list[ChatMessage]:
     return [build[message.role](message.text) for message in messages]
 
 
-def build_chat_model(settings: Settings) -> HaystackChatModel:
+def build_chat_model(settings: Settings) -> ChatModel:
     """The configured provider's model. `Settings` has already checked the config's shape."""
     match settings.llm_provider:
         case "anthropic":
@@ -111,15 +112,10 @@ def build_chat_model(settings: Settings) -> HaystackChatModel:
             return HaystackChatModel(_ollama(settings), _ollama_error)
 
 
-def _claude(settings: Settings) -> AnthropicChatGenerator:
+def anthropic_client(settings: Settings) -> anthropic.AsyncAnthropic:
     key = settings.anthropic_api_key
     assert key is not None  # Settings requires it for the anthropic provider
-    # Thinking can't be turned off on Opus 5.5, so effort is the latency control. No temperature,
-    # top_p or top_k: API version 2026-10-21 rejects them.
-    generator = AnthropicChatGenerator(
-        model=settings.llm_model, generation_kwargs={"output_config": {"effort": "low"}}
-    )
-    generator.async_client = anthropic.AsyncAnthropic(
+    return anthropic.AsyncAnthropic(
         api_key=key.get_secret_value(),
         timeout=anthropic.Timeout(
             settings.llm_read_timeout_s, connect=settings.llm_connect_timeout_s
@@ -127,6 +123,15 @@ def _claude(settings: Settings) -> AnthropicChatGenerator:
         # The SDK retries 429, 5xx and 529 only until the stream starts; never mid-stream.
         max_retries=2,
     )
+
+
+def _claude(settings: Settings) -> AnthropicChatGenerator:
+    # Thinking can't be turned off on the default model (Opus 5.5), so effort is the latency
+    # control. No temperature, top_p or top_k: API version 2026-10-21 rejects them.
+    generator = AnthropicChatGenerator(
+        model=settings.llm_model, generation_kwargs={"output_config": {"effort": "low"}}
+    )
+    generator.async_client = anthropic_client(settings)
     return generator
 
 
@@ -146,16 +151,20 @@ def _claude_error(error: Exception) -> AppError | None:
             return None
 
 
+def ollama_client(settings: Settings) -> ollama.AsyncClient:
+    return ollama.AsyncClient(
+        host=settings.ollama_base_url,
+        timeout=httpx.Timeout(settings.llm_read_timeout_s, connect=settings.llm_connect_timeout_s),
+    )
+
+
 def _ollama(settings: Settings) -> OllamaChatGenerator:
     # qwen3.5 would otherwise write <think> blocks into the reply text. No retries for Ollama.
     generator = OllamaChatGenerator(
         model=settings.llm_model, url=settings.ollama_base_url, think=False, max_retries=0
     )
-    # The generator's own `timeout` is one number for both phases; ours connects in 5 s.
-    generator._async_client = ollama.AsyncClient(  # pyright: ignore[reportPrivateUsage]
-        host=settings.ollama_base_url,
-        timeout=httpx.Timeout(settings.llm_read_timeout_s, connect=settings.llm_connect_timeout_s),
-    )
+    # The generator's own `timeout` is one number for connect and read alike, so swap in ours.
+    generator._async_client = ollama_client(settings)  # pyright: ignore[reportPrivateUsage]
     return generator
 
 

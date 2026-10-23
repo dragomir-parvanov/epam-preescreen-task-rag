@@ -10,7 +10,7 @@ import json
 from collections.abc import AsyncGenerator, Sequence
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Final
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -99,92 +99,92 @@ def _sse(event: str, data: dict[str, Any]) -> bytes:
     return f"event: {event}\ndata: {json.dumps(data)}\n\n".encode()
 
 
-def anthropic_stream_start(model: str = "claude-opus-5-5") -> list[bytes]:
-    """The events before the first text delta."""
-    message: dict[str, Any] = {
+def _anthropic_message(content: list[dict[str, Any]], stop_reason: str | None) -> Any:
+    return {
         "id": "msg_fake",
         "type": "message",
         "role": "assistant",
-        "model": model,
-        "content": [],
-        "stop_reason": None,
+        "model": "claude-opus-5-5",
+        "content": content,
+        "stop_reason": stop_reason,
         "stop_sequence": None,
-        "usage": {"input_tokens": 10, "output_tokens": 1},
+        "usage": {"input_tokens": 10, "output_tokens": 5},
+    }
+
+
+def _anthropic_error_body(error_type: str) -> Any:
+    return {"type": "error", "error": {"type": error_type, "message": "scripted failure"}}
+
+
+def _anthropic_events(deltas: Sequence[str]) -> list[bytes]:
+    """`message_start`, a text block's start, then one `content_block_delta` per delta."""
+    message = _anthropic_message([], stop_reason=None)
+    block = {
+        "type": "content_block_start",
+        "index": 0,
+        "content_block": {"type": "text", "text": ""},
     }
     return [
         _sse("message_start", {"type": "message_start", "message": message}),
-        _sse(
-            "content_block_start",
-            {
-                "type": "content_block_start",
-                "index": 0,
-                "content_block": {"type": "text", "text": ""},
-            },
+        _sse("content_block_start", block),
+        *(
+            _sse(
+                "content_block_delta",
+                {
+                    "type": "content_block_delta",
+                    "index": 0,
+                    "delta": {"type": "text_delta", "text": d},
+                },
+            )
+            for d in deltas
         ),
     ]
 
 
-def anthropic_text_delta(text: str) -> bytes:
-    delta = {"type": "text_delta", "text": text}
-    return _sse("content_block_delta", {"type": "content_block_delta", "index": 0, "delta": delta})
-
-
-def anthropic_stream_end() -> list[bytes]:
-    return [
-        _sse("content_block_stop", {"type": "content_block_stop", "index": 0}),
-        _sse(
-            "message_delta",
-            {
-                "type": "message_delta",
-                "delta": {"stop_reason": "end_turn", "stop_sequence": None},
-                "usage": {"output_tokens": 5},
-            },
-        ),
-        _sse("message_stop", {"type": "message_stop"}),
-    ]
+_ANTHROPIC_STREAM_END: Final = [
+    _sse("content_block_stop", {"type": "content_block_stop", "index": 0}),
+    _sse(
+        "message_delta",
+        {
+            "type": "message_delta",
+            "delta": {"stop_reason": "end_turn", "stop_sequence": None},
+            "usage": {"output_tokens": 5},
+        },
+    ),
+    _sse("message_stop", {"type": "message_stop"}),
+]
 
 
 def anthropic_stream(*deltas: str, hold_open: bool = False) -> Reply:
     """A streamed reply of `deltas`; with `hold_open`, it stops after them and stalls."""
-    parts = [*anthropic_stream_start(), *(anthropic_text_delta(d) for d in deltas)]
+    parts = _anthropic_events(deltas)
     if not hold_open:
-        parts += anthropic_stream_end()
+        parts += _ANTHROPIC_STREAM_END
     return Reply(content_type="text/event-stream", parts=parts, hold_open=hold_open)
 
 
 def anthropic_stream_error(error_type: str, *deltas: str) -> Reply:
     """A stream that fails part-way with an SSE `error` event, as on mid-stream overload."""
-    error = {"type": "error", "error": {"type": error_type, "message": "scripted failure"}}
-    parts = [*anthropic_stream_start(), *(anthropic_text_delta(d) for d in deltas)]
-    return Reply(content_type="text/event-stream", parts=[*parts, _sse("error", error)])
+    parts = [*_anthropic_events(deltas), _sse("error", _anthropic_error_body(error_type))]
+    return Reply(content_type="text/event-stream", parts=parts)
 
 
-def anthropic_message(text: str, model: str = "claude-opus-5-5") -> Reply:
+def anthropic_message(text: str) -> Reply:
     """A non-streamed Messages API reply."""
-    body = {
-        "id": "msg_fake",
-        "type": "message",
-        "role": "assistant",
-        "model": model,
-        "content": [{"type": "text", "text": text}],
-        "stop_reason": "end_turn",
-        "stop_sequence": None,
-        "usage": {"input_tokens": 10, "output_tokens": 5},
-    }
+    body = _anthropic_message([{"type": "text", "text": text}], "end_turn")
     return Reply(parts=[json.dumps(body).encode()])
 
 
 def anthropic_error(status: int, error_type: str) -> Reply:
-    body = {"type": "error", "error": {"type": error_type, "message": "scripted failure"}}
-    return Reply(status=status, parts=[json.dumps(body).encode()])
+    return Reply(status=status, parts=[json.dumps(_anthropic_error_body(error_type)).encode()])
 
 
 # --- Ollama /api/chat -----------------------------------------------------------------------
 
 
-def _ollama_line(content: str, *, done: bool, model: str) -> bytes:
+def _ollama_line(content: str, *, done: bool) -> bytes:
     line: dict[str, Any] = {
-        "model": model,
+        "model": "qwen3.5:2b",
         "created_at": "2026-10-23T12:00:00Z",
         "message": {"role": "assistant", "content": content},
         "done": done,
@@ -194,17 +194,17 @@ def _ollama_line(content: str, *, done: bool, model: str) -> bytes:
     return json.dumps(line).encode() + b"\n"
 
 
-def ollama_stream(*deltas: str, hold_open: bool = False, model: str = "qwen3.5:2b") -> Reply:
+def ollama_stream(*deltas: str, hold_open: bool = False) -> Reply:
     """A streamed NDJSON reply of `deltas`; with `hold_open`, it stops after them and stalls."""
-    parts = [_ollama_line(d, done=False, model=model) for d in deltas]
+    parts = [_ollama_line(d, done=False) for d in deltas]
     if not hold_open:
-        parts.append(_ollama_line("", done=True, model=model))
+        parts.append(_ollama_line("", done=True))
     return Reply(content_type="application/x-ndjson", parts=parts, hold_open=hold_open)
 
 
-def ollama_message(text: str, model: str = "qwen3.5:2b") -> Reply:
+def ollama_message(text: str) -> Reply:
     """A non-streamed /api/chat reply."""
-    return Reply(parts=[_ollama_line(text, done=True, model=model)])
+    return Reply(parts=[_ollama_line(text, done=True)])
 
 
 def ollama_error(status: int, message: str) -> Reply:

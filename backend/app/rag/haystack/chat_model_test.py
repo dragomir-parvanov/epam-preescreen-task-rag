@@ -42,19 +42,13 @@ def anthropic_settings(
     return Settings(_env_file=None, ANTHROPIC_API_KEY="sk-test", **overrides)  # pyright: ignore[reportCallIssue]
 
 
-async def collect(deltas: AsyncIterator[str]) -> list[str]:
-    return [delta async for delta in deltas]
-
-
-async def test_claude_streams_the_reply_as_text_deltas(monkeypatch: pytest.MonkeyPatch) -> None:
-    async with fake_llm_server(
-        anthropic_stream("AUTH-403 means ", "the certificate expired [1].")
-    ) as server:
-        model: ChatModel = build_chat_model(anthropic_settings(server, monkeypatch))
-
-        deltas = await collect(model.stream(MESSAGES))
-
-    assert deltas == ["AUTH-403 means ", "the certificate expired [1]."]
+def ollama_settings(url: str, **overrides: Any) -> Settings:
+    return Settings(
+        _env_file=None,  # pyright: ignore[reportCallIssue]
+        llm_provider="ollama",
+        ollama_base_url=url,
+        **overrides,
+    )
 
 
 async def stop_mid_stream(model: ChatModel, server: FakeLlmServer) -> None:
@@ -71,6 +65,21 @@ async def stop_mid_stream(model: ChatModel, server: FakeLlmServer) -> None:
     with pytest.raises(asyncio.CancelledError):
         await turn
     await asyncio.wait_for(server.hung_up.wait(), timeout=5)
+
+
+async def collect(deltas: AsyncIterator[str]) -> list[str]:
+    return [delta async for delta in deltas]
+
+
+async def test_claude_streams_the_reply_as_text_deltas(monkeypatch: pytest.MonkeyPatch) -> None:
+    async with fake_llm_server(
+        anthropic_stream("AUTH-403 means ", "the certificate expired [1].")
+    ) as server:
+        model: ChatModel = build_chat_model(anthropic_settings(server, monkeypatch))
+
+        deltas = await collect(model.stream(MESSAGES))
+
+    assert deltas == ["AUTH-403 means ", "the certificate expired [1]."]
 
 
 async def test_stopping_a_claude_stream_closes_the_http_connection(
@@ -112,20 +121,11 @@ async def test_claude_model_can_be_overridden(monkeypatch: pytest.MonkeyPatch) -
     assert server.requests[0].body["model"] == "claude-haiku-5-5"
 
 
-def ollama_settings(server: FakeLlmServer, **overrides: Any) -> Settings:
-    return Settings(
-        _env_file=None,  # pyright: ignore[reportCallIssue]
-        llm_provider="ollama",
-        ollama_base_url=server.url,
-        **overrides,
-    )
-
-
 async def test_ollama_streams_the_reply_from_the_default_model_without_thinking() -> None:
     async with fake_llm_server(
         ollama_stream("AUTH-403 means ", "the certificate expired [1].")
     ) as server:
-        deltas = await collect(build_chat_model(ollama_settings(server)).stream(MESSAGES))
+        deltas = await collect(build_chat_model(ollama_settings(server.url)).stream(MESSAGES))
 
     assert deltas == ["AUTH-403 means ", "the certificate expired [1]."]
     [request] = server.requests
@@ -142,7 +142,7 @@ async def test_ollama_streams_the_reply_from_the_default_model_without_thinking(
 
 async def test_stopping_an_ollama_stream_closes_the_http_connection() -> None:
     async with fake_llm_server(ollama_stream("AUTH-403 means ", hold_open=True)) as server:
-        model = build_chat_model(ollama_settings(server))
+        model = build_chat_model(ollama_settings(server.url))
 
         await stop_mid_stream(model, server)
 
@@ -161,7 +161,7 @@ async def test_claude_completes_the_whole_reply_in_one_unstreamed_call(
 
 async def test_ollama_completes_the_whole_reply_in_one_unstreamed_call() -> None:
     async with fake_llm_server(ollama_message("How do I fix AUTH-403 on v2?")) as server:
-        reply = await build_chat_model(ollama_settings(server)).complete(MESSAGES)
+        reply = await build_chat_model(ollama_settings(server.url)).complete(MESSAGES)
 
     assert reply == "How do I fix AUTH-403 on v2?"
     assert server.requests[0].body["stream"] is False
@@ -213,7 +213,7 @@ async def test_a_claude_stream_that_stalls_past_the_read_timeout_is_llm_timeout(
 
 async def test_an_ollama_stream_that_stalls_past_the_read_timeout_is_llm_timeout() -> None:
     async with fake_llm_server(ollama_stream("AUTH-403 ", hold_open=True)) as server:
-        settings = ollama_settings(server, llm_read_timeout_s=0.2)
+        settings = ollama_settings(server.url, llm_read_timeout_s=0.2)
 
         with pytest.raises(AppError) as excinfo:
             await collect(build_chat_model(settings).stream(MESSAGES))
@@ -223,7 +223,7 @@ async def test_an_ollama_stream_that_stalls_past_the_read_timeout_is_llm_timeout
 
 async def test_an_ollama_model_that_is_not_pulled_is_llm_unavailable() -> None:
     async with fake_llm_server(ollama_error(404, 'model "qwen3.5:2b" not found')) as server:
-        model = build_chat_model(ollama_settings(server))
+        model = build_chat_model(ollama_settings(server.url))
 
         with pytest.raises(AppError) as streamed:
             await collect(model.stream(MESSAGES))
@@ -236,9 +236,7 @@ async def test_an_ollama_model_that_is_not_pulled_is_llm_unavailable() -> None:
 async def test_an_unreachable_ollama_is_llm_unavailable_without_retrying() -> None:
     async with fake_llm_server() as server:
         url = server.url  # nothing listens here once the server has shut down
-    settings = Settings(_env_file=None, llm_provider="ollama", ollama_base_url=url)  # pyright: ignore[reportCallIssue]
-
     with pytest.raises(AppError) as excinfo:
-        await collect(build_chat_model(settings).stream(MESSAGES))
+        await collect(build_chat_model(ollama_settings(url)).stream(MESSAGES))
 
     assert excinfo.value.code == "llm_unavailable"
