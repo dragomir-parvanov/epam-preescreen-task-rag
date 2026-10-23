@@ -1,10 +1,12 @@
 from fastapi.testclient import TestClient
 
-from app.main import app
+from app.config import Settings
+from app.main import create_app
 
 
 def test_health_reports_ok() -> None:
-    client = TestClient(app)
+    # Default settings without validation or env: the route doesn't depend on them.
+    client = TestClient(create_app(Settings.model_construct()))
 
     response = client.get("/health")
 

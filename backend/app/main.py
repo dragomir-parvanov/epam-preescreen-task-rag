@@ -3,7 +3,7 @@ from typing import Literal
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-from app.config import Settings
+from app.config import Settings, load_settings
 
 
 class HealthResponse(BaseModel):
@@ -21,4 +21,10 @@ def create_app(settings: Settings) -> FastAPI:
     return app
 
 
-app = create_app(Settings())
+def create_app_from_env() -> FastAPI:
+    """The server entrypoint: `uvicorn --factory app.main:create_app_from_env`.
+
+    A factory rather than a module-level `app`, so importing this module (tests, the OpenAPI
+    export) never reads the environment, and an invalid config exits with its fix message.
+    """
+    return create_app(load_settings())

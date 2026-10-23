@@ -11,4 +11,4 @@ COPY --from=build /app/.pixi/envs/backend /app/.pixi/envs/backend
 ENV PATH=/app/.pixi/envs/backend/bin:$PATH
 COPY backend/app ./app
 EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "--factory", "app.main:create_app_from_env", "--host", "0.0.0.0", "--port", "8000"]
