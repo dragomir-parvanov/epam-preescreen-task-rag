@@ -12,6 +12,15 @@ python = "3.13.*"
 fastapi = ">=0.115"
 pydantic-settings = ">=2.6"
 uvicorn = { version = ">=0.32", extras = ["standard"] }
+# Haystack 3.x and its integrations, exact-pinned (ADR-0003): only app/rag/haystack imports them.
+haystack-ai = "==3.4.1"
+pgvector-haystack = "==8.1.2"
+fastembed-haystack = "==3.0.0"
+fastembed = "==0.9.0"
+# The Postgres driver pgvector-haystack uses; the test fixture uses it too.
+psycopg = { version = "==3.3.6", extras = ["binary"] }
+# Article front-matter.
+pyyaml = ">=6.0"
 
 # --- backend dev tooling ---
 
@@ -25,7 +34,6 @@ ruff = "*"
 httpx2 = "*"
 # A real pgvector for the adapter tests (ADR-0004).
 testcontainers = "==4.15.0"
-psycopg = { version = "==3.3.6", extras = ["binary"] }
 
 # --- frontend: Node comes from conda-forge, npm manages the JS packages ---
 
