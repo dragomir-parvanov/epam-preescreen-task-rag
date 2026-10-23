@@ -1,0 +1,1377 @@
+{
+  "run": {
+    "date": "2026-10-23T14:02:01+00:00",
+    "git_sha": "927a9b6",
+    "provider": "anthropic",
+    "model": "claude-opus-5-5",
+    "effort": "low",
+    "prompt_version": "v2",
+    "top_k": 8,
+    "min_score": 0.66,
+    "question_set": "curated",
+    "concurrency": 1
+  },
+  "totals": {
+    "questions": 25,
+    "outcome_accuracy": 0.8,
+    "citation_precision": 0.45416666666666666,
+    "citation_recall": 1.0,
+    "retrieval_recall": 1.0,
+    "uncited_rate": 0.0,
+    "must_mention_rate": 1.0,
+    "standalone_rate": 1.0,
+    "refusals": [
+      8,
+      13
+    ],
+    "gap_instead_of_refusal": 5,
+    "false_refusals": 0,
+    "errors": 0,
+    "latency_p50_ms": 4192.0,
+    "latency_p95_ms": 6532.7,
+    "ttft_p50_ms": 2039.3,
+    "usage": {
+      "input_tokens": 72424,
+      "output_tokens": 7859
+    },
+    "cost_usd": 0.446876
+  },
+  "known_misses": {
+    "questions": 2,
+    "outcome_accuracy": 0.5,
+    "citation_precision": 0.0,
+    "citation_recall": 0.0,
+    "retrieval_recall": 0.0,
+    "uncited_rate": 0.0,
+    "must_mention_rate": 0.42857142857142855,
+    "standalone_rate": null,
+    "refusals": [
+      0,
+      0
+    ],
+    "gap_instead_of_refusal": 0,
+    "false_refusals": 0,
+    "errors": 0,
+    "latency_p50_ms": 6140.8,
+    "latency_p95_ms": 8444.1,
+    "ttft_p50_ms": 2242.6,
+    "usage": {
+      "input_tokens": 7353,
+      "output_tokens": 1545
+    },
+    "cost_usd": 0.060312
+  },
+  "by_category": {
+    "cross-article": {
+      "questions": 1,
+      "outcome_accuracy": 1.0,
+      "citation_precision": 0.3333333333333333,
+      "citation_recall": 1.0,
+      "retrieval_recall": 1.0,
+      "uncited_rate": 0.0,
+      "must_mention_rate": 1.0,
+      "standalone_rate": null,
+      "refusals": [
+        0,
+        0
+      ],
+      "gap_instead_of_refusal": 0,
+      "false_refusals": 0,
+      "errors": 0,
+      "latency_p50_ms": 5752.5,
+      "latency_p95_ms": 5752.5,
+      "ttft_p50_ms": 2039.3,
+      "usage": {
+        "input_tokens": 4106,
+        "output_tokens": 564
+      },
+      "cost_usd": 0.027704
+    },
+    "follow-up": {
+      "questions": 3,
+      "outcome_accuracy": 0.6666666666666666,
+      "citation_precision": 0.3333333333333333,
+      "citation_recall": 1.0,
+      "retrieval_recall": 1.0,
+      "uncited_rate": 0.0,
+      "must_mention_rate": 1.0,
+      "standalone_rate": 1.0,
+      "refusals": [
+        0,
+        1
+      ],
+      "gap_instead_of_refusal": 1,
+      "false_refusals": 0,
+      "errors": 0,
+      "latency_p50_ms": 5881.7,
+      "latency_p95_ms": 6532.7,
+      "ttft_p50_ms": 4187.7,
+      "usage": {
+        "input_tokens": 13237,
+        "output_tokens": 1213
+      },
+      "cost_usd": 0.077208
+    },
+    "near-duplicate": {
+      "questions": 2,
+      "outcome_accuracy": 1.0,
+      "citation_precision": 0.5,
+      "citation_recall": 1.0,
+      "retrieval_recall": 1.0,
+      "uncited_rate": 0.0,
+      "must_mention_rate": 1.0,
+      "standalone_rate": null,
+      "refusals": [
+        0,
+        0
+      ],
+      "gap_instead_of_refusal": 0,
+      "false_refusals": 0,
+      "errors": 0,
+      "latency_p50_ms": 4610.2,
+      "latency_p95_ms": 5191.5,
+      "ttft_p50_ms": 1155.0,
+      "usage": {
+        "input_tokens": 6834,
+        "output_tokens": 984
+      },
+      "cost_usd": 0.047016
+    },
+    "partial": {
+      "questions": 1,
+      "outcome_accuracy": 1.0,
+      "citation_precision": 0.5,
+      "citation_recall": 1.0,
+      "retrieval_recall": 1.0,
+      "uncited_rate": 0.0,
+      "must_mention_rate": 1.0,
+      "standalone_rate": null,
+      "refusals": [
+        0,
+        0
+      ],
+      "gap_instead_of_refusal": 0,
+      "false_refusals": 0,
+      "errors": 0,
+      "latency_p50_ms": 4192.0,
+      "latency_p95_ms": 4192.0,
+      "ttft_p50_ms": 716.0,
+      "usage": {
+        "input_tokens": 4814,
+        "output_tokens": 498
+      },
+      "cost_usd": 0.029216
+    },
+    "table-lookup": {
+      "questions": 3,
+      "outcome_accuracy": 1.0,
+      "citation_precision": 0.5277777777777778,
+      "citation_recall": 1.0,
+      "retrieval_recall": 1.0,
+      "uncited_rate": 0.0,
+      "must_mention_rate": 1.0,
+      "standalone_rate": null,
+      "refusals": [
+        0,
+        0
+      ],
+      "gap_instead_of_refusal": 0,
+      "false_refusals": 0,
+      "errors": 0,
+      "latency_p50_ms": 3171.6,
+      "latency_p95_ms": 4756.6,
+      "ttft_p50_ms": 1440.0,
+      "usage": {
+        "input_tokens": 11068,
+        "output_tokens": 939
+      },
+      "cost_usd": 0.063052
+    },
+    "unanswerable": {
+      "questions": 12,
+      "outcome_accuracy": 0.6666666666666666,
+      "citation_precision": null,
+      "citation_recall": null,
+      "retrieval_recall": null,
+      "uncited_rate": 0.0,
+      "must_mention_rate": null,
+      "standalone_rate": null,
+      "refusals": [
+        8,
+        12
+      ],
+      "gap_instead_of_refusal": 4,
+      "false_refusals": 0,
+      "errors": 0,
+      "latency_p50_ms": 2779.2,
+      "latency_p95_ms": 7264.7,
+      "ttft_p50_ms": 2948.0,
+      "usage": {
+        "input_tokens": 19053,
+        "output_tokens": 2608
+      },
+      "cost_usd": 0.128372
+    },
+    "version-conflict": {
+      "questions": 3,
+      "outcome_accuracy": 1.0,
+      "citation_precision": 0.45555555555555555,
+      "citation_recall": 1.0,
+      "retrieval_recall": 1.0,
+      "uncited_rate": 0.0,
+      "must_mention_rate": 1.0,
+      "standalone_rate": null,
+      "refusals": [
+        0,
+        0
+      ],
+      "gap_instead_of_refusal": 0,
+      "false_refusals": 0,
+      "errors": 0,
+      "latency_p50_ms": 3971.7,
+      "latency_p95_ms": 5241.0,
+      "ttft_p50_ms": 1337.9,
+      "usage": {
+        "input_tokens": 13312,
+        "output_tokens": 1053
+      },
+      "cost_usd": 0.074308
+    }
+  },
+  "questions": [
+    {
+      "id": "gq-scim-business-tier",
+      "origin": "curated",
+      "category": "cross-article",
+      "known_retrieval_miss": false,
+      "question": "Can a Business-tier client set up SCIM provisioning with Okta?",
+      "expected": "answer",
+      "outcome": "answer",
+      "outcome_correct": true,
+      "blame": null,
+      "refusal_reason": null,
+      "error": null,
+      "uncited": false,
+      "citation_precision": 0.3333333333333333,
+      "citation_recall": 1.0,
+      "retrieval_recall": 1.0,
+      "mentions_hit": 2,
+      "mentions_total": 2,
+      "missed_terms": [],
+      "standalone_question": null,
+      "standalone_hit": 0,
+      "standalone_total": 0,
+      "latency_ms": 5752.5,
+      "ttft_ms": 2039.3,
+      "text": "No. SCIM provisioning is available on the **Enterprise tier only**, and a Business-tier workspace can't turn it on, even with single sign-on configured [1]. A Business-tier client must upgrade to Enterprise first [2]. On a non-Enterprise workspace, the **User provisioning** option doesn't appear in the settings [3].\n\n**After upgrading to Enterprise**, the client can set up SCIM with Okta, which is one of the two supported IdPs [2]. Before starting, confirm that:\n\n1. SAML single sign-on is configured with the same IdP (Okta), and a test sign-in has succeeded [2][4].\n2. The person doing the setup is both a Nimbus Admin and an Okta administrator [2].\n\nIn Okta, they then open the Nimbus SAML app created for SSO and go to the **Provisioning** tab [5]. There they click **Configure API Integration**, enter the SCIM base URL and token, and run **Test API Credentials** [5]. Finally, under **To App**, they turn on **Create Users**, **Update User Attributes** and **Deactivate Users** [5].\n\n**In the meantime on Business**, the client can use SAML single sign-on, which includes just-in-time provisioning [1][6]. JIT creates users on their first login [6]. However, it never deprovisions: leavers can't sign in, but their accounts stay active and keep their seats until an Admin suspends them by hand [6].",
+      "cited": [
+        {
+          "article": "nimbus-plan-tiers",
+          "section": "feature-matrix"
+        },
+        {
+          "article": "nimbus-scim-provisioning",
+          "section": "prerequisites"
+        },
+        {
+          "article": "nimbus-scim-provisioning",
+          "section": "troubleshooting"
+        },
+        {
+          "article": "nimbus-release-3-0",
+          "section": "upgrade-notes"
+        },
+        {
+          "article": "nimbus-scim-provisioning",
+          "section": "connecting-your-identity-provider"
+        },
+        {
+          "article": "nimbus-sso-saml",
+          "section": "just-in-time-provisioning"
+        }
+      ],
+      "usage": {
+        "input_tokens": 4106,
+        "output_tokens": 564
+      }
+    },
+    {
+      "id": "gq-entra-auto-deprovision",
+      "origin": "curated",
+      "category": "cross-article",
+      "known_retrieval_miss": true,
+      "question": "An Enterprise client on Entra ID wants leavers removed automatically. What must be set up and what happens to their data?",
+      "expected": "answer",
+      "outcome": "partial",
+      "outcome_correct": false,
+      "blame": "retrieval",
+      "refusal_reason": null,
+      "error": null,
+      "uncited": false,
+      "citation_precision": 0.0,
+      "citation_recall": 0.0,
+      "retrieval_recall": 0.0,
+      "mentions_hit": 2,
+      "mentions_total": 4,
+      "missed_terms": [
+        "SSO",
+        "30 days"
+      ],
+      "standalone_question": null,
+      "standalone_hit": 0,
+      "standalone_total": 0,
+      "latency_ms": 8444.1,
+      "ttft_ms": 4397.7,
+      "text": "**What must be set up**\n\nAutomatic leaver removal requires SCIM provisioning, which is available on the Enterprise tier [1]. JIT provisioning alone doesn't do this, because it never deprovisions: a leaver removed in the IdP can't sign in, but their Nimbus account stays active, keeps its seat and keeps its workflows until an Admin suspends it by hand [1]. With SCIM, the IdP becomes the source of truth, and people who are unassigned from the Nimbus app or leave the company lose access without anyone using the Nimbus admin console [2]. Microsoft Entra ID is a supported IdP for SCIM [2].\n\n**What happens to their data**\n\n- **Workflows:** When an owner is suspended or deleted, their workflows keep running [3]. An Admin must transfer ownership under **Workflows**: filter by Owner, select the workflows and choose **Transfer ownership** [3].\n- **Run history:** OmniCorp deletes runs automatically after 90 days on every Plan Tier [4][5]. If specific runs must be deleted sooner, the client supplies the `run_` ids and OmniCorp support purges them and confirms in writing [6].\n- **Connected apps:** Nimbus doesn't delete data in third-party apps, so the client must delete it under each vendor's contract [4].\n\nOn v2 (deprecated), there is no SCIM provisioning, so leavers must be removed through the Users API or by an Admin in the console [7].\n\nI couldn't find anything in the Knowledge Base about the specific Entra ID connection steps or whether SCIM deprovisioning suspends or deletes the account.",
+      "cited": [
+        {
+          "article": "nimbus-sso-saml",
+          "section": "just-in-time-provisioning"
+        },
+        {
+          "article": "nimbus-scim-provisioning",
+          "section": "intro"
+        },
+        {
+          "article": "nimbus-faq-user-management",
+          "section": "limits-and-edge-cases"
+        },
+        {
+          "article": "nimbus-security-data-deletion",
+          "section": "shared-responsibilities"
+        },
+        {
+          "article": "nimbus-security-gdpr",
+          "section": "admin-settings"
+        },
+        {
+          "article": "nimbus-security-data-deletion",
+          "section": "admin-settings-handling-a-client-deletion-request"
+        },
+        {
+          "article": "nimbus-v2-api-users",
+          "section": "intro"
+        }
+      ],
+      "usage": {
+        "input_tokens": 3708,
+        "output_tokens": 846
+      }
+    },
+    {
+      "id": "gq-webhook-signature",
+      "origin": "curated",
+      "category": "version-conflict",
+      "known_retrieval_miss": false,
+      "question": "Which header carries the webhook signature and what algorithm is used?",
+      "expected": "answer",
+      "outcome": "answer",
+      "outcome_correct": true,
+      "blame": null,
+      "refusal_reason": null,
+      "error": null,
+      "uncited": false,
+      "citation_precision": 0.6666666666666666,
+      "citation_recall": 1.0,
+      "retrieval_recall": 1.0,
+      "mentions_hit": 3,
+      "mentions_total": 3,
+      "missed_terms": [],
+      "standalone_question": null,
+      "standalone_hit": 0,
+      "standalone_total": 0,
+      "latency_ms": 3971.7,
+      "ttft_ms": 1337.9,
+      "text": "The webhook signature is sent in the `X-Nimbus-Signature-256` header [1]. It is an HMAC-SHA256 of the raw request body, keyed with the endpoint's signing secret [1]. The header value is `sha256=` followed by the hex digest [1].\n\nTo verify a delivery, the client should:\n\n1. Read the raw request body as bytes, before any JSON parsing [1].\n2. Compute the HMAC-SHA256 of the body with the endpoint's signing secret [1].\n3. Prefix the hex digest with `sha256=` and compare it with the `X-Nimbus-Signature-256` header using a constant-time comparison [1].\n4. Reject the request with HTTP 401 if they don't match [1].\n\nVerification often fails when the handler computes the HMAC over re-serialised parsed JSON instead of the raw body [2]. Another frequent cause is an endpoint still verifying with an old secret after an Admin rolled it [2].\n\nOn v2 (deprecated), deliveries are signed with HMAC-SHA1 and sent in the `X-Nimbus-Signature` header as `sha1=` followed by the hex digest [3].",
+      "cited": [
+        {
+          "article": "nimbus-api-webhooks",
+          "section": "verifying-signatures"
+        },
+        {
+          "article": "nimbus-troubleshooting-webhook-deliveries",
+          "section": "common-causes"
+        },
+        {
+          "article": "nimbus-v2-legacy",
+          "section": "webhooks-v2"
+        }
+      ],
+      "usage": {
+        "input_tokens": 4581,
+        "output_tokens": 383
+      }
+    },
+    {
+      "id": "gq-rate-limit-business",
+      "origin": "curated",
+      "category": "version-conflict",
+      "known_retrieval_miss": false,
+      "question": "What is the API rate limit for a Business client?",
+      "expected": "answer",
+      "outcome": "answer",
+      "outcome_correct": true,
+      "blame": null,
+      "refusal_reason": null,
+      "error": null,
+      "uncited": false,
+      "citation_precision": 0.5,
+      "citation_recall": 1.0,
+      "retrieval_recall": 1.0,
+      "mentions_hit": 2,
+      "mentions_total": 2,
+      "missed_terms": [],
+      "standalone_question": null,
+      "standalone_hit": 0,
+      "standalone_total": 0,
+      "latency_ms": 5241.0,
+      "ttft_ms": 1869.2,
+      "text": "A Business client has a sustained limit of **600 requests per minute**, applied per workspace across all of its API keys [1][2]. On top of that, a burst allowance lets the workspace reach 1,200 req/min for 10 seconds to absorb short spikes, such as a nightly batch starting [1]. After a burst, traffic must drop back under the sustained limit before another burst is allowed [1].\n\nEvery response reports the current limit and remaining requests in the `X-RateLimit-Limit` and `X-RateLimit-Remaining` headers [1]. If the workspace goes over its limit, Nimbus returns `429 Too Many Requests` with a `Retry-After` header giving the number of seconds to wait [1]. Clients should wait at least that long before retrying instead of retrying in a tight loop, and rejected requests don't count towards the limit [1].\n\nTo confirm a specific client's effective limit, check **Settings > Plan** in the admin console, where any non-standard limits are marked **Custom** [3]. An Admin can also call `GET /workspace/entitlements` and read the `api_rate_limit_per_minute` field [3].\n\nOn v2 (deprecated), every Plan Tier, including Business, gets 300 req/min per workspace with no burst allowance [4].",
+      "cited": [
+        {
+          "article": "nimbus-api-webhooks",
+          "section": "rate-limits"
+        },
+        {
+          "article": "nimbus-plan-tiers",
+          "section": "feature-matrix"
+        },
+        {
+          "article": "nimbus-plan-tiers",
+          "section": "checking-a-clients-plan-tier"
+        },
+        {
+          "article": "nimbus-v2-legacy",
+          "section": "api-limits-v2"
+        }
+      ],
+      "usage": {
+        "input_tokens": 4418,
+        "output_tokens": 418
+      }
+    },
+    {
+      "id": "gq-v2-saml-email",
+      "origin": "curated",
+      "category": "version-conflict",
+      "known_retrieval_miss": false,
+      "question": "A client still on v2 asks which SAML attribute carries the user's email.",
+      "expected": "answer",
+      "outcome": "answer",
+      "outcome_correct": true,
+      "blame": null,
+      "refusal_reason": null,
+      "error": null,
+      "uncited": false,
+      "citation_precision": 0.2,
+      "citation_recall": 1.0,
+      "retrieval_recall": 1.0,
+      "mentions_hit": 1,
+      "mentions_total": 1,
+      "missed_terms": [],
+      "standalone_question": null,
+      "standalone_hit": 0,
+      "standalone_total": 0,
+      "latency_ms": 3166.9,
+      "ttft_ms": 1260.0,
+      "text": "On v2, which is deprecated, the user's email address must arrive in the `mail` attribute [1]. Attribute names are case-sensitive [1]. Any assertion that carries the address under a different attribute name is rejected, even if the Name ID is an email address [1].\n\nThe v2 SAML attributes are:\n\n- `mail` (required): login and unique identity [1]\n- `firstName` (required): display name [1]\n- `lastName` (required): display name [1]\n\nOn v3, the current version, the email attribute is `email` instead [2][3]. When the client upgrades, they need to update the attribute statements in their identity provider and run a test sign-in straight after the upgrade [4]. If the identity provider still sends the old attribute name after the upgrade, SSO users can't sign in [5].",
+      "cited": [
+        {
+          "article": "nimbus-v2-legacy",
+          "section": "saml-attributes-v2"
+        },
+        {
+          "article": "nimbus-sso-saml",
+          "section": "attribute-mapping"
+        },
+        {
+          "article": "nimbus-release-3-0",
+          "section": "highlights"
+        },
+        {
+          "article": "nimbus-v2-legacy",
+          "section": "upgrading-to-v3"
+        },
+        {
+          "article": "nimbus-faq-upgrading-from-v2",
+          "section": "troubleshooting-questions"
+        }
+      ],
+      "usage": {
+        "input_tokens": 4313,
+        "output_tokens": 252
+      }
+    },
+    {
+      "id": "gq-auth-401",
+      "origin": "curated",
+      "category": "table-lookup",
+      "known_retrieval_miss": false,
+      "question": "What does error AUTH-401 mean and how is it fixed?",
+      "expected": "answer",
+      "outcome": "answer",
+      "outcome_correct": true,
+      "blame": null,
+      "refusal_reason": null,
+      "error": null,
+      "uncited": false,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "retrieval_recall": 1.0,
+      "mentions_hit": 2,
+      "mentions_total": 2,
+      "missed_terms": [],
+      "standalone_question": null,
+      "standalone_hit": 0,
+      "standalone_total": 0,
+      "latency_ms": 2668.2,
+      "ttft_ms": 1440.0,
+      "text": "**AUTH-401** is a SAML single sign-on error. It means the assertion is outside its validity window because the clocks on the identity provider (IdP) and Nimbus differ by more than 5 minutes [1]. When the sign-in fails, Nimbus shows the code on the login page and records it in the audit log [1].\n\n**To fix it:**\n\n1. Sync the IdP server's clock with NTP [1].\n2. Check the clock on any on-premises proxy in the sign-in path, because cloud IdPs rarely drift [1].",
+      "cited": [
+        {
+          "article": "nimbus-sso-saml",
+          "section": "troubleshooting"
+        }
+      ],
+      "usage": {
+        "input_tokens": 3942,
+        "output_tokens": 175
+      }
+    },
+    {
+      "id": "gq-audit-retention-business",
+      "origin": "curated",
+      "category": "table-lookup",
+      "known_retrieval_miss": false,
+      "question": "How long are audit logs kept on the Business tier?",
+      "expected": "answer",
+      "outcome": "answer",
+      "outcome_correct": true,
+      "blame": null,
+      "refusal_reason": null,
+      "error": null,
+      "uncited": false,
+      "citation_precision": 0.25,
+      "citation_recall": 1.0,
+      "retrieval_recall": 1.0,
+      "mentions_hit": 1,
+      "mentions_total": 1,
+      "missed_terms": [],
+      "standalone_question": null,
+      "standalone_hit": 0,
+      "standalone_total": 0,
+      "latency_ms": 3171.6,
+      "ttft_ms": 1366.5,
+      "text": "On the Business tier, audit-log events are kept for **90 days**, counted from the day each event happened [1]. When an event passes that period, it is permanently deleted and can't be restored [1]. Events past retention are also no longer returned by `GET /audit-log/events` [2].\n\nFor comparison, Starter keeps events for 30 days and Enterprise for 365 days [1].\n\nIf a client has a longer compliance requirement, recommend that they export the audit log on a schedule shorter than 90 days [1]. On Enterprise, audit log streaming to Splunk, Datadog Logs or an HTTPS endpoint is another way to hold events for longer than the workspace keeps them [3][4].",
+      "cited": [
+        {
+          "article": "nimbus-plan-tiers",
+          "section": "audit-log-retention"
+        },
+        {
+          "article": "nimbus-api-audit-log",
+          "section": "intro"
+        },
+        {
+          "article": "nimbus-tier-audit-log-streaming",
+          "section": "intro"
+        },
+        {
+          "article": "nimbus-tier-audit-log-streaming",
+          "section": "when-the-plan-tier-changes"
+        }
+      ],
+      "usage": {
+        "input_tokens": 3144,
+        "output_tokens": 225
+      }
+    },
+    {
+      "id": "gq-enterprise-burst",
+      "origin": "curated",
+      "category": "table-lookup",
+      "known_retrieval_miss": false,
+      "question": "How far can an Enterprise client burst above its rate limit?",
+      "expected": "answer",
+      "outcome": "answer",
+      "outcome_correct": true,
+      "blame": null,
+      "refusal_reason": null,
+      "error": null,
+      "uncited": false,
+      "citation_precision": 0.3333333333333333,
+      "citation_recall": 1.0,
+      "retrieval_recall": 1.0,
+      "mentions_hit": 2,
+      "mentions_total": 2,
+      "missed_terms": [],
+      "standalone_question": null,
+      "standalone_hit": 0,
+      "standalone_total": 0,
+      "latency_ms": 4756.6,
+      "ttft_ms": 1498.7,
+      "text": "An Enterprise workspace has a sustained limit of **3,000 req/min** and can burst to **6,000 req/min for 10 seconds**, twice its sustained limit [1]. The burst absorbs short spikes, such as a nightly batch starting [1].\n\n**How the limit works:**\n- The limit applies per workspace, across all of its API keys [1].\n- After a burst, traffic has to drop back under the sustained limit before another burst is allowed [1].\n- Every response includes the `X-RateLimit-Limit` and `X-RateLimit-Remaining` headers [1].\n- Over the limit, Nimbus returns `429 Too Many Requests` with a `Retry-After` header giving the seconds to wait [1]. Clients should wait at least that long before retrying, rather than retrying in a tight loop [1].\n\nTo confirm a specific client's effective limits, open their workspace in the admin console and check **Settings > Plan**, where limits that differ from the standard values are marked **Custom** [2]. An Admin can also call `GET /workspace/entitlements`, which returns `api_rate_limit_per_minute` [2].\n\nOn v2 (deprecated), every Plan Tier, including Enterprise, is limited to 300 req/min with no burst allowance [3].",
+      "cited": [
+        {
+          "article": "nimbus-api-webhooks",
+          "section": "rate-limits"
+        },
+        {
+          "article": "nimbus-plan-tiers",
+          "section": "checking-a-clients-plan-tier"
+        },
+        {
+          "article": "nimbus-v2-legacy",
+          "section": "api-limits-v2"
+        }
+      ],
+      "usage": {
+        "input_tokens": 3982,
+        "output_tokens": 539
+      }
+    },
+    {
+      "id": "gq-jit-vs-scim",
+      "origin": "curated",
+      "category": "near-duplicate",
+      "known_retrieval_miss": false,
+      "question": "What's the difference between JIT provisioning and SCIM?",
+      "expected": "answer",
+      "outcome": "answer",
+      "outcome_correct": true,
+      "blame": null,
+      "refusal_reason": null,
+      "error": null,
+      "uncited": false,
+      "citation_precision": 0.5,
+      "citation_recall": 1.0,
+      "retrieval_recall": 1.0,
+      "mentions_hit": 3,
+      "mentions_total": 3,
+      "missed_terms": [],
+      "standalone_question": null,
+      "standalone_hit": 0,
+      "standalone_total": 0,
+      "latency_ms": 4610.2,
+      "ttft_ms": 1155.0,
+      "text": "**JIT provisioning** comes with single sign-on and is on by default once SSO is saved [1][2]. It creates an account only when a user first signs in: if a successful SAML assertion arrives for an unknown email address, Nimbus creates the account from the assertion's attributes [2]. Nobody has to be invited in advance, and seats go only to people who actually sign in [2]. However, JIT never deprovisions [1][2]. A leaver removed in the IdP can no longer sign in, but their Nimbus account stays active, keeps its seat and keeps ownership of its workflows until an Admin suspends it by hand [2].\n\n**SCIM provisioning** makes the IdP the source of truth and covers the whole life of the account [1][3]. Every 40 minutes, each sync can:\n\n- **Create** accounts for newly assigned users before they have ever signed in [1].\n- **Update** names, email addresses and roles when they change in the IdP [1].\n- **Deprovision** users who are unassigned from the app or deactivated in the IdP [1].\n\nChanges reach Nimbus within one sync cycle, not instantly [1].\n\nSCIM requires the Enterprise tier, SAML SSO configured first with the same IdP, and Okta or Microsoft Entra ID as the IdP [4]. Both can stay switched on together, and SCIM-managed users are simply created before their first sign-in [1].",
+      "cited": [
+        {
+          "article": "nimbus-scim-provisioning",
+          "section": "overview"
+        },
+        {
+          "article": "nimbus-sso-saml",
+          "section": "just-in-time-provisioning"
+        },
+        {
+          "article": "nimbus-scim-provisioning",
+          "section": "intro"
+        },
+        {
+          "article": "nimbus-scim-provisioning",
+          "section": "prerequisites"
+        }
+      ],
+      "usage": {
+        "input_tokens": 3379,
+        "output_tokens": 499
+      }
+    },
+    {
+      "id": "gq-deprovisioned-data",
+      "origin": "curated",
+      "category": "near-duplicate",
+      "known_retrieval_miss": false,
+      "question": "Is a deprovisioned user's data deleted immediately?",
+      "expected": "answer",
+      "outcome": "answer",
+      "outcome_correct": true,
+      "blame": null,
+      "refusal_reason": null,
+      "error": null,
+      "uncited": false,
+      "citation_precision": 0.5,
+      "citation_recall": 1.0,
+      "retrieval_recall": 1.0,
+      "mentions_hit": 2,
+      "mentions_total": 2,
+      "missed_terms": [],
+      "standalone_question": null,
+      "standalone_hit": 0,
+      "standalone_total": 0,
+      "latency_ms": 5191.5,
+      "ttft_ms": 2625.7,
+      "text": "No. A deprovisioned user's data is not deleted immediately. Nimbus suspends the user at the next sync after they are unassigned from the Nimbus app or deactivated in the IdP [1].\n\n**What happens after deprovisioning:**\n\n1. **At the next sync:** The user can't sign in, their API keys stop working and their seat is freed [1].\n2. **Days 1–30:** Their data, including workflows, run history and connector credentials, is kept [1]. Reassigning the user in the IdP during this period reactivates the account with its data [1].\n3. **After 30 days:** The data is permanently deleted and can't be restored [1]. Assigning the user again later creates a new, empty account [1].\n\nWorkflows the suspended user owned keep running during the 30 days [1]. To keep them beyond that, an Admin transfers their ownership in **Settings > Users** before the data is deleted [1].\n\nAudit-log events about the user are not affected and follow the workspace's audit-log retention [1]. When a user is deleted, their events keep the `usr_` id, but the email address on each event is replaced with \"deleted user\" [2].",
+      "cited": [
+        {
+          "article": "nimbus-scim-provisioning",
+          "section": "deprovisioning"
+        },
+        {
+          "article": "nimbus-security-gdpr",
+          "section": "admin-settings"
+        }
+      ],
+      "usage": {
+        "input_tokens": 3455,
+        "output_tokens": 485
+      }
+    },
+    {
+      "id": "gq-enterprise-price",
+      "origin": "curated",
+      "category": "unanswerable",
+      "known_retrieval_miss": false,
+      "question": "How much does the Enterprise tier cost per seat?",
+      "expected": "refusal",
+      "outcome": "refusal",
+      "outcome_correct": true,
+      "blame": null,
+      "refusal_reason": "not_in_context",
+      "error": null,
+      "uncited": false,
+      "citation_precision": null,
+      "citation_recall": null,
+      "retrieval_recall": null,
+      "mentions_hit": 0,
+      "mentions_total": 0,
+      "missed_terms": [],
+      "standalone_question": null,
+      "standalone_hit": 0,
+      "standalone_total": 0,
+      "latency_ms": 2156.7,
+      "ttft_ms": null,
+      "text": "",
+      "cited": [],
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0
+      }
+    },
+    {
+      "id": "gq-ldap",
+      "origin": "curated",
+      "category": "unanswerable",
+      "known_retrieval_miss": false,
+      "question": "Does Nimbus support LDAP directory sync?",
+      "expected": "refusal",
+      "outcome": "refusal",
+      "outcome_correct": true,
+      "blame": null,
+      "refusal_reason": "not_in_context",
+      "error": null,
+      "uncited": false,
+      "citation_precision": null,
+      "citation_recall": null,
+      "retrieval_recall": null,
+      "mentions_hit": 0,
+      "mentions_total": 0,
+      "missed_terms": [],
+      "standalone_question": null,
+      "standalone_hit": 0,
+      "standalone_total": 0,
+      "latency_ms": 2779.2,
+      "ttft_ms": null,
+      "text": "",
+      "cited": [],
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0
+      }
+    },
+    {
+      "id": "gq-google-sso",
+      "origin": "curated",
+      "category": "partial",
+      "known_retrieval_miss": true,
+      "question": "How do I set up SSO with Google Workspace, and which attributes are required?",
+      "expected": "partial",
+      "outcome": "partial",
+      "outcome_correct": true,
+      "blame": null,
+      "refusal_reason": null,
+      "error": null,
+      "uncited": false,
+      "citation_precision": 0.0,
+      "citation_recall": 0.0,
+      "retrieval_recall": 0.0,
+      "mentions_hit": 1,
+      "mentions_total": 3,
+      "missed_terms": [
+        "firstName",
+        "lastName"
+      ],
+      "standalone_question": null,
+      "standalone_hit": 0,
+      "standalone_total": 0,
+      "latency_ms": 6140.8,
+      "ttft_ms": 2242.6,
+      "text": "Google Workspace isn't one of the identity providers with step-by-step guidance; those are Okta and Microsoft Entra ID [1]. These general SAML 2.0 requirements still apply.\n\n**Before you begin**\n- The workspace must be on the **Business** or **Enterprise** tier, because Starter workspaces can't enable SSO [1].\n- The person doing the setup must be a Nimbus Admin in the workspace and an administrator of the client's identity provider [1].\n- Every user needs a unique email address in the identity provider, because Nimbus uses the email address as the login [1].\n- Set up SSO before inviting the rest of the organisation, so new users never have to create a password [2][3].\n- The first Admin's email should match the address the identity provider will send, so the account matches when SSO is switched on [4].\n\n**Values from Nimbus**\nAn Admin finds these under **Settings > Security > Single sign-on** [1]:\n- **ACS URL:** `https://login.nimbus.omnicorp.example/saml/acs/<workspace-id>` [1]\n- **Entity ID (Audience URI):** `https://login.nimbus.omnicorp.example/saml/metadata/<workspace-id>` [1]\n- **Name ID format:** `EmailAddress` [1]\n\nUsers who sign in through SAML aren't affected by the workspace two-factor requirement, because the identity provider handles their second factor [5].\n\nI couldn't find anything in the Knowledge Base about Google Workspace configuration steps or SAML attributes required beyond the email-based Name ID.",
+      "cited": [
+        {
+          "article": "nimbus-sso-saml",
+          "section": "before-you-begin"
+        },
+        {
+          "article": "nimbus-faq-getting-started",
+          "section": "setup-questions-how-do-i-invite-my-team"
+        },
+        {
+          "article": "nimbus-admin-creating-a-workspace",
+          "section": "step-by-step-first-steps-for-the-client"
+        },
+        {
+          "article": "nimbus-admin-creating-a-workspace",
+          "section": "before-you-begin"
+        },
+        {
+          "article": "nimbus-admin-requiring-two-factor",
+          "section": "before-you-begin"
+        }
+      ],
+      "usage": {
+        "input_tokens": 3645,
+        "output_tokens": 699
+      }
+    },
+    {
+      "id": "gq-webhook-retries-ips",
+      "origin": "curated",
+      "category": "partial",
+      "known_retrieval_miss": false,
+      "question": "How many times are failed webhooks retried, and which IP ranges should the client allowlist?",
+      "expected": "partial",
+      "outcome": "partial",
+      "outcome_correct": true,
+      "blame": null,
+      "refusal_reason": null,
+      "error": null,
+      "uncited": false,
+      "citation_precision": 0.5,
+      "citation_recall": 1.0,
+      "retrieval_recall": 1.0,
+      "mentions_hit": 2,
+      "mentions_total": 2,
+      "missed_terms": [],
+      "standalone_question": null,
+      "standalone_hit": 0,
+      "standalone_total": 0,
+      "latency_ms": 4192.0,
+      "ttft_ms": 716.0,
+      "text": "A failed webhook delivery is retried up to **8 times** with exponential backoff over 24 hours [1]. The delays between attempts are:\n\n| Retry | Delay after previous attempt | Time since first attempt |\n|---|---|---|\n| 1 | 1 minute | 1 minute |\n| 2 | 5 minutes | 6 minutes |\n| 3 | 15 minutes | 21 minutes |\n| 4 | 30 minutes | 51 minutes |\n| 5 | 1 hour | about 2 hours |\n| 6 | 3 hours | about 5 hours |\n| 7 | 7 hours | about 12 hours |\n| 8 | 12 hours | about 24 hours |\n\nIf the last retry also fails, the delivery is dropped, but it stays visible in the endpoint's delivery log with every attempt's response status [1]. Once the client has fixed the receiver, an Admin can resend dropped deliveries with `POST /webhooks/deliveries/{dlv_id}/redeliver` [2].\n\nIf an endpoint has no successful delivery for 3 days in a row, it is disabled automatically and Nimbus emails the workspace's Admins [1]. While it is disabled, events for it are not queued [1]. To turn it back on, an Admin fixes the endpoint, clicks **Send test event** and, once that succeeds, clicks **Enable** [1].\n\nI couldn't find anything in the Knowledge Base about which IP ranges the client should allowlist for webhook deliveries.",
+      "cited": [
+        {
+          "article": "nimbus-api-webhooks",
+          "section": "retries-and-auto-disable"
+        },
+        {
+          "article": "nimbus-api-webhook-deliveries",
+          "section": "filtering-and-pagination"
+        }
+      ],
+      "usage": {
+        "input_tokens": 4814,
+        "output_tokens": 498
+      }
+    },
+    {
+      "id": "gq-followup-webhook-signature-v2",
+      "origin": "curated",
+      "category": "follow-up",
+      "known_retrieval_miss": false,
+      "question": "and on v2?",
+      "expected": "answer",
+      "outcome": "answer",
+      "outcome_correct": true,
+      "blame": null,
+      "refusal_reason": null,
+      "error": null,
+      "uncited": false,
+      "citation_precision": 0.3333333333333333,
+      "citation_recall": 1.0,
+      "retrieval_recall": 1.0,
+      "mentions_hit": 2,
+      "mentions_total": 2,
+      "missed_terms": [],
+      "standalone_question": "Which header carries the webhook signature and what algorithm is used on v2?",
+      "standalone_hit": 1,
+      "standalone_total": 1,
+      "latency_ms": 6532.7,
+      "ttft_ms": 4187.7,
+      "text": "On v2 (deprecated), the webhook signature is sent in the `X-Nimbus-Signature` header [1]. It is an **HMAC-SHA1** of the raw request body, keyed with the endpoint's signing secret, and formatted as `sha1=` followed by the hex digest [1].\n\nTo verify a delivery on v2:\n\n1. Read the raw request body as bytes, before any JSON parsing [1].\n2. Compute the HMAC-SHA1 of the body with the endpoint's signing secret [1].\n3. Prefix the hex digest with `sha1=` and compare it with the `X-Nimbus-Signature` header using a constant-time comparison [1].\n4. Reject the request if they don't match [1].\n\nOn v3, the current version, deliveries are signed with **HMAC-SHA256** and the signature is sent in the `X-Nimbus-Signature-256` header as `sha256=` followed by the hex digest [2]. Clients upgrading from v2 need to update their verification code before the upgrade date [3].",
+      "cited": [
+        {
+          "article": "nimbus-v2-legacy",
+          "section": "webhooks-v2"
+        },
+        {
+          "article": "nimbus-api-webhooks",
+          "section": "verifying-signatures"
+        },
+        {
+          "article": "nimbus-v2-legacy",
+          "section": "upgrading-to-v3"
+        }
+      ],
+      "usage": {
+        "input_tokens": 4817,
+        "output_tokens": 514
+      }
+    },
+    {
+      "id": "gq-followup-rate-limit-enterprise",
+      "origin": "curated",
+      "category": "follow-up",
+      "known_retrieval_miss": false,
+      "question": "what about Enterprise?",
+      "expected": "answer",
+      "outcome": "answer",
+      "outcome_correct": true,
+      "blame": null,
+      "refusal_reason": null,
+      "error": null,
+      "uncited": false,
+      "citation_precision": 0.3333333333333333,
+      "citation_recall": 1.0,
+      "retrieval_recall": 1.0,
+      "mentions_hit": 1,
+      "mentions_total": 1,
+      "missed_terms": [],
+      "standalone_question": "What is the API rate limit for an Enterprise client?",
+      "standalone_hit": 2,
+      "standalone_total": 2,
+      "latency_ms": 5093.3,
+      "ttft_ms": 2362.7,
+      "text": "An Enterprise workspace has a sustained limit of **3,000 requests per minute**, with a burst allowance of **6,000 requests per minute for 10 seconds** [1]. The limit applies per workspace, across all of its API keys [1]. After a burst, traffic has to drop back under the sustained limit before another burst is allowed [1].\n\nEvery response carries the current limit and the remaining allowance in the `X-RateLimit-Limit` and `X-RateLimit-Remaining` headers [1]. If the workspace goes over its limit, Nimbus returns `429 Too Many Requests` with a `Retry-After` header giving the number of seconds to wait [1]. Clients should wait at least that long before retrying, and requests rejected with 429 don't count towards the limit [1].\n\nTo confirm a client's effective limits, open their workspace in the admin console and go to **Settings > Plan**, where any limits that differ from the standard values are marked **Custom** [2].\n\nOn v2 (deprecated), every Plan Tier, including Enterprise, is limited to 300 requests per minute with no burst allowance [3].",
+      "cited": [
+        {
+          "article": "nimbus-api-webhooks",
+          "section": "rate-limits"
+        },
+        {
+          "article": "nimbus-plan-tiers",
+          "section": "checking-a-clients-plan-tier"
+        },
+        {
+          "article": "nimbus-v2-legacy",
+          "section": "api-limits-v2"
+        }
+      ],
+      "usage": {
+        "input_tokens": 4634,
+        "output_tokens": 384
+      }
+    },
+    {
+      "id": "gq-followup-topic-change-ldap",
+      "origin": "curated",
+      "category": "follow-up",
+      "known_retrieval_miss": false,
+      "question": "Does Nimbus support LDAP?",
+      "expected": "refusal",
+      "outcome": "partial",
+      "outcome_correct": false,
+      "blame": "model",
+      "refusal_reason": null,
+      "error": null,
+      "uncited": false,
+      "citation_precision": null,
+      "citation_recall": null,
+      "retrieval_recall": null,
+      "mentions_hit": 0,
+      "mentions_total": 0,
+      "missed_terms": [],
+      "standalone_question": "Does Nimbus support LDAP for SSO?",
+      "standalone_hit": 1,
+      "standalone_total": 1,
+      "latency_ms": 5881.7,
+      "ttft_ms": 4572.0,
+      "text": "Nimbus single sign-on works with SAML 2.0, with Nimbus acting as the service provider [1]. It supports sign-in from both the Nimbus login page (SP-initiated) and the identity provider's app dashboard (IdP-initiated), and setup is covered for **Okta** and **Microsoft Entra ID** [1].\n\nI couldn't find anything in the Knowledge Base about LDAP support for SSO.",
+      "cited": [
+        {
+          "article": "nimbus-sso-saml",
+          "section": "intro"
+        }
+      ],
+      "usage": {
+        "input_tokens": 3786,
+        "output_tokens": 315
+      }
+    },
+    {
+      "id": "gq-scim-onelogin",
+      "origin": "curated",
+      "category": "unanswerable",
+      "known_retrieval_miss": false,
+      "question": "How do I set up SCIM provisioning with OneLogin?",
+      "expected": "refusal",
+      "outcome": "partial",
+      "outcome_correct": false,
+      "blame": "model",
+      "refusal_reason": null,
+      "error": null,
+      "uncited": false,
+      "citation_precision": null,
+      "citation_recall": null,
+      "retrieval_recall": null,
+      "mentions_hit": 0,
+      "mentions_total": 0,
+      "missed_terms": [],
+      "standalone_question": null,
+      "standalone_hit": 0,
+      "standalone_total": 0,
+      "latency_ms": 5548.8,
+      "ttft_ms": 2948.0,
+      "text": "I couldn't find anything in the Knowledge Base about setting up SCIM provisioning with OneLogin. The SCIM setup guide documents the connection for only two identity providers, **Okta** and **Microsoft Entra ID** [1].\n\nThe other SCIM prerequisites apply whatever the identity provider:\n\n1. **Enterprise tier:** SCIM provisioning isn't available on Starter or Business, so a Business-tier client must upgrade first [1].\n2. **SAML single sign-on first:** SSO must already be set up with the same identity provider, and a test sign-in must have succeeded [1]. SCIM creates the accounts, and SSO is how users sign in to them [1].\n3. **Admin access:** The person doing the setup must be a Nimbus Admin and an administrator of the identity provider [1].\n\nOnce connected, changes sync every 40 minutes [2]. Each sync can create accounts before a user's first sign-in, update names, emails and roles, and deprovision users who are unassigned or deactivated [2].",
+      "cited": [
+        {
+          "article": "nimbus-scim-provisioning",
+          "section": "prerequisites"
+        },
+        {
+          "article": "nimbus-scim-provisioning",
+          "section": "overview"
+        }
+      ],
+      "usage": {
+        "input_tokens": 3270,
+        "output_tokens": 518
+      }
+    },
+    {
+      "id": "gq-sso-ping-identity",
+      "origin": "curated",
+      "category": "unanswerable",
+      "known_retrieval_miss": false,
+      "question": "How do I configure SAML SSO with Ping Identity?",
+      "expected": "refusal",
+      "outcome": "partial",
+      "outcome_correct": false,
+      "blame": "model",
+      "refusal_reason": null,
+      "error": null,
+      "uncited": false,
+      "citation_precision": null,
+      "citation_recall": null,
+      "retrieval_recall": null,
+      "mentions_hit": 0,
+      "mentions_total": 0,
+      "missed_terms": [],
+      "standalone_question": null,
+      "standalone_hit": 0,
+      "standalone_total": 0,
+      "latency_ms": 6388.2,
+      "ttft_ms": 2607.1,
+      "text": "Nimbus acts as a standard SAML 2.0 service provider and supports both SP-initiated sign-in from the Nimbus login page and IdP-initiated sign-in from the IdP's app dashboard [1]. Step-by-step setup instructions are available for Okta and Microsoft Entra ID [2].\n\n**Before you begin**, confirm the following with the client [2]:\n\n- The workspace is on the **Business** or **Enterprise** tier, because Starter workspaces can't enable SSO [2].\n- The person doing the setup is both a Nimbus Admin and an administrator of the client's IdP [2].\n- Every user has a unique email address in the IdP, because Nimbus uses the email address as the login [2].\n\n**Values the IdP needs from Nimbus:** An Admin finds these under **Settings > Security > Single sign-on** [2].\n\n- **ACS URL:** `https://login.nimbus.omnicorp.example/saml/acs/<workspace-id>` [2]\n- **Entity ID (Audience URI):** `https://login.nimbus.omnicorp.example/saml/metadata/<workspace-id>` [2]\n- **Name ID format:** EmailAddress [2]\n\nIn the Entra setup, the IdP's metadata URL is pasted into **IdP metadata** in Nimbus. The setup is then verified by assigning a test user to the app and clicking **Test sign-in** [3].\n\nI couldn't find anything in the Knowledge Base about configuring SSO specifically with Ping Identity.",
+      "cited": [
+        {
+          "article": "nimbus-sso-saml",
+          "section": "intro"
+        },
+        {
+          "article": "nimbus-sso-saml",
+          "section": "before-you-begin"
+        },
+        {
+          "article": "nimbus-sso-saml",
+          "section": "configuring-microsoft-entra-id"
+        }
+      ],
+      "usage": {
+        "input_tokens": 3514,
+        "output_tokens": 652
+      }
+    },
+    {
+      "id": "gq-webhook-source-ips",
+      "origin": "curated",
+      "category": "unanswerable",
+      "known_retrieval_miss": false,
+      "question": "Which IP addresses do Nimbus webhook deliveries come from?",
+      "expected": "refusal",
+      "outcome": "refusal",
+      "outcome_correct": true,
+      "blame": null,
+      "refusal_reason": "not_in_context",
+      "error": null,
+      "uncited": false,
+      "citation_precision": null,
+      "citation_recall": null,
+      "retrieval_recall": null,
+      "mentions_hit": 0,
+      "mentions_total": 0,
+      "missed_terms": [],
+      "standalone_question": null,
+      "standalone_hit": 0,
+      "standalone_total": 0,
+      "latency_ms": 2001.4,
+      "ttft_ms": null,
+      "text": "",
+      "cited": [],
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0
+      }
+    },
+    {
+      "id": "gq-business-annual-discount",
+      "origin": "curated",
+      "category": "unanswerable",
+      "known_retrieval_miss": false,
+      "question": "Is there a discount on the Business tier for annual billing?",
+      "expected": "refusal",
+      "outcome": "refusal",
+      "outcome_correct": true,
+      "blame": null,
+      "refusal_reason": "no_relevant_passages",
+      "error": null,
+      "uncited": false,
+      "citation_precision": null,
+      "citation_recall": null,
+      "retrieval_recall": null,
+      "mentions_hit": 0,
+      "mentions_total": 0,
+      "missed_terms": [],
+      "standalone_question": null,
+      "standalone_hit": 0,
+      "standalone_total": 0,
+      "latency_ms": 24.8,
+      "ttft_ms": null,
+      "text": "",
+      "cited": [],
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0
+      }
+    },
+    {
+      "id": "gq-upgrade-cost",
+      "origin": "curated",
+      "category": "unanswerable",
+      "known_retrieval_miss": false,
+      "question": "What would it cost a Starter client to upgrade to Business?",
+      "expected": "refusal",
+      "outcome": "refusal",
+      "outcome_correct": true,
+      "blame": null,
+      "refusal_reason": "not_in_context",
+      "error": null,
+      "uncited": false,
+      "citation_precision": null,
+      "citation_recall": null,
+      "retrieval_recall": null,
+      "mentions_hit": 0,
+      "mentions_total": 0,
+      "missed_terms": [],
+      "standalone_question": null,
+      "standalone_hit": 0,
+      "standalone_total": 0,
+      "latency_ms": 3435.4,
+      "ttft_ms": null,
+      "text": "",
+      "cited": [],
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0
+      }
+    },
+    {
+      "id": "gq-active-directory-sync",
+      "origin": "curated",
+      "category": "unanswerable",
+      "known_retrieval_miss": false,
+      "question": "Can Nimbus sync users from an on-premises Active Directory?",
+      "expected": "refusal",
+      "outcome": "partial",
+      "outcome_correct": false,
+      "blame": "model",
+      "refusal_reason": null,
+      "error": null,
+      "uncited": false,
+      "citation_precision": null,
+      "citation_recall": null,
+      "retrieval_recall": null,
+      "mentions_hit": 0,
+      "mentions_total": 0,
+      "missed_terms": [],
+      "standalone_question": null,
+      "standalone_hit": 0,
+      "standalone_total": 0,
+      "latency_ms": 7264.7,
+      "ttft_ms": 3914.0,
+      "text": "Nimbus syncs users and groups from an identity provider (IdP) through **SCIM 2.0** [1]. The IdP sends Nimbus every change to the users and groups assigned to the Nimbus app, and these changes sync every 40 minutes [1].\n\nEach sync can:\n\n- **Create** an account for a newly assigned user before their first sign-in [1].\n- **Update** a user's name, email address and role when they change in the IdP [1].\n- **Deprovision** a user who is unassigned or deactivated in the IdP [1]. Nimbus suspends the user at the next sync and keeps their data for 30 days before permanently deleting it [2].\n\nThe IdPs named for the Nimbus app are Okta and Microsoft Entra ID [3]. SCIM provisioning is referenced in connection with Enterprise workspaces [4].\n\nThe private connector agent lets Nimbus workflows reach on-premises systems such as PostgreSQL, SQL Server and SFTP servers [5]. It is described for connector work, not for user provisioning [5].\n\nOn v2 (deprecated), there is no SCIM provisioning [6]. Users are created at first SSO sign-in with the Viewer role, and removing them from the IdP doesn't change their Nimbus account [6].\n\nI couldn't find anything in the Knowledge Base about syncing users directly from an on-premises Active Directory.",
+      "cited": [
+        {
+          "article": "nimbus-scim-provisioning",
+          "section": "overview"
+        },
+        {
+          "article": "nimbus-scim-provisioning",
+          "section": "deprovisioning"
+        },
+        {
+          "article": "nimbus-sso-saml",
+          "section": "troubleshooting"
+        },
+        {
+          "article": "nimbus-tier-seat-limits",
+          "section": "when-the-plan-tier-changes"
+        },
+        {
+          "article": "nimbus-tier-private-connector-agent",
+          "section": "intro"
+        },
+        {
+          "article": "nimbus-v2-admin-managing-users",
+          "section": "how-it-works"
+        }
+      ],
+      "usage": {
+        "input_tokens": 4108,
+        "output_tokens": 700
+      }
+    },
+    {
+      "id": "gq-google-workspace-provisioning",
+      "origin": "curated",
+      "category": "unanswerable",
+      "known_retrieval_miss": false,
+      "question": "Can users be provisioned automatically from Google Workspace?",
+      "expected": "refusal",
+      "outcome": "partial",
+      "outcome_correct": false,
+      "blame": "model",
+      "refusal_reason": null,
+      "error": null,
+      "uncited": false,
+      "citation_precision": null,
+      "citation_recall": null,
+      "retrieval_recall": null,
+      "mentions_hit": 0,
+      "mentions_total": 0,
+      "missed_terms": [],
+      "standalone_question": null,
+      "standalone_hit": 0,
+      "standalone_total": 0,
+      "latency_ms": 6300.7,
+      "ttft_ms": 3373.1,
+      "text": "Automatic user provisioning with deprovisioning uses SCIM provisioning on the **Enterprise** tier [1]. The documented SCIM setup covers **Okta** and **Microsoft Entra ID** [2]. In both, only users and groups assigned to the Nimbus app are provisioned, so assign groups rather than individual users so that new joiners are picked up automatically [2].\n\nOnce SSO is saved, just-in-time (JIT) provisioning is on by default [1]. It creates a user's account from the SAML assertion on their first login, so nobody has to be invited in advance [1]. JIT never deprovisions, though [1]. An account removed in the identity provider stays active and keeps its seat until an Admin suspends it by hand [1].\n\nIf a client downgrades from Enterprise, SCIM sync stops, but users it already provisioned keep their accounts [3].\n\nOn v2 (deprecated), there is no SCIM provisioning [4]. Users arrive only by Admin invitation or JIT provisioning, and leavers must be removed through the Users API or the console [4].\n\nI couldn't find anything in the Knowledge Base about provisioning users from Google Workspace.",
+      "cited": [
+        {
+          "article": "nimbus-sso-saml",
+          "section": "just-in-time-provisioning"
+        },
+        {
+          "article": "nimbus-scim-provisioning",
+          "section": "connecting-your-identity-provider"
+        },
+        {
+          "article": "nimbus-faq-workspace-and-account",
+          "section": "limits-and-edge-cases"
+        },
+        {
+          "article": "nimbus-v2-api-users",
+          "section": "intro"
+        }
+      ],
+      "usage": {
+        "input_tokens": 4322,
+        "output_tokens": 603
+      }
+    },
+    {
+      "id": "gq-v1-end-of-support",
+      "origin": "curated",
+      "category": "unanswerable",
+      "known_retrieval_miss": false,
+      "question": "When did Nimbus v1 reach end of support?",
+      "expected": "refusal",
+      "outcome": "refusal",
+      "outcome_correct": true,
+      "blame": null,
+      "refusal_reason": "not_in_context",
+      "error": null,
+      "uncited": false,
+      "citation_precision": null,
+      "citation_recall": null,
+      "retrieval_recall": null,
+      "mentions_hit": 0,
+      "mentions_total": 0,
+      "missed_terms": [],
+      "standalone_question": null,
+      "standalone_hit": 0,
+      "standalone_total": 0,
+      "latency_ms": 2287.3,
+      "ttft_ms": null,
+      "text": "",
+      "cited": [],
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0
+      }
+    },
+    {
+      "id": "gq-saml-single-logout",
+      "origin": "curated",
+      "category": "unanswerable",
+      "known_retrieval_miss": false,
+      "question": "Does Nimbus support SAML single logout?",
+      "expected": "refusal",
+      "outcome": "refusal",
+      "outcome_correct": true,
+      "blame": null,
+      "refusal_reason": "not_in_context",
+      "error": null,
+      "uncited": false,
+      "citation_precision": null,
+      "citation_recall": null,
+      "retrieval_recall": null,
+      "mentions_hit": 0,
+      "mentions_total": 0,
+      "missed_terms": [],
+      "standalone_question": null,
+      "standalone_hit": 0,
+      "standalone_total": 0,
+      "latency_ms": 3747.3,
+      "ttft_ms": null,
+      "text": "",
+      "cited": [],
+      "usage": {
+        "input_tokens": 3839,
+        "output_tokens": 135
+      }
+    },
+    {
+      "id": "gq-enterprise-uptime-sla",
+      "origin": "curated",
+      "category": "unanswerable",
+      "known_retrieval_miss": false,
+      "question": "What uptime SLA does the Enterprise tier guarantee?",
+      "expected": "refusal",
+      "outcome": "refusal",
+      "outcome_correct": true,
+      "blame": null,
+      "refusal_reason": "not_in_context",
+      "error": null,
+      "uncited": false,
+      "citation_precision": null,
+      "citation_recall": null,
+      "retrieval_recall": null,
+      "mentions_hit": 0,
+      "mentions_total": 0,
+      "missed_terms": [],
+      "standalone_question": null,
+      "standalone_hit": 0,
+      "standalone_total": 0,
+      "latency_ms": 1578.5,
+      "ttft_ms": null,
+      "text": "",
+      "cited": [],
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0
+      }
+    }
+  ]
+}
