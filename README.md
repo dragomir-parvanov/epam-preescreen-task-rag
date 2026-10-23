@@ -9,24 +9,48 @@ A RAG chatbot for OmniCorp's Customer Success Managers (CSMs). A CSM asks a ques
 
 Domain terms (Article, Section, Passage, Citation, Turn, Follow-up Question, Standalone Question, Uncited Answer, Refusal, Golden Question) are defined in [`GLOSSARY.md`](GLOSSARY.md). Every decision below links to its ADR in [`docs/adr/`](docs/adr/) or to its ticket on the planning map, [Map: Enterprise Knowledge Base RAG Chatbot](https://github.com/dragomir-parvanov/epam-preescreen-task-rag/issues/1).
 
-**Contents:** [How to run](#how-to-run) · [What the CSM sees](#what-the-csm-sees) · [Architecture](#architecture) · [API design](#api-design) · [Trade-offs](#trade-offs) · [How to test](#how-to-test) · [Quality](#quality) · [Known limitations](#known-limitations) · [What I'd do next](#what-id-do-next) · [How AI was used](#how-ai-was-used)
+**Contents:** [Quick start for reviewers](#quick-start-for-reviewers) · [How to run](#how-to-run) · [What the CSM sees](#what-the-csm-sees) · [Architecture](#architecture) · [API design](#api-design) · [Trade-offs](#trade-offs) · [How to test](#how-to-test) · [Quality](#quality) · [Known limitations](#known-limitations) · [What I'd do next](#what-id-do-next) · [How AI was used](#how-ai-was-used)
+
+## Quick start for reviewers
+
+You need Docker (Engine 25 or later, for the healthcheck's `start_interval`) and [pixi](https://pixi.sh), and nothing else. pixi installs Python, Node and every other tool into the project. To install pixi itself, at the version CI uses:
+
+```sh
+curl -fsSL https://pixi.sh/install.sh | PIXI_VERSION=0.81.0 sh   # Linux and macOS; then open a new shell
+```
+
+On Windows, in PowerShell: `$Env:PIXI_VERSION='0.81.0'; irm -useb https://pixi.sh/install.ps1 | iex`. On macOS, `brew install pixi` also works. Check it with `pixi --version`. The lockfile covers Linux (x86-64 and ARM), Apple silicon Macs and Windows, but not Intel Macs.
+
+```sh
+git clone https://github.com/dragomir-parvanov/epam-preescreen-task-rag.git
+cd epam-preescreen-task-rag
+cp .env.example .env   # set ANTHROPIC_API_KEY=... in .env
+pixi run up            # returns once the stack can answer: about 1.5 to 4 minutes on the first run
+```
+
+Open <http://localhost:8080> and ask these in order:
+
+| Ask | What it shows |
+| --- | --- |
+| Which header carries the webhook signature and what algorithm is used? | A cited Answer. Hover a `[n]` chip, expand a Citation to its verbatim quote, then click "Open Section" to see the whole Article, scrolled to the cited Section |
+| and on v2? | A Follow-up Question. "Searched for: …" shows the Standalone Question it was rewritten into, and the Citation carries the `v2` and `Deprecated` badges |
+| What is the API rate limit for a Business client? | A version conflict: the v3 limit, with the deprecated v2 limit called out separately |
+| How much does the Enterprise tier cost per seat? | A Refusal. The Knowledge Base doesn't cover pricing, so nothing is made up |
+
+**No key?** In `.env`, uncomment `BACKEND_LLM_PROVIDER=ollama` and `COMPOSE_PROFILES=ollama`, then run `pixi run up`. This runs `qwen3.5:2b` locally. The first run downloads about 8 GB, and an Answer takes about 30 s on the CPU. Expect more Uncited Answers than with Claude.
+
+**Ports taken?** If 8080, 8000 or 5432 is already in use, change `FRONTEND_HOST_PORT`, `BACKEND_HOST_PORT` or `POSTGRES_HOST_PORT` in `.env`.
+
+`pixi run test` and `pixi run smoke` run every test with no key ([How to test](#how-to-test)). `pixi run down` stops the stack.
 
 ## How to run
 
-You need Docker (Engine 25 or later, for the healthcheck's `start_interval`) and [pixi](https://pixi.sh). pixi installs Python, Node and every tool, so nothing else is needed on the host.
-
-```sh
-cp .env.example .env   # then set ANTHROPIC_API_KEY, or uncomment the keyless Ollama block
-pixi run up            # check the config, then build and start the stack, and wait until it can answer
-pixi run down          # stop it (keeps the index and the downloaded models)
-```
-
-The app is at <http://localhost:8080>, and the backend's live API docs are at <http://localhost:8000/docs>.
+The [Quick start](#quick-start-for-reviewers) covers the first run. This section has the details behind it. Besides the app at <http://localhost:8080>, the backend's live API docs are at <http://localhost:8000/docs>.
 
 **Pick an LLM in `.env`.** `pixi run up` first runs `pixi run check-config`, which validates `.env` with the backend's own `Settings`. If the config is invalid, it prints the fix and exits before any Docker build.
 
 - **Claude (the default):** set `ANTHROPIC_API_KEY`, in `.env` or exported in your shell. The default model is `claude-opus-5-5`. `BACKEND_LLM_MODEL=claude-haiku-5-5` is faster and about 40 times cheaper (see [the baselines](#the-full-llm-eval-opt-in)).
-- **Keyless, local:** uncomment `BACKEND_LLM_PROVIDER=ollama` and `COMPOSE_PROFILES=ollama`. This runs `qwen3.5:2b` in an `ollama` container. **The first `up` downloads about 8 GB:** the 5.0 GB Ollama image plus the 2.7 GB model. Follow the model download with `docker compose logs -f ollama-pull`. `up` waits up to 30 minutes for it. On a Mac, a native Ollama can use the Metal GPU, which a container can't; `.env.example` shows how to point the backend at it.
+- **Keyless, local:** the Ollama profile runs `qwen3.5:2b` in an `ollama` container. Its first `up` downloads the 5.0 GB Ollama image plus the 2.7 GB model; follow the model download with `docker compose logs -f ollama-pull`. `up` waits up to 30 minutes for it. On a Mac, a native Ollama can use the Metal GPU, which a container can't; `.env.example` shows how to point the backend at it.
 
 ### First boot and readiness
 

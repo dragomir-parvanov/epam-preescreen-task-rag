@@ -182,3 +182,54 @@ Round 2 is settled too, so every branch of this ticket has now been visited. Bef
 
 Shall I go ahead?
 
+## user · 2026-10-23 13:16:00 · context 8.5% (84.6k / 1000k)
+
+go ahead
+
+## assistant · 2026-10-23 13:16:08 · context 8.6% (85.6k / 1000k)
+
+Writing the resolution comment first.
+
+## assistant · 2026-10-23 13:16:42 · context 8.9% (88.8k / 1000k)
+
+Next, the three new tickets.
+
+## assistant · 2026-10-23 13:17:11 · context 9.2% (92.3k / 1000k)
+
+Now the second pass: replace the placeholder, make them sub-issues of the map, and wire the blocking edges.
+
+## assistant · 2026-10-23 13:17:36 · context 9.3% (93k / 1000k)
+
+Adding hand-off notes to the existing build tickets.
+
+## assistant · 2026-10-23 13:18:06 · context 9.5% (95.1k / 1000k)
+
+Closing the ticket and updating the map.
+
+## assistant · 2026-10-23 13:18:32 · context 9.7% (97.3k / 1000k)
+
+I resolved and closed **Operational readiness: config, health, ingestion lifecycle, logging**. The full answer is in its resolution comment, and the map now has a one-line entry for it under Decisions so far.
+
+**What was decided**
+- **Ingestion:**
+  - At startup the backend checks every Article and refuses to start if one is malformed.
+  - It then syncs the index in the background, under a Postgres lock so two runs can't collide, and retries on failure without crashing.
+  - Swapping the embedder re-embeds everything automatically, and `pixi run reindex` rebuilds the index without deleting the downloaded Ollama models.
+- **Readiness:** `/ready` depends only on the database and the index. The LLM check is reported but doesn't block it. Compose's healthcheck uses `/ready`, so `pixi run up --wait` returns only once the stack can answer.
+- **Timeouts and retries:** explicit timeouts for Claude, Ollama and Postgres. Claude calls are retried only before the first byte of the answer, never mid-stream. A new `retrieval_unavailable` error covers a database failure during a Turn.
+- **Logging:** structlog JSON, with nginx's request id carried into every log line and every error response. One `turn_completed` event per Turn, and question and Answer text only at DEBUG level.
+- **Compose:** an `ollama-pull` service pre-pulls the model, no service restarts automatically, and shutdown is graceful.
+
+**Tracker changes**
+- **New tickets:**
+  - **Build the startup ingestion lifecycle and readiness checks**, blocked by the retrieval adapter, ChatModel adapter, LLM provider settings and pgvector Compose service tickets.
+  - **Build structured logging and request ids**, blocked by **Build the chat API contract over a stub pipeline**.
+  - **Readiness banner and degraded-mode UX**, a grilling ticket graduated from the failure-UX fog. It is unblocked, so it's on the frontier now.
+- **Rewired:** **Build the Compose smoke job in CI** is now also blocked by the new ingestion lifecycle ticket.
+- **Notes:** hand-off notes went on seven existing build tickets: the ChatModel adapter, LLM provider settings, retrieval adapter, chat API contract, ChatService orchestration, chat page and Compose smoke job.
+- **Out of scope:** metrics and tracing were added to the map's Out of scope section.
+
+No ADR and no glossary changes were needed. I also didn't touch any repo files, so there's nothing for you to commit from this session.
+
+While I was working, another session resolved **Chunking & retrieval strategy**. I re-read the map just before saving my edit, so that session's line was kept.
+

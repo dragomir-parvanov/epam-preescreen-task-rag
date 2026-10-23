@@ -343,3 +343,22 @@ The downstream tickets are updated and the new corpus-generation ticket is wired
 
 **Not committed:** ADR-0005 and the Golden Question curated/generated definition in `GLOSSARY.md` are in your working tree, waiting for you to commit.
 
+## user · 2026-10-23 13:15:20 · context 14.2% (142.3k / 1000k)
+
+commit everything that we have now
+
+## assistant · 2026-10-23 13:15:27 · context 14.4% (144.2k / 1000k)
+
+Splitting this into two commits, matching earlier history: the decision docs, then the session logs. First, a quick scan of the new logs for anything that looks like a key.
+
+## assistant · 2026-10-23 13:15:35 · context 14.5% (145k / 1000k)
+
+I've committed everything to `main` in two commits; nothing is pushed yet.
+
+- **`1e36ce4` docs: record ADRs 0004-0005, testing rules and Golden Question origins**: `AGENTS.md`, `GLOSSARY.md`, `docs/adr/0004-pgvector-as-the-passage-store.md` (from the vector-store session) and `docs/adr/0005-hybrid-retrieval-with-an-in-memory-bm25-mirror.md`.
+- **`655edbc` docs: add wayfinder session conversations**: all new and changed files under `chats/`. A scan of the committed files for API keys found nothing.
+
+The working tree is now clean. I can push whenever you want.
+
+The Stop hook will log this session as another file in `chats/`, which will show up uncommitted afterwards.
+
